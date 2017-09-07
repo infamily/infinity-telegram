@@ -137,7 +137,6 @@ def inline_topic_query(bot, update):
                     title=topic.title,
                     input_message_content=InputTextMessageContent(topic.url)))
         update.inline_query.answer(results)
-        return TOPIC_PARENTS
 
 def topic_done(bot, update):
     new_topic = data['new_topic']

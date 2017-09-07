@@ -30,6 +30,7 @@ import re
 import json
 
 from user import User
+from comment import Comment
 from topic import Topic
 from constants import SERVER_PATH
 
@@ -43,10 +44,11 @@ logger=logging.getLogger(__name__)
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 
-COMMENT_TITLE, COMMENT_BODY, COMMENT_PARENTS=range(3)
+COMMENT_TOPIC, COMMENT_TEXT, COMMENT_CH, COMMENT_AH=range(4)
+
 token = '6b7b4bf980cc3fdcfce2ae44939693dc8f023018'
 data = {}
-# topics
+# comment
 def comment_new(bot, update):
     # test
     user=User('longx695@gmail.com')
@@ -56,72 +58,47 @@ def comment_new(bot, update):
     if ('user' not in data or token is '') :
         update.message.reply_text('You have to login to create a topic. Please use /register to login')
         return ConversationHandler.END
-    new_topic=Topic()
-    data['new_topic']=new_topic
-    keyboard = [[InlineKeyboardButton("Need", callback_data='0'), InlineKeyboardButton("Goal", callback_data='1'), InlineKeyboardButton("Idea", callback_data='2')],
-                 [InlineKeyboardButton("Plan", callback_data='3'), InlineKeyboardButton("Task", callback_data='4')]]
-    update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
-    return TOPIC_TITLE
-
-def comment_callback(bot, update):
-    query = update.callback_query
-    message = query.message
-    chat_id = message.chat_id
-    message_id = message.message_id
-    type = int(query.data)
-    print ("callback: %d" % type)
-    bot.delete_message(chat_id=chat_id, message_id=message_id)
-    if type < 5:
-        new_topic=data['new_topic']
-        new_topic.type=type
-        types=['Need', 'Goal', 'Idea', 'Plan', 'Task']
-        bot.send_message(chat_id=chat_id, text="Type: %s\nPlease input Title." % types[type])
-    elif type is 6:
-        bot.send_message(chat_id=chat_id, text="Please type /done to finish")
-    else:
-        print ('parents')
-
-def comment_title(bot, update):
-    new_topic=data['new_topic']
-    if new_topic.type is -1:
-        return
-    title=update.message.text
-    new_topic.title=title
-    update.message.reply_text('Title: %s\nPlease input body.' % title)
-    return TOPIC_BODY
-def comment_body(bot, update):
-    body=update.message.text
-    new_topic=data['new_topic']
-    new_topic.body=body
-
-    keyboard = [[InlineKeyboardButton("Parents", switch_inline_query_current_chat = "parents")],
-        [InlineKeyboardButton("Done", callback_data="6")]]
-    bot.send_message(chat_id=update.message.chat_id, text='Body: %s\nSelect Parents' % body, reply_markup=InlineKeyboardMarkup(keyboard))
-
+    new_comment=Comment()
+    data['new_comment']=new_comment
+    keyboard = [[InlineKeyboardButton("Select Topic", switch_inline_query_current_chat = 'topics')]]
     data['topics'] = Topic.topics(token)
-    return TOPIC_PARENTS
-def comment_parents(bot, update):
-    parent=update.message.text
-    print (parent)
-    topics = data['topics']
-    new_topic = data['new_topic']
-    if parent in new_topic.parents:
-        return
-    if parent in topics:
-        new_topic.parents.append(parent)
+    update.message.reply_text('Select Topic', reply_markup=InlineKeyboardMarkup(keyboard))
+    return COMMENT_TOPIC
 
-def comment_list(bot, update):
-    if ('user' not in data or token is '') :
-        update.message.reply_text('You have to login to create a topic. Please use /register to login')
-        return
-    update.message.reply_text('topic_list')
-    print ('topic_list')
+def comment_topic(bot, update):
+    topic=update.message.text
+    topics = data['topics']
+    if topic in topic:
+        new_comment = data['new_comment']
+        new_comment.topic = topic
+        update.message.reply_text('Please input text.')
+        return COMMENT_TEXT
+def comment_text(bot, update):
+    new_comment = data['new_comment']
+    text=update.message.text
+    new_comment.text=text
+    update.message.reply_text('Text: %s\nPlease input Claimed hours.' % text)
+    return COMMENT_CH
+
+def comment_ch(bot, update):
+    new_comment = data['new_comment']
+    ch=update.message.text
+    new_comment.claimed_hours=ch
+    update.message.reply_text('Claimed hours: %s\nPlease input Claimed hours.' % ch)
+    return COMMENT_AH
+
+def comment_ah(bot, update):
+    new_comment = data['new_comment']
+    ah=update.message.text
+    new_comment.assumed_hours=ah
+    new_comment.create(token)
+    update.message.reply_text('Claimed hours: %s\nA new comment has been created.' % ah)
+    return ConversationHandler.END
 
 def inline_topic_query(bot, update):
     query = update.inline_query.query
     query = query.decode('utf-8')
     results = list()
-    print (query)
     if query == 'parents':
         if 'topics' not in data:
             return
@@ -137,13 +114,15 @@ def inline_topic_query(bot, update):
                     title=topic.title,
                     input_message_content=InputTextMessageContent(topic.url)))
         update.inline_query.answer(results)
-        return TOPIC_PARENTS
-
-def done(bot, update):
-    new_topic = data['new_topic']
-    new_topic.create(token)
-    bot.send_message(chat_id=update.message.chat_id, text='New topic created')
-    return ConversationHandler.END
+    if query == 'topics':
+        if 'topics' not in data:
+            return
+        topics = data['topics']
+        for topic in topics:
+            results.append(InlineQueryResultArticle(id=uuid4(),
+                title=topic.title,
+                input_message_content=InputTextMessageContent(topic.url)))
+        update.inline_query.answer(results)
 
 def error(bot, update, error):
     logger.warn('Update "%s" caused error "%s"' % (update, error))
@@ -155,18 +134,18 @@ def main():
     # Get the dispatcher to register handlers
     dp=updater.dispatcher
 
-    topics_handler=ConversationHandler(
-        entry_points=[CommandHandler('newtopic', topic_new)],
+    comment_handler=ConversationHandler(
+        entry_points=[CommandHandler('newcomment', comment_new)],
         states={
-            TOPIC_TITLE: [MessageHandler(Filters.text, topic_title)],
-            TOPIC_BODY: [MessageHandler(Filters.text, topic_body)],
-            TOPIC_PARENTS: [RegexHandler('^(https://test.wfx.io/api/v1/topics/[0-9]+/)$', topic_parents)],
+            COMMENT_TOPIC: [RegexHandler('^(https://test.wfx.io/api/v1/topics/[0-9]+/)$', comment_topic)],
+            COMMENT_TEXT: [MessageHandler(Filters.text, comment_text)],
+            COMMENT_CH: [MessageHandler(Filters.text, comment_ch)],
+            COMMENT_AH: [MessageHandler(Filters.text, comment_ah)],
         },
-        fallbacks=[CommandHandler('done', done)],
+        fallbacks=[CommandHandler('cancel', error)],
     )
-    dp.add_handler(topics_handler)
-    dp.add_handler(CommandHandler('findtopic', topic_list)),
-    dp.add_handler(CallbackQueryHandler(topic_type_callback))
+    dp.add_handler(comment_handler)
+    # dp.add_handler(CommandHandler('findtopic', topic_list)),
     dp.add_handler(InlineQueryHandler(inline_topic_query))
 
     # on noncommand i.e message - echo the message on Telegram
