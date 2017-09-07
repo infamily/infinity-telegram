@@ -16,6 +16,7 @@ Press Ctrl-C on the command line or send a signal to the process to stop the
 bot.
 """
 from uuid import uuid4
+import sys
 
 from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram  import InlineQueryResultArticle, InputTextMessageContent, ParseMode
@@ -42,79 +43,11 @@ logger=logging.getLogger(__name__)
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 
-AUTH_EMAIL, AUTH_CAPTCHA, AUTH_PASSWORD=range(3)
-TOPIC_TITLE, TOPIC_BODY, TOPIC_PARENTS=range(3)
-
+COMMENT_TITLE, COMMENT_BODY, COMMENT_PARENTS=range(3)
 token = '6b7b4bf980cc3fdcfce2ae44939693dc8f023018'
 data = {}
-
-# user authentication
-def auth_register(bot, update):
-    update.message.reply_text('What\'s your e-mail?')
-    return AUTH_EMAIL
-def auth_email(bot, update):
-    user_email=update.message.text
-    if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', user_email):
-        update.message.reply_text('Please enter valid email')
-        return AUTH_EMAIL
-    bot.send_chat_action(chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING)
-    user=User(user_email)
-    captcha=user.get_captcha()
-    data['user']=user
-    data['captcha']=captcha
-    bot.sendPhoto(chat_id=update.message.chat_id, photo=SERVER_PATH + captcha['image_url'])
-    update.message.reply_text('Please, solve the captcha.')
-    return AUTH_CAPTCHA
-def auth_captcha(bot, update):
-    captcha_value=update.message.text
-    if 'user' not in data or 'captcha' not in data :
-        print ('captcha_error')
-        return
-    user=data['user']
-    captcha=data['captcha']
-    res=user.signup(captcha['key'], captcha_value)
-    if res.status_code == 200 :
-        print res.text
-        token=json.loads(res.text)['token']
-        del data['captcha']
-        data['token']=token
-        update.message.reply_text('Please input OTP password')
-        return AUTH_PASSWORD
-    else:
-        captcha=json.loads(res.content)
-        data['captcha']=captcha
-        bot.sendPhoto(chat_id=update.message.chat_id, photo=SERVER_PATH + captcha['image_url'])
-        update.message.reply_text('Please, solve the captcha.')
-        return AUTH_CAPTCHA
-def auth_password(bot, update):
-    password=update.message.text
-    if 'user' not in data or 'token' not in data :
-        print ('password_error')
-        return
-    user=data['user']
-    token=data['token']
-    if user.login(token, password):
-        update.message.reply_text('Login Successed')
-        return ConversationHandler.END
-    else :
-        update.message.reply_text('Login Failed')
-# 
-def user_logout(bot, update):
-    if 'user' not in data or 'token' not in data :
-        update.message.reply_text('You need to login in order to logout')
-        return
-    del data['user']
-    del data['token']
-    update.message.reply_text('Logged out!')
-def user_status(bot, update):
-    if 'user' not in data or 'token' not in data :
-        update.message.reply_text('You are not logged in')
-        return
-    user=data['user']
-    update.message.reply_text('(' + user.email + ') is logged in')
-
 # topics
-def topic_new(bot, update):
+def comment_new(bot, update):
     # test
     user=User('longx695@gmail.com')
     user.token=token
@@ -130,7 +63,7 @@ def topic_new(bot, update):
     update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
     return TOPIC_TITLE
 
-def topic_callback(bot, update):
+def comment_callback(bot, update):
     query = update.callback_query
     message = query.message
     chat_id = message.chat_id
@@ -148,7 +81,7 @@ def topic_callback(bot, update):
     else:
         print ('parents')
 
-def topic_title(bot, update):
+def comment_title(bot, update):
     new_topic=data['new_topic']
     if new_topic.type is -1:
         return
@@ -156,7 +89,7 @@ def topic_title(bot, update):
     new_topic.title=title
     update.message.reply_text('Title: %s\nPlease input body.' % title)
     return TOPIC_BODY
-def topic_body(bot, update):
+def comment_body(bot, update):
     body=update.message.text
     new_topic=data['new_topic']
     new_topic.body=body
@@ -167,7 +100,7 @@ def topic_body(bot, update):
 
     data['topics'] = Topic.topics(token)
     return TOPIC_PARENTS
-def topic_parents(bot, update):
+def comment_parents(bot, update):
     parent=update.message.text
     print (parent)
     topics = data['topics']
@@ -177,7 +110,7 @@ def topic_parents(bot, update):
     if parent in topics:
         new_topic.parents.append(parent)
 
-def topic_list(bot, update):
+def comment_list(bot, update):
     if ('user' not in data or token is '') :
         update.message.reply_text('You have to login to create a topic. Please use /register to login')
         return
@@ -206,7 +139,7 @@ def inline_topic_query(bot, update):
         update.inline_query.answer(results)
         return TOPIC_PARENTS
 
-def topic_done(bot, update):
+def done(bot, update):
     new_topic = data['new_topic']
     new_topic.create(token)
     bot.send_message(chat_id=update.message.chat_id, text='New topic created')
@@ -222,21 +155,6 @@ def main():
     # Get the dispatcher to register handlers
     dp=updater.dispatcher
 
-    # on different commands - answer in Telegram
-
-    auth_handler=ConversationHandler(
-        entry_points=[CommandHandler('register', auth_register)],
-        states={
-            AUTH_EMAIL: [MessageHandler(Filters.text, auth_email)],
-            AUTH_CAPTCHA: [MessageHandler(Filters.text, auth_captcha)],
-            AUTH_PASSWORD: [MessageHandler(Filters.text, auth_password)]
-        },
-        fallbacks=[CommandHandler('cancel', error)]
-    )
-    dp.add_handler(auth_handler)
-    dp.add_handler(CommandHandler("logout", user_logout))
-    dp.add_handler(CommandHandler("status", user_status))
-
     topics_handler=ConversationHandler(
         entry_points=[CommandHandler('newtopic', topic_new)],
         states={
@@ -244,11 +162,11 @@ def main():
             TOPIC_BODY: [MessageHandler(Filters.text, topic_body)],
             TOPIC_PARENTS: [RegexHandler('^(https://test.wfx.io/api/v1/topics/[0-9]+/)$', topic_parents)],
         },
-        fallbacks=[CommandHandler('done', topic_done)],
+        fallbacks=[CommandHandler('done', done)],
     )
     dp.add_handler(topics_handler)
-
-    dp.add_handler(CallbackQueryHandler(topic_callback))
+    dp.add_handler(CommandHandler('findtopic', topic_list)),
+    dp.add_handler(CallbackQueryHandler(topic_type_callback))
     dp.add_handler(InlineQueryHandler(inline_topic_query))
 
     # on noncommand i.e message - echo the message on Telegram

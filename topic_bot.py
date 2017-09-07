@@ -63,7 +63,7 @@ def topic_new(bot, update):
     update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
     return TOPIC_TITLE
 
-def topic_type_callback(bot, update):
+def topic_callback(bot, update):
     query = update.callback_query
     message = query.message
     chat_id = message.chat_id
@@ -139,7 +139,7 @@ def inline_topic_query(bot, update):
         update.inline_query.answer(results)
         return TOPIC_PARENTS
 
-def done(bot, update):
+def topic_done(bot, update):
     new_topic = data['new_topic']
     new_topic.create(token)
     bot.send_message(chat_id=update.message.chat_id, text='New topic created')
@@ -162,11 +162,11 @@ def main():
             TOPIC_BODY: [MessageHandler(Filters.text, topic_body)],
             TOPIC_PARENTS: [RegexHandler('^(https://test.wfx.io/api/v1/topics/[0-9]+/)$', topic_parents)],
         },
-        fallbacks=[CommandHandler('done', done)],
+        fallbacks=[CommandHandler('done', topic_done)],
     )
     dp.add_handler(topics_handler)
-    dp.add_handler(CommandHandler('findtopic', topic_list)),
-    dp.add_handler(CallbackQueryHandler(topic_type_callback))
+    # dp.add_handler(CommandHandler('findtopic', topic_list)),
+    dp.add_handler(CallbackQueryHandler(topic_callback))
     dp.add_handler(InlineQueryHandler(inline_topic_query))
 
     # on noncommand i.e message - echo the message on Telegram
