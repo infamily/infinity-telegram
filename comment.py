@@ -1,10 +1,11 @@
 import requests 
- 
 import json
-import urllib, cStringIO
+import urllib,
+import cStringIO
 from constants import SERVER_PATH
 
 API_APTH = SERVER_PATH + '/api/v1/comments/'
+
 class Comment:
     url = 0
     topic = None
@@ -35,20 +36,26 @@ class Comment:
             comment.set(_t)
             comments.append(comment)
         return comments
+
     def update(self, token):
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.put(self.url, data = self.getData(), headers = headers)
+        response = requests.put(self.url,
+                                data = self.getData(),
+                                headers = headers)
+
     def create(self, token):
         if self.url is not '':
-            print 'already created'
             return
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.post(API_APTH, data = self.getData(), headers = headers)
+        response = requests.post(API_APTH,
+                                 data = self.getData(),
+                                 headers = headers)
         self.set(json.loads(response.text))
+
     def set(self, _t):
         self.topic = _t['topic']
         self.text = _t['text']

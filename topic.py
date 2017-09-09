@@ -1,7 +1,8 @@
 import requests 
- 
 import json
-import urllib, cStringIO
+import urllib
+import cStringIO
+
 from constants import SERVER_PATH
 
 API_APTH = SERVER_PATH + '/api/v1/topics/'
@@ -11,10 +12,9 @@ class Topic:
     type = -1
     title = ''
     body = ''
-    # editors(User)
     parents = []
 
-    NEED = 0 # Goal condition
+    NEED = 0
     GOAL = 1
     IDEA = 2
     PLAN = 3
@@ -50,11 +50,15 @@ class Topic:
             topic.set(_t)
             topics.append(topic)
         return topics
+
     def update(self, token):
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.put(self.url, data = self.getData(), headers = headers)
+        response = requests.put(self.url,
+                                data = self.getData(),
+                                headers = headers)
+
     def create(self, token):
         if self.url is not '':
             print 'already created'
@@ -62,14 +66,18 @@ class Topic:
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.post(API_APTH, data = self.getData(), headers = headers)
+        response = requests.post(API_APTH,
+                                 data = self.getData(),
+                                 headers = headers)
         self.set(json.loads(response.text))
+
     def set(self, _t):
         self.type = _t['type']
         self.title = _t['title']
         self.body = _t['body']
         self.parents = _t['parents']
         self.url = _t['url']
+
     def getData(self):
         return {
             'type': self.type,

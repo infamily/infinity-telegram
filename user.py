@@ -16,6 +16,7 @@ class User:
             return
         captcha = json.loads(response.text)
         return captcha
+
     def get_captcha_image(self, url):
         print ('getCaptchaImage')
         # file = cStringIO.StringIO(urllib.urlopen(url).read())
@@ -28,7 +29,9 @@ class User:
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.post(SERVER_PATH + '/otp/login/', data = json.dumps(data), headers = headers)
+        response = requests.post(SERVER_PATH + '/otp/login/',
+                                 data = json.dumps(data),
+                                 headers = headers)
         print response.status_code
         self.token = token
         return response.status_code == 200
@@ -39,5 +42,6 @@ class User:
             'captcha_0': captcha,
             'captcha_1': key
         }
-        response = requests.post(SERVER_PATH + '/otp/singup/', data = json.dumps(data))
+        response = requests.post(SERVER_PATH + '/otp/singup/',
+                                 data = json.dumps(data))
         return response
