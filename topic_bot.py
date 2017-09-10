@@ -173,16 +173,6 @@ def main():
         fallbacks = [CommandHandler('done', topic_done)],
     )
     dp.add_handler(topics_handler)
-    topics_handler = ConversationHandler(
-        entry_points = [CommandHandler('newtopic', topic_new)],
-        states = {
-            TOPIC_TITLE: [MessageHandler(Filters.text, topic_title)],
-            TOPIC_BODY: [MessageHandler(Filters.text, topic_body)],
-            TOPIC_PARENTS: [RegexHandler(TOPIC_URL_PATTERN, topic_parents)],
-        },
-        fallbacks = [CommandHandler('done', topic_done)],
-    )
-    dp.add_handler(topics_handler)
     dp.add_handler(CallbackQueryHandler(topic_callback))
     dp.add_handler(InlineQueryHandler(inline_topic_query))
     dp.add_error_handler(error)
