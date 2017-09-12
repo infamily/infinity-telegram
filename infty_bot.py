@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 AUTH_EMAIL, AUTH_CAPTCHA, AUTH_PASSWORD = range(3)
 TOPIC_TITLE, TOPIC_BODY, TOPIC_PARENTS, TOPIC_DELETE, TOPIC_UPDATE, TOPIC_CALLBACK = range(6)
-COMMENT_TEXT, COMMENT_CH, COMMENT_AH, COMMENT_TOPIC, COMMENT_DELETE, COMMENT_UPDATE, COMMENT_CALLBACK = range(7)
+COMMENT_TEXT, COMMENT_TOPIC, COMMENT_DELETE, COMMENT_UPDATE, COMMENT_CALLBACK = range(5)
 
 token = '6b7b4bf980cc3fdcfce2ae44939693dc8f023018'
 data = {}
@@ -106,14 +106,14 @@ def auth_password(bot, update, chat_data):
     else:
         update.message.reply_text('Login Failed')
 
-def user_logout(bot, update):
+def user_logout(bot, update, chat_data):
     if 'user' not in data or 'token' not in data:
         update.message.reply_text('You need to login in order to logout')
         return
     del data['user']
     del data['token']
     update.message.reply_text('Logged out!')
-def user_status(bot, update):
+def user_status(bot, update, chat_data):
     if 'user' not in data or 'token' not in data:
         update.message.reply_text('You are not logged in')
         return
@@ -194,9 +194,6 @@ def topic_delete(bot, update, chat_data):
     keyboard = [
         [
             InlineKeyboardButton("Topics", switch_inline_query_current_chat = "Topics:"),
-        ],
-        [
-            InlineKeyboardButton("Cancel", callback_data = '6'),
         ]
     ]
     data['topic_command_type'] = "delete"
@@ -355,31 +352,7 @@ def comment_text(bot, update, chat_data):
         update.message.reply_text('Text: %s' % text)
         return COMMENT_CALLBACK
     else:
-        update.message.reply_text('Text: %s\nPlease input Claimed hours.' % text)
-        return COMMENT_CH
-
-def comment_ch(bot, update, chat_data):
-    _comment = data['_comment']
-    ch = update.message.text
-    _comment.claimed_hours = ch
-    if data['comment_command_type'] == 'update':
-        update.message.reply_text('Claimed hours: %s' % ch)
-        return COMMENT_CALLBACK
-    else:
-        update.message.reply_text('Claimed hours: %s\nPlease input Claimed hours.' % ch)
-        return COMMENT_AH
-
-def comment_ah(bot, update, chat_data):
-    _comment = data['_comment']
-    ah = update.message.text
-    _comment.assumed_hours = ah
-
-    if data['comment_command_type'] == 'update':
-        update.message.reply_text('Assumed hours: %s' % ah)
-        return COMMENT_CALLBACK
-    else:
-        update.message.reply_text('Assumed hours: %s\nA new comment has been created.' % ah)
-        _comment.create(token)
+        update.message.reply_text('Text: %s\n' % text)
         return comment_finish(bot, update.message.chat_id)
 
 def comment_update(bot, update, chat_data):
@@ -410,11 +383,7 @@ def comment_update_properties(bot, update, chat_data):
             InlineKeyboardButton("Text", callback_data = '2'),
         ],
         [
-            InlineKeyboardButton("Claimed hours", callback_data = '3'),
-            InlineKeyboardButton("Assumed hours", callback_data = '4'),
-        ],
-        [
-            InlineKeyboardButton("Update", callback_data = '5'),
+            InlineKeyboardButton("Update", callback_data = '3'),
         ]
     ]
     data['comment_command_type'] = "update"
@@ -439,14 +408,6 @@ def comment_callback(bot, update, chat_data):
                          chat_id = chat_id)
         return COMMENT_TEXT
     elif type is 3:
-        bot.send_message(text = "Please input claimed hours:",
-                         chat_id = chat_id)
-        return COMMENT_CH
-    elif type is 4:
-        bot.send_message(text = "Please input assumed hours:",
-                         chat_id = chat_id)
-        return COMMENT_AH
-    elif type is 5:
         return comment_finish(bot, chat_id)
     else:
         print ('parents')
@@ -556,8 +517,6 @@ def main():
         states = {
             COMMENT_TOPIC: [RegexHandler(Constants.TOPIC_URL_PATTERN, comment_topic, pass_chat_data = True)],
             COMMENT_TEXT: [MessageHandler(Filters.text, comment_text, pass_chat_data = True)],
-            COMMENT_CH: [MessageHandler(Filters.text, comment_ch, pass_chat_data = True)],
-            COMMENT_AH: [MessageHandler(Filters.text, comment_ah, pass_chat_data = True)],
             COMMENT_UPDATE: [RegexHandler(Constants.COMMENT_URL_PATTERN, comment_update_properties, pass_chat_data = True)],
             COMMENT_DELETE: [RegexHandler(Constants.COMMENT_URL_PATTERN, comment_delete_selected, pass_chat_data = True)],
             COMMENT_CALLBACK: [CallbackQueryHandler(comment_callback, pass_chat_data = True)]
@@ -565,7 +524,6 @@ def main():
         fallbacks = [CommandHandler('done', comment_done, pass_chat_data = True)],
     )
     dp.add_handler(comment_handler)
-    dp.add_handler(CallbackQueryHandler(topic_callback))
     dp.add_handler(InlineQueryHandler(inline_query))
     # on noncommand i.e message - echo the message on Telegram
 
