@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 AUTH_EMAIL, AUTH_CAPTCHA, AUTH_PASSWORD = range(3)
 TOPIC_TITLE, TOPIC_BODY, TOPIC_PARENTS, TOPIC_DELETE, TOPIC_UPDATE, TOPIC_CALLBACK = range(6)
-COMMENT_TOPIC, COMMENT_TEXT, COMMENT_CH, COMMENT_AH = range(4)
+COMMENT_TEXT, COMMENT_CH, COMMENT_AH, COMMENT_TOPIC, COMMENT__DELETE, COMMENT__UPDATE, COMMENT__CALLBACK = range(7)
 
 token = '6b7b4bf980cc3fdcfce2ae44939693dc8f023018'
 data = {}
@@ -53,11 +53,11 @@ data['user'] = user
 
 
 # user authentication
-def auth_register(bot, update):
+def auth_register(bot, update, chat_data):
     update.message.reply_text('What\'s your e-mail?')
     return AUTH_EMAIL
 
-def auth_email(bot, update):
+def auth_email(bot, update, chat_data):
     user_email = update.message.text
     if not re.match(Constants.EMAIL_PATTERN, user_email):
         update.message.reply_text('Please enter valid email')
@@ -71,7 +71,7 @@ def auth_email(bot, update):
     update.message.reply_text('Please, solve the captcha.')
     return AUTH_CAPTCHA
 
-def auth_captcha(bot, update):
+def auth_captcha(bot, update, chat_data):
     captcha_value = update.message.text
     if 'user' not in data or 'captcha' not in data:
         print ('captcha_error')
@@ -93,7 +93,7 @@ def auth_captcha(bot, update):
         update.message.reply_text('Please, solve the captcha.')
         return AUTH_CAPTCHA
 
-def auth_password(bot, update):
+def auth_password(bot, update, chat_data):
     password = update.message.text
     if 'user' not in data or 'token' not in data:
         print ('password_error')
@@ -121,7 +121,7 @@ def user_status(bot, update):
     update.message.reply_text('(' + user.email + ') is logged in')
 
 # topics
-def topic_new(bot, update):
+def topic_new(bot, update, chat_data):
     if ('user' not in data or token is ''):
         update.message.reply_text('You have to login to create a topic. Please use /register to login')
         return ConversationHandler.END
@@ -142,7 +142,7 @@ def topic_new(bot, update):
     update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
     return TOPIC_CALLBACK
 
-def topic_title(bot, update):
+def topic_title(bot, update, chat_data):
     _topic = data['_topic']
     if _topic.type is -1:
         return
@@ -155,7 +155,7 @@ def topic_title(bot, update):
         update.message.reply_text('Title: %s\nPlease input body.' % title)
         return TOPIC_BODY
 
-def topic_body(bot, update):
+def topic_body(bot, update, chat_data):
     body = update.message.text
     _topic = data['_topic']
     _topic.body = body
@@ -169,7 +169,7 @@ def topic_body(bot, update):
                                   reply_markup = InlineKeyboardMarkup(keyboard))
         return TOPIC_PARENTS
 
-def topic_parents(bot, update):
+def topic_parents(bot, update, chat_data):
     parent = update.message.text
     topics = Topic.topics(token)
     _topic = data['_topic']
@@ -187,7 +187,7 @@ def topic_parents(bot, update):
     else:
         return topic_done(bot, update)
 
-def topic_delete(bot, update):
+def topic_delete(bot, update, chat_data):
     if ('user' not in data or token is ''):
         update.message.reply_text('You have to login to create a topic. Please use /register to login')
         return ConversationHandler.END
@@ -203,14 +203,14 @@ def topic_delete(bot, update):
     update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
     return TOPIC_DELETE
 
-def topic_delete_selected(bot, update):
+def topic_delete_selected(bot, update, chat_data):
     url = update.message.text
     _topic = Topic(token, url)
     data['_topic'] = _topic
     bot.send_message(chat_id = update.message.chat_id,
                      text = "Please type /done to finish")
 
-def topic_update(bot, update):
+def topic_update(bot, update, chat_data):
     if ('user' not in data or token is ''):
         update.message.reply_text('You have to login to create a topic. Please use /register to login')
         return ConversationHandler.END
@@ -225,7 +225,7 @@ def topic_update(bot, update):
     update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
     return TOPIC_UPDATE
 
-def topic_update_properties(bot, update):
+def topic_update_properties(bot, update, chat_data):
     url = update.message.text
     _topic = Topic(token, url)
     keyboard = [
@@ -245,7 +245,8 @@ def topic_update_properties(bot, update):
     data['_topic'] = _topic
     update.message.reply_text('What would you like to update?:', reply_markup = InlineKeyboardMarkup(keyboard))
     return TOPIC_CALLBACK
-def topic_list(bot, update):
+
+def topic_list(bot, update, chat_data):
     if ('user' not in data or token is ''):
         update.message.reply_text('You have to login to create a topic. Please use /register to login')
         return
@@ -309,7 +310,7 @@ def topic_callback(bot, update):
         print ('parents')
 
 # comment
-def comment_new(bot, update):
+def comment_new(bot, update, chat_data):
     if ('user' not in data or token is ''):
         update.message.reply_text('You have to login to create a topic. Please use /register to login')
         return ConversationHandler.END
@@ -320,7 +321,27 @@ def comment_new(bot, update):
     update.message.reply_text('Select Topic', reply_markup = InlineKeyboardMarkup(keyboard))
     return COMMENT_TOPIC
 
-def comment_topic(bot, update):
+def comment_new(bot, update, chat_data):
+    if ('user' not in data or token is ''):
+        update.message.reply_text('You have to login to create a topic. Please use /register to login')
+        return ConversationHandler.END
+    _topic = Topic()
+    data['_topic'] = _topic
+    data['topic_command_type'] = "post"
+    keyboard = [
+        [
+            InlineKeyboardButton("Need", callback_data = '0'),
+            InlineKeyboardButton("Goal", callback_data = '1'),
+            InlineKeyboardButton("Idea", callback_data = '2')
+        ],
+        [
+            InlineKeyboardButton("Plan", callback_data = '3'),
+            InlineKeyboardButton("Task", callback_data = '4')
+        ]
+    ]
+    update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
+    return TOPIC_CALLBACK
+def comment_topic(bot, update, chat_data):
     topic = update.message.text
     topics = data['topics']
     if topic in topic:
@@ -328,21 +349,21 @@ def comment_topic(bot, update):
         new_comment.topic = topic
         update.message.reply_text('Please input text.')
         return COMMENT_TEXT
-def comment_text(bot, update):
+def comment_text(bot, update, chat_data):
     new_comment = data['new_comment']
     text = update.message.text
     new_comment.text = text
     update.message.reply_text('Text: %s\nPlease input Claimed hours.' % text)
     return COMMENT_CH
 
-def comment_ch(bot, update):
+def comment_ch(bot, update, chat_data):
     new_comment = data['new_comment']
     ch = update.message.text
     new_comment.claimed_hours = ch
     update.message.reply_text('Claimed hours: %s\nPlease input Claimed hours.' % ch)
     return COMMENT_AH
 
-def comment_ah(bot, update):
+def comment_ah(bot, update, chat_data):
     new_comment = data['new_comment']
     ah = update.message.text
     new_comment.assumed_hours = ah
@@ -350,7 +371,7 @@ def comment_ah(bot, update):
     update.message.reply_text('Claimed hours: %s\nA new comment has been created.' % ah)
     return ConversationHandler.END
 
-def inline_topic_query(bot, update):
+def inline_topic_query(bot, update, chat_data):
     query = update.inline_query.query
     query = query.decode('utf-8')
     results = list()
@@ -365,10 +386,10 @@ def inline_topic_query(bot, update):
     else:
         print "?%s?" % query
 
-def topic_done(bot, update):
+def topic_done(bot, update, chat_data):
     return topic_finish(bot, update.message.chat_id)
 
-def topic_finish(bot, chat_id):
+def topic_finish(bot, chat_id, chat_data):
     _topic = data['_topic']
     topic_command_type = data['topic_command_type']
     if topic_command_type is 'post':
@@ -398,46 +419,46 @@ def main():
     dp = updater.dispatcher
     # on different commands - answer in Telegram
     auth_handler = ConversationHandler(
-        entry_points = [CommandHandler('register', auth_register)],
+        entry_points = [CommandHandler('register', auth_register, pass_chat_data = True)],
         states = {
-            AUTH_EMAIL: [MessageHandler(Filters.text, auth_email)],
-            AUTH_CAPTCHA: [MessageHandler(Filters.text, auth_captcha)],
-            AUTH_PASSWORD: [MessageHandler(Filters.text, auth_password)]
+            AUTH_EMAIL: [MessageHandler(Filters.text, auth_email, pass_chat_data = True)],
+            AUTH_CAPTCHA: [MessageHandler(Filters.text, auth_captcha, pass_chat_data = True)],
+            AUTH_PASSWORD: [MessageHandler(Filters.text, auth_password, pass_chat_data = True)]
         },
         fallbacks = [CommandHandler('cancel', error)]
     )
     dp.add_handler(auth_handler)
-    dp.add_handler(CommandHandler("logout", user_logout))
-    dp.add_handler(CommandHandler("status", user_status))
+    dp.add_handler(CommandHandler("logout", user_logout, pass_chat_data = True))
+    dp.add_handler(CommandHandler("status", user_status, pass_chat_data = True))
     topics_handler = ConversationHandler(
         entry_points = [
-            CommandHandler('newtopic', topic_new),
-            CommandHandler('deletetopic', topic_delete),
-            CommandHandler('updatetopic', topic_update)],
+            CommandHandler('newtopic', topic_new, pass_chat_data = True),
+            CommandHandler('deletetopic', topic_delete, pass_chat_data = True),
+            CommandHandler('updatetopic', topic_update, pass_chat_data = True)],
         states = {
-            TOPIC_TITLE: [MessageHandler(Filters.text, topic_title)],
-            TOPIC_BODY: [MessageHandler(Filters.text, topic_body)],
-            TOPIC_PARENTS: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_parents)],
-            TOPIC_DELETE: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_delete_selected)],
-            TOPIC_UPDATE: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_update_properties)],
-            TOPIC_CALLBACK : [CallbackQueryHandler(topic_callback)]
+            TOPIC_TITLE: [MessageHandler(Filters.text, topic_title, pass_chat_data = True)],
+            TOPIC_BODY: [MessageHandler(Filters.text, topic_body, pass_chat_data = True)],
+            TOPIC_PARENTS: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_parents, pass_chat_data = True)],
+            TOPIC_DELETE: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_delete_selected, pass_chat_data = True)],
+            TOPIC_UPDATE: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_update_properties, pass_chat_data = True)],
+            TOPIC_CALLBACK : [CallbackQueryHandler(topic_callback, pass_chat_data = True)]
         },
-        fallbacks = [CommandHandler('done', topic_done)],
+        fallbacks = [CommandHandler('done', topic_done, pass_chat_data = True)],
     )
     dp.add_handler(topics_handler)
 
-    # comment_handler = ConversationHandler(
-    #     entry_points = [CommandHandler('newcomment', comment_new)],
-    #     states = {
-    #         COMMENT_TOPIC: [RegexHandler(Constants.TOPIC_URL_PATTERN, comment_topic)],
-    #         COMMENT_TEXT: [MessageHandler(Filters.text, comment_text)],
-    #         COMMENT_CH: [MessageHandler(Filters.text, comment_ch)],
-    #         COMMENT_AH: [MessageHandler(Filters.text, comment_ah)],
-    #     },
-    #     fallbacks = [CommandHandler('cancel', error)],
-    # )
-    # dp.add_handler(comment_handler)
-    # dp.add_handler(CallbackQueryHandler(topic_callback))
+    comment_handler = ConversationHandler(
+        entry_points = [CommandHandler('newcomment', comment_new, pass_chat_data = True)],
+        states = {
+            COMMENT_TOPIC: [RegexHandler(Constants.TOPIC_URL_PATTERN, comment_topic, pass_chat_data = True)],
+            COMMENT_TEXT: [MessageHandler(Filters.text, comment_text, pass_chat_data = True)],
+            COMMENT_CH: [MessageHandler(Filters.text, comment_ch, pass_chat_data = True)],
+            COMMENT_AH: [MessageHandler(Filters.text, comment_ah, pass_chat_data = True)],
+        },
+        fallbacks = [CommandHandler('cancel', error)],
+    )
+    dp.add_handler(comment_handler)
+    dp.add_handler(CallbackQueryHandler(topic_callback))
     dp.add_handler(InlineQueryHandler(inline_topic_query))
     # on noncommand i.e message - echo the message on Telegram
 
