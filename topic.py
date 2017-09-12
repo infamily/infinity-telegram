@@ -2,10 +2,7 @@ import requests
 import json
 import urllib
 import cStringIO
-
-from constants import SERVER_PATH
-
-API_APTH = SERVER_PATH + '/api/v1/topics/'
+from constants import Constants
 
 class Topic:
     url = ''
@@ -38,11 +35,11 @@ class Topic:
         self.set(json.loads(response.text))
 
     @staticmethod
-    def topics(token):
+    def topics(token, title=''):
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.get(API_APTH, headers = headers)
+        response = requests.get(Constants.TOPIC_API_PATH + "?search=%s" % title, headers = headers)
         _topics = json.loads(response.text)
         topics = []
         for _t in _topics:
@@ -66,11 +63,17 @@ class Topic:
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.post(API_APTH,
+        response = requests.post(Constants.TOPIC_API_PATH,
                                  data = self.getData(),
                                  headers = headers)
         self.set(json.loads(response.text))
 
+    def delete(self, token):
+        headers = {
+            "Authorization": 'Token ' + token,
+        }
+        response = requests.delete(self.url,
+                                 headers = headers)
     def set(self, _t):
         self.type = _t['type']
         self.title = _t['title']

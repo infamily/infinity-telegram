@@ -1,10 +1,9 @@
 import requests 
 import json
-import urllib,
+import urllib
 import cStringIO
-from constants import SERVER_PATH
+from constants import Constants
 
-API_APTH = SERVER_PATH + '/api/v1/comments/'
 
 class Comment:
     url = 0
@@ -28,7 +27,7 @@ class Comment:
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.get(API_APTH, headers = headers)
+        response = requests.get(Constants.COMMENT_API_PATH, headers = headers)
         _comments = json.loads(response.text)
         comments = []
         for _t in _comments:
@@ -51,7 +50,7 @@ class Comment:
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.post(API_APTH,
+        response = requests.post(Constants.COMMENT_API_PATH,
                                  data = self.getData(),
                                  headers = headers)
         self.set(json.loads(response.text))

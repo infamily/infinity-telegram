@@ -1,8 +1,8 @@
 import requests 
- 
 import json
 import urllib, cStringIO
-from constants import SERVER_PATH
+
+from constants import Constants
 
 class User:
     email = ''
@@ -11,7 +11,7 @@ class User:
         self.email = email
 
     def get_captcha(self):
-        response = requests.get(SERVER_PATH + '/otp/singup')
+        response = requests.get(Constants.SERVER_PATH + '/otp/singup')
         if response.status_code != 200 :
             return
         captcha = json.loads(response.text)
@@ -29,10 +29,9 @@ class User:
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.post(SERVER_PATH + '/otp/login/',
+        response = requests.post(Constants.SERVER_PATH + '/otp/login/',
                                  data = json.dumps(data),
                                  headers = headers)
-        print response.status_code
         self.token = token
         return response.status_code == 200
 
@@ -42,6 +41,6 @@ class User:
             'captcha_0': captcha,
             'captcha_1': key
         }
-        response = requests.post(SERVER_PATH + '/otp/singup/',
+        response = requests.post(Constants.SERVER_PATH + '/otp/singup/',
                                  data = json.dumps(data))
         return response
