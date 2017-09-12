@@ -73,7 +73,7 @@ class Topic:
             "Authorization": 'Token ' + token,
         }
         response = requests.delete(self.url,
-                                 headers = headers)
+                                   headers = headers)
     def set(self, _t):
         self.type = _t['type']
         self.title = _t['title']

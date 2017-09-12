@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 AUTH_EMAIL, AUTH_CAPTCHA, AUTH_PASSWORD = range(3)
 TOPIC_TITLE, TOPIC_BODY, TOPIC_PARENTS, TOPIC_DELETE, TOPIC_UPDATE, TOPIC_CALLBACK = range(6)
-COMMENT_TEXT, COMMENT_CH, COMMENT_AH, COMMENT_TOPIC, COMMENT__DELETE, COMMENT__UPDATE, COMMENT__CALLBACK = range(7)
+COMMENT_TEXT, COMMENT_CH, COMMENT_AH, COMMENT_TOPIC, COMMENT_DELETE, COMMENT_UPDATE, COMMENT_CALLBACK = range(7)
 
 token = '6b7b4bf980cc3fdcfce2ae44939693dc8f023018'
 data = {}
@@ -185,7 +185,7 @@ def topic_parents(bot, update, chat_data):
     if data['topic_command_type'] == 'update':
         return TOPIC_CALLBACK
     else:
-        return topic_done(bot, update)
+        return topic_finish(bot, update.message.chat_id)
 
 def topic_delete(bot, update, chat_data):
     if ('user' not in data or token is ''):
@@ -246,13 +246,7 @@ def topic_update_properties(bot, update, chat_data):
     update.message.reply_text('What would you like to update?:', reply_markup = InlineKeyboardMarkup(keyboard))
     return TOPIC_CALLBACK
 
-def topic_list(bot, update, chat_data):
-    if ('user' not in data or token is ''):
-        update.message.reply_text('You have to login to create a topic. Please use /register to login')
-        return
-    update.message.reply_text('topic_list')
-
-def topic_callback(bot, update):
+def topic_callback(bot, update, chat_data):
     query = update.callback_query
     message = query.message
     chat_id = message.chat_id
@@ -306,90 +300,14 @@ def topic_callback(bot, update):
         bot.send_message(text = "Please select parents:",
                          chat_id = chat_id,
                          reply_markup = InlineKeyboardMarkup(keyboard))
+        return TOPIC_PARENTS
     else:
         print ('parents')
-
-# comment
-def comment_new(bot, update, chat_data):
-    if ('user' not in data or token is ''):
-        update.message.reply_text('You have to login to create a topic. Please use /register to login')
-        return ConversationHandler.END
-    new_comment = Comment()
-    data['new_comment'] = new_comment
-    keyboard = [[InlineKeyboardButton("Select Topic", switch_inline_query_current_chat = 'Topics:')]]
-    data['topics'] = Topic.topics(token)
-    update.message.reply_text('Select Topic', reply_markup = InlineKeyboardMarkup(keyboard))
-    return COMMENT_TOPIC
-
-def comment_new(bot, update, chat_data):
-    if ('user' not in data or token is ''):
-        update.message.reply_text('You have to login to create a topic. Please use /register to login')
-        return ConversationHandler.END
-    _topic = Topic()
-    data['_topic'] = _topic
-    data['topic_command_type'] = "post"
-    keyboard = [
-        [
-            InlineKeyboardButton("Need", callback_data = '0'),
-            InlineKeyboardButton("Goal", callback_data = '1'),
-            InlineKeyboardButton("Idea", callback_data = '2')
-        ],
-        [
-            InlineKeyboardButton("Plan", callback_data = '3'),
-            InlineKeyboardButton("Task", callback_data = '4')
-        ]
-    ]
-    update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
-    return TOPIC_CALLBACK
-def comment_topic(bot, update, chat_data):
-    topic = update.message.text
-    topics = data['topics']
-    if topic in topic:
-        new_comment = data['new_comment']
-        new_comment.topic = topic
-        update.message.reply_text('Please input text.')
-        return COMMENT_TEXT
-def comment_text(bot, update, chat_data):
-    new_comment = data['new_comment']
-    text = update.message.text
-    new_comment.text = text
-    update.message.reply_text('Text: %s\nPlease input Claimed hours.' % text)
-    return COMMENT_CH
-
-def comment_ch(bot, update, chat_data):
-    new_comment = data['new_comment']
-    ch = update.message.text
-    new_comment.claimed_hours = ch
-    update.message.reply_text('Claimed hours: %s\nPlease input Claimed hours.' % ch)
-    return COMMENT_AH
-
-def comment_ah(bot, update, chat_data):
-    new_comment = data['new_comment']
-    ah = update.message.text
-    new_comment.assumed_hours = ah
-    new_comment.create(token)
-    update.message.reply_text('Claimed hours: %s\nA new comment has been created.' % ah)
-    return ConversationHandler.END
-
-def inline_topic_query(bot, update, chat_data):
-    query = update.inline_query.query
-    query = query.decode('utf-8')
-    results = list()
-    if 'Topics:' in query:
-        query = remove_prefix(query, 'Topics:')
-        topics = Topic.topics(token, query)
-        for topic in topics:
-            results.append(InlineQueryResultArticle(id = uuid4(),
-                                                    title = topic.title,
-                                                    input_message_content = InputTextMessageContent(topic.url)))
-        update.inline_query.answer(results)
-    else:
-        print "?%s?" % query
 
 def topic_done(bot, update, chat_data):
     return topic_finish(bot, update.message.chat_id)
 
-def topic_finish(bot, chat_id, chat_data):
+def topic_finish(bot, chat_id):
     _topic = data['_topic']
     topic_command_type = data['topic_command_type']
     if topic_command_type is 'post':
@@ -404,6 +322,189 @@ def topic_finish(bot, chat_id, chat_data):
         bot.send_message(chat_id = chat_id,
                          text = 'A topic has been updated')
     return ConversationHandler.END
+
+# comment
+def comment_new(bot, update, chat_data):
+    if ('user' not in data or token is ''):
+        update.message.reply_text('You have to login to create a topic. Please use /register to login')
+        return ConversationHandler.END
+    _comment = Comment()
+    data['_comment'] = _comment
+    data['comment_command_type'] = "post"
+    keyboard = [[InlineKeyboardButton("Select Topic", switch_inline_query_current_chat = 'Topics:')]]
+    update.message.reply_text('Select Topic', reply_markup = InlineKeyboardMarkup(keyboard))
+    return COMMENT_TOPIC
+
+def comment_topic(bot, update, chat_data):
+    topic = update.message.text
+    topics = Topic.topics(token)
+    if topic in topic:
+        _comment = data['_comment']
+        _comment.topic = topic
+        if data['comment_command_type'] == 'update':
+            return COMMENT_CALLBACK
+        else:
+            update.message.reply_text('Please input text.')
+            return COMMENT_TEXT
+
+def comment_text(bot, update, chat_data):
+    _comment = data['_comment']
+    text = update.message.text
+    _comment.text = text
+    if data['comment_command_type'] == 'update':
+        update.message.reply_text('Text: %s' % text)
+        return COMMENT_CALLBACK
+    else:
+        update.message.reply_text('Text: %s\nPlease input Claimed hours.' % text)
+        return COMMENT_CH
+
+def comment_ch(bot, update, chat_data):
+    _comment = data['_comment']
+    ch = update.message.text
+    _comment.claimed_hours = ch
+    if data['comment_command_type'] == 'update':
+        update.message.reply_text('Claimed hours: %s' % ch)
+        return COMMENT_CALLBACK
+    else:
+        update.message.reply_text('Claimed hours: %s\nPlease input Claimed hours.' % ch)
+        return COMMENT_AH
+
+def comment_ah(bot, update, chat_data):
+    _comment = data['_comment']
+    ah = update.message.text
+    _comment.assumed_hours = ah
+
+    if data['comment_command_type'] == 'update':
+        update.message.reply_text('Assumed hours: %s' % ah)
+        return COMMENT_CALLBACK
+    else:
+        update.message.reply_text('Assumed hours: %s\nA new comment has been created.' % ah)
+        _comment.create(token)
+        return comment_finish(bot, update.message.chat_id)
+
+def comment_update(bot, update, chat_data):
+    if ('user' not in data or token is ''):
+        update.message.reply_text('You have to login to create a topic. Please use /register to login')
+        return ConversationHandler.END
+    keyboard = [
+        [
+            InlineKeyboardButton("Select Comments", switch_inline_query_current_chat = "Comment:"),
+        ]
+    ]
+    update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
+    return COMMENT_UPDATE
+
+def comment_delete_selected(bot, update, chat_data):
+    url = update.message.text
+    _comment = Comment(token, url)
+    data['_comment'] = _comment
+    bot.send_message(chat_id = update.message.chat_id,
+                     text = "Please type /done to finish")
+
+def comment_update_properties(bot, update, chat_data):
+    url = update.message.text
+    _comment = Comment(token, url)
+    keyboard = [
+        [
+            InlineKeyboardButton("Topic", callback_data = '1'),
+            InlineKeyboardButton("Text", callback_data = '2'),
+        ],
+        [
+            InlineKeyboardButton("Claimed hours", callback_data = '3'),
+            InlineKeyboardButton("Assumed hours", callback_data = '4'),
+        ],
+        [
+            InlineKeyboardButton("Update", callback_data = '5'),
+        ]
+    ]
+    data['comment_command_type'] = "update"
+    data['_comment'] = _comment
+    update.message.reply_text('What would you like to update?:', reply_markup = InlineKeyboardMarkup(keyboard))
+    return COMMENT_CALLBACK
+
+def comment_callback(bot, update, chat_data):
+    query = update.callback_query
+    message = query.message
+    chat_id = message.chat_id
+    message_id = message.message_id
+    type = int(query.data)
+    if type is 1:
+        keyboard = [[InlineKeyboardButton("Select Topic", switch_inline_query_current_chat = "Topics:")]]
+        bot.send_message(text = "Please select topic:",
+                         chat_id = chat_id,
+                         reply_markup = InlineKeyboardMarkup(keyboard))
+        return COMMENT_TOPIC
+    elif type is 2:
+        bot.send_message(text = "Please input Text:",
+                         chat_id = chat_id)
+        return COMMENT_TEXT
+    elif type is 3:
+        bot.send_message(text = "Please input claimed hours:",
+                         chat_id = chat_id)
+        return COMMENT_CH
+    elif type is 4:
+        bot.send_message(text = "Please input assumed hours:",
+                         chat_id = chat_id)
+        return COMMENT_AH
+    elif type is 5:
+        return comment_finish(bot, chat_id)
+    else:
+        print ('parents')
+
+def comment_delete(bot, update,chat_data):
+    if ('user' not in data or token is ''):
+        update.message.reply_text('You have to login to create a topic. Please use /register to login')
+        return ConversationHandler.END
+    keyboard = [
+        [
+            InlineKeyboardButton("Comment:", switch_inline_query_current_chat = "Comment:"),
+        ]
+    ]
+    data['comment_command_type'] = "delete"
+    update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
+    return COMMENT_DELETE
+
+def comment_done(bot, update, chat_data):
+    return comment_finish(bot, update.message.chat_id)
+
+def comment_finish(bot, chat_id):
+    _comment = data['_comment']
+    comment_command_type = data['comment_command_type']
+    if comment_command_type is 'post':
+        _comment.create(token)
+        bot.send_message(chat_id = chat_id,
+                         text = 'New comment has been created')
+    elif comment_command_type is 'delete':
+        bot.send_message(chat_id = chat_id,
+                         text = 'A comment has been deleted')
+        _comment.delete(token)
+    else :
+        bot.send_message(chat_id = chat_id,
+                         text = 'A comment has been updated')
+    return ConversationHandler.END
+
+def inline_query(bot, update):
+    query = update.inline_query.query
+    query = query.decode('utf-8')
+    results = list()
+    if 'Topics:' in query:
+        query = remove_prefix(query, 'Topics:')
+        topics = Topic.topics(token, query)
+        for topic in topics:
+            results.append(InlineQueryResultArticle(id = uuid4(),
+                                                    title = topic.title,
+                                                    input_message_content = InputTextMessageContent(topic.url)))
+        update.inline_query.answer(results)
+    elif 'Comment:' in query:
+        query = remove_prefix(query, 'Comment:')
+        comments = Comment.comments(token, query)
+        for comment in comments:
+            results.append(InlineQueryResultArticle(id = uuid4(),
+                                                    title = comment.url,
+                                                    input_message_content = InputTextMessageContent(comment.url)))
+        update.inline_query.answer(results)
+    else:
+        print "error"
 def remove_prefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]
@@ -448,18 +549,24 @@ def main():
     dp.add_handler(topics_handler)
 
     comment_handler = ConversationHandler(
-        entry_points = [CommandHandler('newcomment', comment_new, pass_chat_data = True)],
+        entry_points = [
+            CommandHandler('newcomment', comment_new, pass_chat_data = True),
+            CommandHandler('deletecomment', comment_delete, pass_chat_data = True),
+            CommandHandler('updatecomment', comment_update, pass_chat_data = True)],
         states = {
             COMMENT_TOPIC: [RegexHandler(Constants.TOPIC_URL_PATTERN, comment_topic, pass_chat_data = True)],
             COMMENT_TEXT: [MessageHandler(Filters.text, comment_text, pass_chat_data = True)],
             COMMENT_CH: [MessageHandler(Filters.text, comment_ch, pass_chat_data = True)],
             COMMENT_AH: [MessageHandler(Filters.text, comment_ah, pass_chat_data = True)],
+            COMMENT_UPDATE: [RegexHandler(Constants.COMMENT_URL_PATTERN, comment_update_properties, pass_chat_data = True)],
+            COMMENT_DELETE: [RegexHandler(Constants.COMMENT_URL_PATTERN, comment_delete_selected, pass_chat_data = True)],
+            COMMENT_CALLBACK: [CallbackQueryHandler(comment_callback, pass_chat_data = True)]
         },
-        fallbacks = [CommandHandler('cancel', error)],
+        fallbacks = [CommandHandler('done', comment_done, pass_chat_data = True)],
     )
     dp.add_handler(comment_handler)
     dp.add_handler(CallbackQueryHandler(topic_callback))
-    dp.add_handler(InlineQueryHandler(inline_topic_query))
+    dp.add_handler(InlineQueryHandler(inline_query))
     # on noncommand i.e message - echo the message on Telegram
 
     # log all errors
