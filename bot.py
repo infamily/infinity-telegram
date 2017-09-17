@@ -23,7 +23,7 @@ from uuid import uuid4
 
 import telegram
 from telegram import ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton, InlineQueryResultArticle, InputTextMessageContent, ParseMode
-from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, ConversationHandler, CallbackQueryHandler, InlineQueryHandler, RegexHandler
+from telegram.ext import Updater, Filters, CommandHandler, MessageHandler, ConversationHandler, CallbackQueryHandler, InlineQueryHandler, RegexHandler, ChosenInlineResultHandler
 
 from user import User
 from topic import Topic
@@ -43,8 +43,6 @@ AUTH_EMAIL, AUTH_CAPTCHA, AUTH_PASSWORD = range(3)
 TOPIC_TITLE, TOPIC_BODY, TOPIC_PARENTS, TOPIC_DELETE, TOPIC_UPDATE, TOPIC_CALLBACK = range(6)
 COMMENT_TEXT, COMMENT_TOPIC, COMMENT_DELETE, COMMENT_UPDATE, COMMENT_CALLBACK = range(5)
 
-token = '6b7b4bf980cc3fdcfce2ae44939693dc8f023018'
-data = {}
 
 # Test value
 user = User('longx695@gmail.com')
@@ -156,6 +154,7 @@ def topic_title(bot, update, chat_data):
         return TOPIC_BODY
 
 def topic_body(bot, update, chat_data):
+    print ('topic_body')
     body = update.message.text
     _topic = data['_topic']
     _topic.body = body
@@ -167,25 +166,22 @@ def topic_body(bot, update, chat_data):
         keyboard = [[InlineKeyboardButton("Select Parents", switch_inline_query_current_chat = "Topics:")]]
         update.message.reply_text('Body: %s\nSelect Parents' % body,
                                   reply_markup = InlineKeyboardMarkup(keyboard))
-        return TOPIC_PARENTS
+        return TOPIC_CALLBACK
 
 def topic_parents(bot, update, chat_data):
     parent = update.message.text
-    topics = Topic.topics(token)
-    _topic = data['_topic']
-    if parent in _topic.parents:
-        return
-    if parent in topics:
-        _topic.parents.append(parent)
-    # keyboard = [[InlineKeyboardButton("Done", callback_data = '-1')]]
-    # bot.send_message(text = "Please click Done button",
-    #                 chat_id = update.message.chat_id,
-    #                 reply_markup = InlineKeyboardMarkup(keyboard))
 
-    if data['topic_command_type'] == 'update':
-        return TOPIC_CALLBACK
-    else:
-        return topic_finish(bot, update.message.chat_id)
+    print ("topic_parents")
+    # topics = Topic.topics(token)
+    # _topic = data['_topic']
+    # if parent in _topic.parents:
+    #     return
+    # if parent in topics:
+    #     _topic.parents.append(parent)
+    # if data['topic_command_type'] == 'update':
+    #     return TOPIC_CALLBACK
+    # else:
+    #     return topic_finish(bot, update.message.chat_id)
 
 def topic_delete(bot, update, chat_data):
     if ('user' not in data or token is ''):
@@ -214,9 +210,6 @@ def topic_update(bot, update, chat_data):
     keyboard = [
         [
             InlineKeyboardButton("Select Topics", switch_inline_query_current_chat = "Topics:"),
-        ],
-        [
-            InlineKeyboardButton("Cancel", callback_data = '6'),
         ]
     ]
     update.message.reply_text('Please choose:', reply_markup = InlineKeyboardMarkup(keyboard))
@@ -243,11 +236,15 @@ def topic_update_properties(bot, update, chat_data):
     update.message.reply_text('What would you like to update?:', reply_markup = InlineKeyboardMarkup(keyboard))
     return TOPIC_CALLBACK
 
+def parents_callback(bot, update):
+    print ("parents_callback")
+
 def topic_callback(bot, update, chat_data):
     query = update.callback_query
     message = query.message
     chat_id = message.chat_id
     message_id = message.message_id
+    print ("callback: %s" % query.data)
     type = int(query.data)
     if type < 5:
         _topic = data['_topic']
@@ -297,7 +294,7 @@ def topic_callback(bot, update, chat_data):
         bot.send_message(text = "Please select parents:",
                          chat_id = chat_id,
                          reply_markup = InlineKeyboardMarkup(keyboard))
-        return TOPIC_PARENTS
+        # return PARENT_CALLBACK
     else:
         print ('parents')
 
@@ -452,10 +449,12 @@ def inline_query(bot, update):
         query = remove_prefix(query, 'Topics:')
         topics = Topic.topics(token, query)
         for topic in topics:
+            keyboard = [[InlineKeyboardButton(topic.title, callback_data = topic.url)]]
             results.append(InlineQueryResultArticle(id = uuid4(),
                                                     title = topic.title,
-                                                    input_message_content = InputTextMessageContent(topic.url)))
-        update.inline_query.answer(results)
+                                                    input_message_content = InputTextMessageContent('Topic:'),
+                                                    reply_markup = InlineKeyboardMarkup(keyboard)))
+        # update.inline_query.answer(results, cache_time = 5)
     elif 'Comment:' in query:
         query = remove_prefix(query, 'Comment:')
         comments = Comment.comments(token, query)
@@ -463,9 +462,11 @@ def inline_query(bot, update):
             results.append(InlineQueryResultArticle(id = uuid4(),
                                                     title = comment.url,
                                                     input_message_content = InputTextMessageContent(comment.url)))
-        update.inline_query.answer(results)
+        # update.inline_query.answer(results, cache_time = 5)
     else:
         print "error"
+    bot.answerInlineQuery(update.inline_query.id, results, cache_time=0)
+
 def remove_prefix(text, prefix):
     if text.startswith(prefix):
         return text[len(prefix):]
@@ -503,7 +504,7 @@ def main():
             TOPIC_PARENTS: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_parents, pass_chat_data = True)],
             TOPIC_DELETE: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_delete_selected, pass_chat_data = True)],
             TOPIC_UPDATE: [RegexHandler(Constants.TOPIC_URL_PATTERN, topic_update_properties, pass_chat_data = True)],
-            TOPIC_CALLBACK : [CallbackQueryHandler(topic_callback, pass_chat_data = True)]
+            TOPIC_CALLBACK: [CallbackQueryHandler(topic_callback, pass_chat_data = True)],
         },
         fallbacks = [CommandHandler('done', topic_done, pass_chat_data = True)],
     )
@@ -525,6 +526,8 @@ def main():
     )
     dp.add_handler(comment_handler)
     dp.add_handler(InlineQueryHandler(inline_query))
+    dp.add_handler(ChosenInlineResultHandler(parents_callback))
+
     # on noncommand i.e message - echo the message on Telegram
 
     # log all errors
