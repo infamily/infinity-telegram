@@ -23,11 +23,11 @@ class Comment:
         self.set(json.loads(response.text))
 
     @staticmethod
-    def comments(token):
+    def comments(token, text=''):
         headers = {
             "Authorization": 'Token ' + token,
         }
-        response = requests.get(Constants.COMMENT_API_PATH, headers = headers)
+        response = requests.get(Constants.COMMENT_API_PATH + "?search=%s" % text, headers = headers)
         _comments = json.loads(response.text)
         comments = []
         for _t in _comments:
@@ -69,3 +69,9 @@ class Comment:
             'claimed_hours': self.claimed_hours,
             'assumed_hours': self.assumed_hours,
         }
+    def delete(self, token):
+        headers = {
+            "Authorization": 'Token ' + token,
+        }
+        response = requests.delete(self.url,
+                                   headers = headers)
