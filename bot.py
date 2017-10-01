@@ -38,7 +38,7 @@ from telegram.ext import (
 )
 
 class Config:
-    SERVER_PATH = 'https://test.wfx.io'
+    SERVER_PATH = 'https://test-staging.wfx.io'
     TELEGRAM_BOT_TOKEN = '422394624:AAEtMdP9ghRkcvOqKgX2YN5WjwmlUMylgsY'
 
 config = Config()
@@ -106,13 +106,15 @@ class Topic:
     GOAL = 1
     IDEA = 2
     PLAN = 3
-    TASK = 4
+    STEP = 4
+    TASK = 5
 
     TOPIC_TYPES = [
         (NEED, 'Need'),
         (GOAL, 'Goal'),
         (IDEA, 'Idea'),
         (PLAN, 'Plan'),
+        (STEP, 'Step'),
         (TASK, 'Task'),
     ]
 
@@ -360,8 +362,8 @@ class Agent:
             update.message.reply_text('You need to login in order to logout')
             return
 
-        del data['user']
-        del data['token']
+        del self.data['user']
+        del self.data['token']
         update.message.reply_text('Logged out!')
 
     def user_status(bot, update, chat_data):
@@ -370,7 +372,7 @@ class Agent:
             update.message.reply_text('You are not logged in')
             return
 
-        user = data.get('user')
+        user = self.data.get('user')
         update.message.reply_text('({}) is logged in'.format(user.email))
 
     #################  TOPIC  ################# 
@@ -380,8 +382,8 @@ class Agent:
             update.message.reply_text('You have to login to create a topic. Please use /register to login')
             return ConversationHandler.END
         _topic = Topic()
-        data['_topic'] = _topic
-        data['topic_command_type'] = "post"
+        self.data['_topic'] = _topic
+        self.data['topic_command_type'] = "post"
         keyboard = [
             [
                 InlineKeyboardButton("Need", callback_data='0'),
@@ -390,19 +392,20 @@ class Agent:
             ],
             [
                 InlineKeyboardButton("Plan", callback_data='3'),
-                InlineKeyboardButton("Task", callback_data='4')
+                InlineKeyboardButton("Step", callback_data='4'),
+                InlineKeyboardButton("Task", callback_data='5')
             ]
         ]
         update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
         return TOPIC_CALLBACK
 
     def topic_title(self, bot, update, chat_data):
-        _topic = data['_topic']
+        _topic = self.data['_topic']
         if _topic.type is -1:
             return
         title = update.message.text
         _topic.title = title
-        if data['topic_command_type'] == 'update':
+        if self.data['topic_command_type'] == 'update':
             update.message.reply_text('Title: {}'.format(title))
             return TOPIC_CALLBACK
         else:
@@ -412,10 +415,10 @@ class Agent:
     def topic_body(self, bot, update, chat_data):
         logger.info('topic_body')
         body = update.message.text
-        _topic = data['_topic']
+        _topic = self.data['_topic']
         _topic.body = body
-        data['topics'] = Topic.topics(token)
-        if data['topic_command_type'] == 'update':
+        self.data['topics'] = Topic.topics(token)
+        if self.data['topic_command_type'] == 'update':
             update.message.reply_text('Body: {}'.format(body))
             return TOPIC_CALLBACK
         else:
@@ -431,12 +434,12 @@ class Agent:
 
         logging.info("topic_parents")
         # topics = Topic.topics(token)
-        # _topic = data['_topic']
+        # _topic = self.data['_topic']
         # if parent in _topic.parents:
         #     return
         # if parent in topics:
         #     _topic.parents.append(parent)
-        # if data['topic_command_type'] == 'update':
+        # if self.data['topic_command_type'] == 'update':
         #     return TOPIC_CALLBACK
         # else:
         #     return topic_finish(bot, update.message.chat_id)
@@ -450,14 +453,14 @@ class Agent:
                 InlineKeyboardButton("Topics", switch_inline_query_current_chat="Topics:"),
             ]
         ]
-        data['topic_command_type'] = "delete"
+        self.data['topic_command_type'] = "delete"
         update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
         return TOPIC_DELETE
 
     def topic_delete_selected(self, bot, update, chat_data):
         url = update.message.text
         _topic = Topic(token, url)
-        data['_topic'] = _topic
+        self.data['_topic'] = _topic
 
         bot.send_message(
             chat_id = update.message.chat_id,
@@ -492,8 +495,8 @@ class Agent:
                 InlineKeyboardButton("Update", callback_data = '7'),
             ]
         ]
-        data['topic_command_type'] = "update"
-        data['_topic'] = _topic
+        self.data['topic_command_type'] = "update"
+        self.data['_topic'] = _topic
         update.message.reply_text('What would you like to update?:', reply_markup = InlineKeyboardMarkup(keyboard))
         return TOPIC_CALLBACK
 
@@ -509,10 +512,10 @@ class Agent:
         topic_type = int(query.data)
 
         if topic_type < 5:
-            _topic = data['_topic']
+            _topic = self.data['_topic']
             _topic.type = topic_type
             topic_types = ['Need', 'Goal', 'Idea', 'Plan', 'Task']
-            if data['topic_command_type'] == 'update':
+            if self.data['topic_command_type'] == 'update':
                 bot.edit_message_text(
                     text="Type: {}".format(topic_types[type]),
                     chat_id=chat_id,
@@ -574,8 +577,8 @@ class Agent:
         return topic_finish(bot, update.message.chat_id)
 
     def topic_finish(bot, chat_id):
-        _topic = data['_topic']
-        topic_command_type = data['topic_command_type']
+        _topic = self.data['_topic']
+        topic_command_type = self.data['topic_command_type']
         if topic_command_type is 'post':
             _topic.create(token)
             bot.send_message(chat_id = chat_id,
@@ -598,8 +601,8 @@ class Agent:
             update.message.reply_text('You have to login to create a topic. Please use /register to login')
             return ConversationHandler.END
         _comment = Comment()
-        data['_comment'] = _comment
-        data['comment_command_type'] = "post"
+        self.data['_comment'] = _comment
+        self.data['comment_command_type'] = "post"
         keyboard = [[InlineKeyboardButton("Select Topic", switch_inline_query_current_chat='Topics:')]]
         update.message.reply_text('Select Topic', reply_markup = InlineKeyboardMarkup(keyboard))
         return COMMENT_TOPIC
@@ -608,19 +611,19 @@ class Agent:
         topic = update.message.text
         topics = Topic.topics(token)
         if topic in topic:
-            _comment = data['_comment']
+            _comment = self.data['_comment']
             _comment.topic = topic
-            if data['comment_command_type'] == 'update':
+            if self.data['comment_command_type'] == 'update':
                 return COMMENT_CALLBACK
             else:
                 update.message.reply_text('Please input text.')
                 return COMMENT_TEXT
 
     def comment_text(self, bot, update, chat_data):
-        _comment = data['_comment']
+        _comment = self.data['_comment']
         text = update.message.text
         _comment.text = text
-        if data['comment_command_type'] == 'update':
+        if self.data['comment_command_type'] == 'update':
             update.message.reply_text('Text: {}'.format(text))
             return COMMENT_CALLBACK
         else:
@@ -642,7 +645,7 @@ class Agent:
     def comment_delete_selected(self, bot, update, chat_data):
         url = update.message.text
         _comment = Comment(token, url)
-        data['_comment'] = _comment
+        self.data['_comment'] = _comment
         bot.send_message(
             chat_id=update.message.chat_id,
             text="Please type /done to finish"
@@ -660,8 +663,8 @@ class Agent:
                 InlineKeyboardButton("Update", callback_data = '3'),
             ]
         ]
-        data['comment_command_type'] = "update"
-        data['_comment'] = _comment
+        self.data['comment_command_type'] = "update"
+        self.data['_comment'] = _comment
         update.message.reply_text('What would you like to update?:', reply_markup=InlineKeyboardMarkup(keyboard))
         return COMMENT_CALLBACK
 
@@ -699,7 +702,7 @@ class Agent:
                 InlineKeyboardButton("Comment:", switch_inline_query_current_chat="Comment:"),
             ]
         ]
-        data['comment_command_type'] = "delete"
+        self.data['comment_command_type'] = "delete"
         update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
         return COMMENT_DELETE
 
@@ -707,8 +710,8 @@ class Agent:
         return comment_finish(bot, update.message.chat_id)
 
     def comment_finish(self, bot, chat_id):
-        _comment = data['_comment']
-        comment_command_type = data['comment_command_type']
+        _comment = self.data['_comment']
+        comment_command_type = self.data['comment_command_type']
 
         if comment_command_type is 'post':
             _comment.create(token)
@@ -734,10 +737,9 @@ class Agent:
 
     def inline_query(self, bot, update):
         query = update.inline_query.query
-        query = query.decode('utf-8')
         results = list()
         if 'Topics:' in query:
-            query = remove_prefix(query, 'Topics:')
+            query = self.remove_prefix(query, 'Topics:')
             topics = Topic.topics(token, query)
             for topic in topics:
                 keyboard = [[InlineKeyboardButton(topic.title, callback_data = topic.url)]]
@@ -751,7 +753,7 @@ class Agent:
                 )
             # update.inline_query.answer(results, cache_time = 5)
         elif 'Comment:' in query:
-            query = remove_prefix(query, 'Comment:')
+            query = self.remove_prefix(query, 'Comment:')
             comments = Comment.comments(token, query)
             for comment in comments:
                 results.append(
@@ -763,7 +765,7 @@ class Agent:
                 )
             # update.inline_query.answer(results, cache_time = 5)
         else:
-            logging.error("error")
+            logging.error(query)
         bot.answerInlineQuery(update.inline_query.id, results, cache_time=0)
 
     def remove_prefix(self, text, prefix):
