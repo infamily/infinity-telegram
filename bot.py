@@ -4,6 +4,8 @@
 import re
 import uuid
 import json
+
+import pandas
 import logging
 import requests
 import urllib.parse
@@ -38,8 +40,8 @@ from telegram.ext import (
 )
 
 class Config:
-    SERVER_PATH = 'https://test.wfx.io/'
     TELEGRAM_BOT_TOKEN = '414551649:AAG9pwFamFR68bRJhd4Fd62eMY7caBxzem0'
+    SERVER_PATH = 'https://test.wfx.io/'
 
 config = Config()
 
@@ -50,6 +52,21 @@ class Constants:
     TOPIC_API_PATH = '{base}/api/v1/topics/'.format(base=config.SERVER_PATH)
 
 constants = Constants()
+
+
+# Sample Open Data #
+
+topics_df = pandas.io.json.json_normalize(
+    json.loads(
+        open('./data/topics_2017-09-23.json', 'rb').read().decode('utf-8')
+    ))[['fields.title', 'fields.body', 'pk']].rename(
+        columns={'fields.title': 'title', 'fields.body': 'body'}
+    )
+
+comments_df = pandas.io.json.json_normalize(
+    json.loads(
+        open('./data/comments_2017-09-23.json', 'rb').read().decode('utf-8')
+    ))
 
 
 class User:
@@ -302,7 +319,7 @@ class Agent:
 
     def topic_new(self, bot, update, chat_data):
         if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /login to login')
+            update.message.reply_text('You have to login to create a topic. Please use /register to login')
             return ConversationHandler.END
         _topic = Topic()
         self.data['_topic'] = _topic
@@ -369,7 +386,7 @@ class Agent:
 
     def topic_delete(self, bot, update, chat_data):
         if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /login to login')
+            update.message.reply_text('You have to login to create a topic. Please use /register to login')
             return ConversationHandler.END
         keyboard = [
             [
@@ -392,7 +409,7 @@ class Agent:
 
     def topic_update(self, bot, update, chat_data):
         if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /login to login')
+            update.message.reply_text('You have to login to create a topic. Please use /register to login')
             return ConversationHandler.END
         keyboard = [
             [
@@ -517,27 +534,53 @@ class Agent:
         return ConversationHandler.END
 
 
-
-    def inline_query(self, bot, update):
+    def inlinequery(self, bot, update):
         query = update.inline_query.query
-        results = list()
-        if 'Topics:' in query:
-            query = self.remove_prefix(query, 'Topics:')
-            topics = Topic.topics(token, query)
-            for topic in topics:
-                keyboard = [[InlineKeyboardButton(topic.title, callback_data = topic.url)]]
-                results.append(
-                    InlineQueryResultArticle(
-                        id = uuid4(),
-                        title = topic.title,
-                        input_message_content = InputTextMessageContent('Topic:'),
-                        reply_markup = InlineKeyboardMarkup(keyboard)
-                    )
-                )
-            # update.inline_query.answer(results, cache_time = 5)
-        else:
-            logging.error(query)
-        bot.answerInlineQuery(update.inline_query.id, results, cache_time=0)
+
+        if query:
+
+            try:
+                lookup = topics_df[
+                    (topics_df['title'].apply(lambda x: x.lower()).str.contains(query)) | \
+                    (topics_df['body'].apply(lambda x: x[:30].lower()).str.contains(query))].iloc[:50]
+
+                if len(lookup):
+
+                    results = list()
+
+                    for i, row in lookup.iterrows():
+
+                        title = row['title']
+                        body = row['body']
+                        url = "{}/api/v1/topics/{}/".format(WFX_API_BASE, row['pk'])
+
+                        results.append(
+                            InlineQueryResultArticle(
+
+                                id=uuid.uuid4(),
+                                title=title,
+                                description=body[:200],
+                                url=url,
+
+                                input_message_content=InputTextMessageContent(
+
+                                    message_text='*{}*\n\n{}\n\n{} - `COMMENTS`\n\n**Reply to this message to post a comment on Infinity.**'.format(title, body, url),
+                                    parse_mode=telegram.ParseMode.MARKDOWN,
+                                    disable_web_page_preview=True
+
+                                ),
+                            )
+                        )
+
+                    bot.answerInlineQuery(update.inline_query.id, results, cache_time=0)
+
+                    # update.inline_query.answer(results)
+                else:
+                    update.inline_query.answer([])
+
+            except Exception as e:
+                update.inline_query.answer([])
+
 
     def remove_prefix(self, text, prefix):
         if text.startswith(prefix):
@@ -563,7 +606,7 @@ def main():
 
     # AUTH
     auth_handler = ConversationHandler(
-        entry_points = [CommandHandler('login', agent.auth_register, pass_chat_data=True)],
+        entry_points = [CommandHandler('register', agent.auth_register, pass_chat_data=True)],
         states = {
             AUTH_EMAIL: [MessageHandler(Filters.text, agent.auth_email, pass_chat_data=True)],
             AUTH_CAPTCHA: [MessageHandler(Filters.text, agent.auth_captcha, pass_chat_data=True)],
