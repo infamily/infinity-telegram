@@ -38,8 +38,8 @@ from telegram.ext import (
 )
 
 class Config:
-    SERVER_PATH = 'https://test-staging.wfx.io'
-    TELEGRAM_BOT_TOKEN = '422394624:AAEtMdP9ghRkcvOqKgX2YN5WjwmlUMylgsY'
+    SERVER_PATH = 'https://test.wfx.io/'
+    TELEGRAM_BOT_TOKEN = '414551649:AAG9pwFamFR68bRJhd4Fd62eMY7caBxzem0'
 
 config = Config()
 
@@ -47,9 +47,7 @@ config = Config()
 class Constants:
     EMAIL_PATTERN = '^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     TOPIC_URL_PATTERN = '^({base}/api/v1/topics/[0-9]+/)$'.format(base=config.SERVER_PATH)
-    COMMENT_URL_PATTERN = '^({base}/api/v1/comments/[0-9]+/)$'.format(base=config.SERVER_PATH)
     TOPIC_API_PATH = '{base}/api/v1/topics/'.format(base=config.SERVER_PATH)
-    COMMENT_API_PATH = '{base}/api/v1/comments/'.format(base=config.SERVER_PATH)
 
 constants = Constants()
 
@@ -92,7 +90,6 @@ class User:
             urllib.parse.urljoin(config.SERVER_PATH, '/otp/singup/'),
             data=json.dumps(data)
         )
-        # Sometimes returns 400
         # if not response.ok:
         #     import ipdb; ipdb.set_trace()
 
@@ -202,80 +199,6 @@ class Topic:
         }
 
 
-class Comment:
-
-    def __init__(self, token=None, url=''):
-
-        self.url = 0
-        self.topic = None
-        self.text = ''
-        self.claimed_hours = 0.0
-        self.assumed_hours = 0.0
-        self.url = url
-
-        if url is '':
-            return
-
-        headers = {"Authorization": 'Token {}'.format(token)}
-        response = requests.get(url, headers=headers)
-        self.set(json.loads(response.text))
-
-    @staticmethod
-    def comments(self, token, text=''):
-        headers = {"Authorization": 'Token {}'.format(token)}
-        response = requests.get(
-            "{}?search=%s".format(constants.COMMENT_API_PATH, text),
-             headers = headers
-        )
-        _comments = json.loads(response.text)
-        comments = []
-        for _t in _comments:
-            comment = Comment()
-            comment.set(_t)
-            comments.append(comment)
-        return comments
-
-    def update(self, token):
-        headers = {"Authorization": 'Token {}'.format(token)}
-        response = requests.put(
-            self.url,
-            data = self.get_data(),
-            headers = headers
-        )
-
-    def create(self, token):
-        if not self.url:
-            return
-        headers = {"Authorization": 'Token {}'.format(token)}
-        response = requests.post(
-            constants.COMMENT_API_PATH,
-            data=self.get_data(),
-            headers=headers
-        )
-        self.set(json.loads(response.text))
-
-    def set(self, _t):
-        self.topic = _t['topic']
-        self.text = _t['text']
-        self.claimed_hours = _t['claimed_hours']
-        self.assumed_hours = _t['assumed_hours']
-        self.url = _t['url']
-
-    def get_data(self):
-        return {
-            'topic': self.topic,
-            'text': self.text,
-            'claimed_hours': self.claimed_hours,
-            'assumed_hours': self.assumed_hours,
-        }
-    def delete(self, token):
-        headers = {"Authorization": 'Token {}'.format(token)}
-
-        response = requests.delete(
-            self.url,
-            headers = headers
-        )
-
 
 class Agent:
 
@@ -379,7 +302,7 @@ class Agent:
 
     def topic_new(self, bot, update, chat_data):
         if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /register to login')
+            update.message.reply_text('You have to login to create a topic. Please use /login to login')
             return ConversationHandler.END
         _topic = Topic()
         self.data['_topic'] = _topic
@@ -446,7 +369,7 @@ class Agent:
 
     def topic_delete(self, bot, update, chat_data):
         if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /register to login')
+            update.message.reply_text('You have to login to create a topic. Please use /login to login')
             return ConversationHandler.END
         keyboard = [
             [
@@ -469,7 +392,7 @@ class Agent:
 
     def topic_update(self, bot, update, chat_data):
         if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /register to login')
+            update.message.reply_text('You have to login to create a topic. Please use /login to login')
             return ConversationHandler.END
         keyboard = [
             [
@@ -542,7 +465,8 @@ class Agent:
                 ],
                 [
                     InlineKeyboardButton("Plan", callback_data = '3'),
-                    InlineKeyboardButton("Task", callback_data = '4')
+                    InlineKeyboardButton("Step", callback_data = '4'),
+                    InlineKeyboardButton("Task", callback_data = '5')
                 ]
             ]
             bot.send_message(
@@ -593,147 +517,6 @@ class Agent:
         return ConversationHandler.END
 
 
-    #################  COMMENT  ################# 
-
-
-    def comment_new(self, bot, update, chat_data):
-        if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /register to login')
-            return ConversationHandler.END
-        _comment = Comment()
-        self.data['_comment'] = _comment
-        self.data['comment_command_type'] = "post"
-        keyboard = [[InlineKeyboardButton("Select Topic", switch_inline_query_current_chat='Topics:')]]
-        update.message.reply_text('Select Topic', reply_markup = InlineKeyboardMarkup(keyboard))
-        return COMMENT_TOPIC
-
-    def comment_topic(self, bot, update, chat_data):
-        topic = update.message.text
-        topics = Topic.topics(token)
-        if topic in topic:
-            _comment = self.data['_comment']
-            _comment.topic = topic
-            if self.data['comment_command_type'] == 'update':
-                return COMMENT_CALLBACK
-            else:
-                update.message.reply_text('Please input text.')
-                return COMMENT_TEXT
-
-    def comment_text(self, bot, update, chat_data):
-        _comment = self.data['_comment']
-        text = update.message.text
-        _comment.text = text
-        if self.data['comment_command_type'] == 'update':
-            update.message.reply_text('Text: {}'.format(text))
-            return COMMENT_CALLBACK
-        else:
-            update.message.reply_text('Text: {}\n'.format(text))
-            return comment_finish(bot, update.message.chat_id)
-
-    def comment_update(self, bot, update, chat_data):
-        if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /register to login')
-            return ConversationHandler.END
-        keyboard = [
-            [
-                InlineKeyboardButton("Select Comments", switch_inline_query_current_chat="Comment:"),
-            ]
-        ]
-        update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
-        return COMMENT_UPDATE
-
-    def comment_delete_selected(self, bot, update, chat_data):
-        url = update.message.text
-        _comment = Comment(token, url)
-        self.data['_comment'] = _comment
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text="Please type /done to finish"
-        )
-
-    def comment_update_properties(self, bot, update, chat_data):
-        url = update.message.text
-        _comment = Comment(token, url)
-        keyboard = [
-            [
-                InlineKeyboardButton("Topic", callback_data = '1'),
-                InlineKeyboardButton("Text", callback_data = '2'),
-            ],
-            [
-                InlineKeyboardButton("Update", callback_data = '3'),
-            ]
-        ]
-        self.data['comment_command_type'] = "update"
-        self.data['_comment'] = _comment
-        update.message.reply_text('What would you like to update?:', reply_markup=InlineKeyboardMarkup(keyboard))
-        return COMMENT_CALLBACK
-
-    def comment_callback(self, bot, update, chat_data):
-        query = update.callback_query
-        message = query.message
-        chat_id = message.chat_id
-        message_id = message.message_id
-        topic_type = int(query.data)
-        if topic_type is 1:
-            keyboard = [[InlineKeyboardButton("Select Topic", switch_inline_query_current_chat="Topics:")]]
-            bot.send_message(
-                text = "Please select topic:",
-                chat_id = chat_id,
-                reply_markup = InlineKeyboardMarkup(keyboard)
-            )
-            return COMMENT_TOPIC
-        elif topic_type is 2:
-            bot.send_message(
-                text = "Please input Text:",
-                chat_id = chat_id
-            )
-            return COMMENT_TEXT
-        elif topic_type is 3:
-            return comment_finish(bot, chat_id)
-        else:
-            logging.info('parents')
-
-    def comment_delete(self, bot, update, chat_data):
-        if ('user' not in self.data or not self.data.get('token')):
-            update.message.reply_text('You have to login to create a topic. Please use /register to login')
-            return ConversationHandler.END
-        keyboard = [
-            [
-                InlineKeyboardButton("Comment:", switch_inline_query_current_chat="Comment:"),
-            ]
-        ]
-        self.data['comment_command_type'] = "delete"
-        update.message.reply_text('Please choose:', reply_markup=InlineKeyboardMarkup(keyboard))
-        return COMMENT_DELETE
-
-    def comment_done(self, bot, update, chat_data):
-        return comment_finish(bot, update.message.chat_id)
-
-    def comment_finish(self, bot, chat_id):
-        _comment = self.data['_comment']
-        comment_command_type = self.data['comment_command_type']
-
-        if comment_command_type is 'post':
-            _comment.create(token)
-            bot.send_message(
-                chat_id=chat_id,
-                text='New comment has been created'
-            )
-        elif comment_command_type is 'delete':
-            bot.send_message(
-                chat_id=chat_id,
-                text='A comment has been deleted'
-            )
-            _comment.delete(token)
-        else :
-            bot.send_message(
-                chat_id=chat_id,
-                text='A comment has been updated'
-            )
-        return ConversationHandler.END
-
-
-    #################  GENERAL  ################# 
 
     def inline_query(self, bot, update):
         query = update.inline_query.query
@@ -749,18 +532,6 @@ class Agent:
                         title = topic.title,
                         input_message_content = InputTextMessageContent('Topic:'),
                         reply_markup = InlineKeyboardMarkup(keyboard)
-                    )
-                )
-            # update.inline_query.answer(results, cache_time = 5)
-        elif 'Comment:' in query:
-            query = self.remove_prefix(query, 'Comment:')
-            comments = Comment.comments(token, query)
-            for comment in comments:
-                results.append(
-                    InlineQueryResultArticle(
-                        id = uuid4(),
-                        title = comment.url,
-                        input_message_content = InputTextMessageContent(comment.url)
                     )
                 )
             # update.inline_query.answer(results, cache_time = 5)
@@ -780,20 +551,19 @@ class Agent:
 # Dummy Constants
 AUTH_EMAIL, AUTH_CAPTCHA, AUTH_PASSWORD = range(3)
 TOPIC_TITLE, TOPIC_BODY, TOPIC_PARENTS, TOPIC_DELETE, TOPIC_UPDATE, TOPIC_CALLBACK = range(6)
-COMMENT_TEXT, COMMENT_TOPIC, COMMENT_DELETE, COMMENT_UPDATE, COMMENT_CALLBACK = range(5)
 
 def main():
 
     # Initialization
     agent = Agent()
     updater = Updater(config.TELEGRAM_BOT_TOKEN)
-    dispatcher = updater.dispatcher
+    dp = updater.dispatcher
 
     # Handlers
 
     # AUTH
     auth_handler = ConversationHandler(
-        entry_points = [CommandHandler('register', agent.auth_register, pass_chat_data=True)],
+        entry_points = [CommandHandler('login', agent.auth_register, pass_chat_data=True)],
         states = {
             AUTH_EMAIL: [MessageHandler(Filters.text, agent.auth_email, pass_chat_data=True)],
             AUTH_CAPTCHA: [MessageHandler(Filters.text, agent.auth_captcha, pass_chat_data=True)],
@@ -801,9 +571,9 @@ def main():
         },
         fallbacks = [CommandHandler('cancel', agent.error)]
     )
-    dispatcher.add_handler(auth_handler)
-    dispatcher.add_handler(CommandHandler("logout", agent.user_logout, pass_chat_data=True))
-    dispatcher.add_handler(CommandHandler("status", agent.user_status, pass_chat_data=True))
+    dp.add_handler(auth_handler)
+    dp.add_handler(CommandHandler("logout", agent.user_logout, pass_chat_data=True))
+    dp.add_handler(CommandHandler("status", agent.user_status, pass_chat_data=True))
 
 
     # TOPIC
@@ -823,28 +593,7 @@ def main():
         },
         fallbacks = [CommandHandler('done', agent.topic_done, pass_chat_data = True)],
     )
-    dispatcher.add_handler(topics_handler)
-
-
-    # COMMENT
-
-    comment_handler = ConversationHandler(
-        entry_points = [
-            CommandHandler('newcomment', agent.comment_new, pass_chat_data=True),
-            CommandHandler('deletecomment', agent.comment_delete, pass_chat_data=True),
-            CommandHandler('updatecomment', agent.comment_update, pass_chat_data=True)],
-        states = {
-            COMMENT_TOPIC: [RegexHandler(constants.TOPIC_URL_PATTERN, agent.comment_topic, pass_chat_data=True)],
-            COMMENT_TEXT: [MessageHandler(Filters.text, agent.comment_text, pass_chat_data = True)],
-            COMMENT_UPDATE: [RegexHandler(constants.COMMENT_URL_PATTERN, agent.comment_update_properties, pass_chat_data = True)],
-            COMMENT_DELETE: [RegexHandler(constants.COMMENT_URL_PATTERN, agent.comment_delete_selected, pass_chat_data = True)],
-            COMMENT_CALLBACK: [CallbackQueryHandler(agent.comment_callback, pass_chat_data = True)]
-        },
-        fallbacks = [CommandHandler('done', agent.comment_done, pass_chat_data=True)],
-    )
-    dispatcher.add_handler(comment_handler)
-    dispatcher.add_handler(InlineQueryHandler(agent.inline_query))
-    dispatcher.add_handler(ChosenInlineResultHandler(agent.parents_callback))
+    dp.add_handler(topics_handler)
 
 
     # Polling
