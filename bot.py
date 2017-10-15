@@ -66,8 +66,9 @@ class Agent:
         return response.json()
 
     def start(self, bot, update):
+        bot_username = bot.getMe().username
         update.message.reply_text(
-            'Just type @{} to start searching topics. Type at least 3 letters, e.g. _@{} ena..._'.format(*((bot.getMe().username)*2)),
+            'Just type @{} to start searching topics. Type at least 3 letters, e.g. _@{} ena..._'.format(bot_username, bot_username),
             parse_mode=ParseMode.MARKDOWN
         )
 
