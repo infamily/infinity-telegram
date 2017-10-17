@@ -8,6 +8,7 @@ def create_bot(*args, **kwargs):
     Factory for bot instances
 
     Injects webhook_handler to original bot object for handling webhook requests from external web server
+
     :param kwargs:
         token: telegram bot api token
 
