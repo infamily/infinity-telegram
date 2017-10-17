@@ -39,4 +39,4 @@ class WebhookHandlerTestCase(TestCase):
         self.client.post(
             '/telegram/webhook', data=json.dumps(self.DIRECT_MESSAGE_PAYLOAD), content_type='application/json'
         )
-        self.assertEquals(1, self.app.extensions['telegram_bot'].bot.webhook_handler.call_count)
+        self.assertEqual(1, self.app.extensions['telegram_bot'].bot.webhook_handler.call_count)
