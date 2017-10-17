@@ -11,3 +11,10 @@ def set_webhook(url):
     telegram_bot = current_app.extensions['telegram_bot']
     telegram_bot.bot.set_webhook(url)
     print(telegram_bot.bot.get_webhook_info())
+
+
+@current_app.cli.command()
+def webhook_info():
+    """Prints telegram bot webhook info"""
+    telegram_bot = current_app.extensions['telegram_bot']
+    print(telegram_bot.bot.get_webhook_info())
