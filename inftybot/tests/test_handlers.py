@@ -1,65 +1,45 @@
 # coding: utf-8
+import json
 from unittest import TestCase
 
-COMMAND_MESSAGE_PAYLOAD = {
-    "message": {
-        "chat": {
-            "first_name": "Kuznetsov",
-            "id": 317865952,
-            "last_name": "Eugene",
-            "type": "private",
-            "username": "e_kuznetsov"
-        },
-        "date": 1509305066,
-        "entities": [
-            {
-                "length": 4,
-                "offset": 0,
-                "type": "bot_command"
-            }
-        ],
-        "from": {
-            "first_name": "Kuznetsov",
-            "id": 317865952,
-            "is_bot": False,
-            "language_code": "en-US",
-            "last_name": "Eugene",
-            "username": "e_kuznetsov"
-        },
-        "message_id": 19,
-        "text": "/cmd"
-    },
-    "update_id": 739983003
-}
+from mock import patch
 
-DIRECT_MESSAGE_PAYLOAD = {
-    "message": {
-        "chat": {
-            "first_name": "Kuznetsov",
-            "id": 317865952,
-            "last_name": "Eugene",
-            "type": "private",
-            "username": "e_kuznetsov"
-        },
-        "date": 1509305316,
-        "from": {
-            "first_name": "Kuznetsov",
-            "id": 317865952,
-            "is_bot": False,
-            "language_code": "en-US",
-            "last_name": "Eugene",
-            "username": "e_kuznetsov"
-        },
-        "message_id": 20,
-        "text": "test"
-    },
-    "update_id": 739983004
-}
+from inftybot.factory import create_bot, create_dispatcher
 
 
-class WebhookHandlerTestCase(TestCase):
-    pass
+def load_payload():
+    with open('./requests.json', 'r') as fp:
+        return json.load(fp)
 
 
-class DirectMessageWebhookTestCase(WebhookHandlerTestCase):
-    pass
+payload = load_payload()
+
+
+class HandlerTestCase(TestCase):
+    validate_token_patch = patch('telegram.bot.Bot._validate_token')
+    # send_message_patch = patch('telegram.bot.Bot.send_message')
+    # answer_inline_patch = patch('telegram.bot.Bot.answer_inline_query')
+
+    def setUp(self):
+        super(HandlerTestCase, self).setUp()
+        self.validate_token_patch.start()
+        self.bot = create_bot(token=None)
+        self.dispatcher = create_dispatcher(self.bot)
+
+    def tearDown(self):
+        super(HandlerTestCase, self).tearDown()
+        self.validate_token_patch.stop()
+
+
+class InlineQueryTestCase(HandlerTestCase):
+    def test_unknown_query_no_results(self):
+        with patch('telegram.bot.Bot.answer_inline_query') as mock:
+            self.dispatcher.process_update(payload.get('INLINE_QUERY_UNKNOWN_PAYLOAD'))
+            results = mock.call_args[0][1]
+            self.assertEqual(len(results), 0)
+
+    def test_known_query_has_results(self):
+        with patch('telegram.bot.Bot.answer_inline_query') as mock:
+            self.dispatcher.process_update(payload.get('INLINE_QUERY_PAYLOAD_GOAL'))
+            results = mock.call_args[0][1]
+            self.assertEqual(len(results), 1)
