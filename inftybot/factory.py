@@ -46,6 +46,7 @@ def register_handlers(dispatcher):
     :param dispatcher: import telegram.ext.Dispatcher instance
     :return:
     """
-    dispatcher.add_handler(telegram.ext.MessageHandler(telegram.ext.Filters.all, handlers.common_message_handler))
+    message_filter = telegram.ext.Filters.all & (~telegram.ext.Filters.command)
+    dispatcher.add_handler(telegram.ext.MessageHandler(message_filter, handlers.common_message_handler))
     dispatcher.add_handler(telegram.ext.CommandHandler("start", handlers.start_command_handler))
     dispatcher.add_handler(telegram.ext.InlineQueryHandler(handlers.inline_query_handler))
