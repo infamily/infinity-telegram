@@ -25,10 +25,10 @@ def register_extensions(appl):
 
 
 def update_logging(appl):
-    conf = appl.config.get('LOGGING', {})
-    if not conf:
+    config = appl.config.get('LOGGING', {})
+    if not config:
         return
-    dictConfig(conf)
+    dictConfig(config)
 
 
 app = create_app()
