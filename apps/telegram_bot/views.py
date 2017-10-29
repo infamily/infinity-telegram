@@ -2,8 +2,8 @@
 import json
 import logging
 
-from flask import Blueprint, request, current_app, jsonify
-
+from flask import Blueprint, request, current_app, jsonify, make_response
+from .base import get_telegram_ext
 
 blueprint = Blueprint(__name__, __name__)
 logger = logging.getLogger(__name__)
@@ -14,7 +14,6 @@ def webhook():
     """Handles webhook request"""
     payload = request.get_json()
     logger.debug('Request: {}'.format(json.dumps(payload)))
-    telegram_bot = current_app.extensions['telegram_bot']
-    response = telegram_bot.bot.webhook_handler(payload)
-    logger.debug('Response: {}'.format(json.dumps(response)))
-    return jsonify(response)
+    telegram_ext = get_telegram_ext()
+    telegram_ext.dispatcher.process_update(payload)
+    return '', 202
