@@ -5,7 +5,6 @@ from mock import patch, MagicMock
 from telegram import Update
 
 from inftybot.dispatcher import Dispatcher
-from inftybot.factory import create_bot
 
 
 class DispatcherTestCase(TestCase):
