@@ -29,3 +29,27 @@ TELEGRAM_BOT_FACTORY = env('TELEGRAM_BOT_FACTORY', 'inftybot.factory.create_bot'
 TELEGRAM_BOT_FACTORY_PARAMS = env('TELEGRAM_BOT_FACTORY_PARAMS', {
     'token': TELEGRAM_BOT_TOKEN
 })
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+        },
+    },
+    'handlers': {
+        'default': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['default'],
+            'level': 'INFO',
+            'propagate': True
+        }
+    }
+}
