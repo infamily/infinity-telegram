@@ -1,6 +1,9 @@
 # coding: utf-8
-
+from flask import current_app
 from werkzeug.utils import import_string
+
+
+EXTENSION_NAME = 'telegram_bot'
 
 
 def create_bot(app):
@@ -24,6 +27,10 @@ def register_blueprint(app):
         app.register_blueprint(blueprint, url_prefix='/telegram')
 
 
+def get_telegram_bot():
+    return current_app.extensions[EXTENSION_NAME]
+
+
 class TelegramBot(object):
     """Pluggable flask app"""
     def __init__(self, app=None):
@@ -36,4 +43,4 @@ class TelegramBot(object):
         self.bot = create_bot(app)
         register_commands(app)
         register_blueprint(app)
-        app.extensions['telegram_bot'] = self
+        app.extensions[EXTENSION_NAME] = self

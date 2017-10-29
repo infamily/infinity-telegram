@@ -1,9 +1,8 @@
 # coding: utf-8
 import json
 
-from flask import current_app, jsonify
 from flask_testing import TestCase
-from mock import patch, MagicMock
+from mock import MagicMock
 
 from app import create_app
 
