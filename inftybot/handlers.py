@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import inftybot.intents.utils
+from inftybot import config
 from inftybot.utils import process_update
 
 
@@ -17,4 +18,4 @@ def inline_query_handler(bot, update):
     handler_cls = inftybot.intents.utils.get_intent_for_inline(update)
     handler = handler_cls(bot, update)
     results = handler.handle()
-    update.inline_query.answer(results)
+    update.inline_query.answer(results, cache_time=config.INLINE_QUERY_CACHE_TIME)

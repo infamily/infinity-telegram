@@ -19,6 +19,8 @@ flask-testing = "*"
 mock = "*"
 pytest = "*"
 slumber = "*"
+"bs4" = "*"
+mistune = "*"
 
 
 ["dev-packages"]
