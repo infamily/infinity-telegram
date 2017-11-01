@@ -1,5 +1,5 @@
 {
-  "UNKNOWN_COMMAND_MESSAGE_PAYLOAD": {
+  "UNKNOWN_COMMAND": {
     "message": {
       "chat": {
         "first_name": "Kuznetsov",
@@ -29,7 +29,7 @@
     },
     "update_id": 739983003
   },
-  "START_COMMAND_PAYLOAD": {
+  "START_COMMAND": {
     "message": {
       "chat": {
         "first_name": "Kuznetsov",
@@ -59,46 +59,7 @@
     },
     "update_id": 739983025
   },
-  "DIRECT_MESSAGE_PAYLOAD": {
-    "message": {
-      "chat": {
-        "first_name": "Kuznetsov",
-        "id": 317865952,
-        "last_name": "Eugene",
-        "type": "private",
-        "username": "e_kuznetsov"
-      },
-      "date": 1509305316,
-      "from": {
-        "first_name": "Kuznetsov",
-        "id": 317865952,
-        "is_bot": false,
-        "language_code": "en-US",
-        "last_name": "Eugene",
-        "username": "e_kuznetsov"
-      },
-      "message_id": 20,
-      "text": "test"
-    },
-    "update_id": 739983004
-  },
-  "INLINE_QUERY_UNKNOWN_PAYLOAD": {
-    "inline_query": {
-      "from": {
-        "first_name": "Kuznetsov",
-        "id": 317865952,
-        "is_bot": false,
-        "language_code": "en-US",
-        "last_name": "Eugene",
-        "username": "e_kuznetsov"
-      },
-      "id": "1365223869854011651",
-      "offset": "",
-      "query": "testquery"
-    },
-    "update_id": 739983032
-  },
-  "INLINE_QUERY_PAYLOAD_GOAL": {
+  "INLINE_QUERY": {
     "inline_query": {
       "from": {
         "first_name": "Kuznetsov",

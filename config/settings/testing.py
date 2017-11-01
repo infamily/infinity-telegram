@@ -24,6 +24,11 @@ LOGGING = {
             'handlers': ['default'],
             'level': 'DEBUG',
             'propagate': True
+        },
+        'telegram': {
+            'handlers': ['default'],
+            'level': 'DEBUG',
+            'propagate': True
         }
     }
 }

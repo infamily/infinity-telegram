@@ -4,21 +4,10 @@ from queue import Queue
 import telegram
 import telegram.ext
 
-from . import handlers
-from .dispatcher import Dispatcher
-
-
-def create_dispatcher(bot, workers=1, **kwargs):
-    """
-    Factory for message dispatcher
-    :param bot: bot instance
-    :param workers: workers count
-    :param kwargs: Dispatcher kwargs
-    :return:
-    """
-    dispatcher = Dispatcher(bot, Queue(), workers=workers, **kwargs)
-    register_handlers(dispatcher)
-    return dispatcher
+from inftybot import handlers
+from inftybot.api.base import API
+from inftybot import config
+from inftybot.dispatcher import Dispatcher
 
 
 def create_bot(*args, **kwargs):
@@ -35,6 +24,19 @@ def create_bot(*args, **kwargs):
     return bot
 
 
+def create_dispatcher(bot, workers=1, **kwargs):
+    """
+    Factory for message dispatcher
+    :param bot: bot instance
+    :param workers: workers count
+    :param kwargs: Dispatcher kwargs
+    :return:
+    """
+    dispatcher = Dispatcher(bot, Queue(), workers=workers, **kwargs)
+    register_handlers(dispatcher)
+    return dispatcher
+
+
 def register_handlers(dispatcher):
     """
     Registers message handlers
@@ -46,7 +48,5 @@ def register_handlers(dispatcher):
     :param dispatcher: import telegram.ext.Dispatcher instance
     :return:
     """
-    message_filter = telegram.ext.Filters.all & (~telegram.ext.Filters.command)
-    dispatcher.add_handler(telegram.ext.MessageHandler(message_filter, handlers.common_message_handler))
-    dispatcher.add_handler(telegram.ext.CommandHandler("start", handlers.start_command_handler))
+    dispatcher.add_handler(telegram.ext.CommandHandler("start", handlers.command_handler))
     dispatcher.add_handler(telegram.ext.InlineQueryHandler(handlers.inline_query_handler))
