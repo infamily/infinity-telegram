@@ -41,11 +41,11 @@ def process_result(result):
     return telegram.InlineQueryResultArticle(
         id=uuid4(),
         title=result.get('title'),
-        description='{} ...'.format(description),
+        description='{} ...'.format(description) if description else '',
         url=result.get('url'),
         input_message_content=InputTextMessageContent(
             message_text=message_text,
-            parse_mode=ParseMode.HTML,
+            parse_mode=ParseMode.MARKDOWN,
             disable_web_page_preview=True,
         )
     )
@@ -78,8 +78,6 @@ class SearchTopicsInlineQuery(BaseInlineQuery):
 
     def handle(self):
         results = []
-
-        # self.query = 'Society Tends to Unite Under Projects, not Goals'
 
         if not self.query:
             return results
