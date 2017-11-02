@@ -56,3 +56,11 @@ class APIMixin(TestCase):
     def create_api_client(self):
         api = API(base_url='http://example.com/api/v1')
         return api
+
+
+class AuthenticatedAPIMixin(APIMixin):
+    def create_api_client(self):
+        api = super(AuthenticatedAPIMixin, self).create_api_client()
+        api.session.api_token = 'test_token'
+        api.session.user = {}
+        return api
