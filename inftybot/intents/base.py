@@ -27,11 +27,13 @@ class BaseIntent(object):
     def as_callback(cls, **init_kwargs):
         """Hello, django as_view()"""
 
-        def handler(bot, update, *args, **kwargs):
-            self = cls(**init_kwargs)
+        def handler(bot, update, *args, **callback_kwargs):
+            kwargs = {'bot': bot, 'update': update}
+            kwargs.update(init_kwargs)
+            self = cls(**kwargs)
             self.bot = bot
             self.update = update
-            return self(*args, **kwargs)
+            return self(*args, **callback_kwargs)
 
         return handler
 
