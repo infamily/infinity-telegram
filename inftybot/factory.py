@@ -50,6 +50,7 @@ def get_intents_conf():
             'cls': 'inftybot.intents.conversations.LoginConversationIntent',
         },
         'inftybot.intents.commands.StartCommandIntent',
+        'inftybot.intents.inlines.SearchTopicsInlineIntent'
     ]
 
 
@@ -69,4 +70,5 @@ def register_intents(dispatcher):
 
         dispatcher.add_handler(intent_cls.get_handler())
 
+    # todo
     # dispatcher.add_handler(telegram.ext.InlineQueryHandler(handlers.inline_query_handler))
