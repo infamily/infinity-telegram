@@ -1,11 +1,18 @@
 # coding: utf-8
 
+TOPIC_TYPE_NEED = 'need'
+TOPIC_TYPE_GOAL = 'goal'
+TOPIC_TYPE_IDEA = 'idea'
+TOPIC_TYPE_PLAN = 'plan'
+TOPIC_TYPE_STEP = 'stel'
+TOPIC_TYPE_TASK = 'task'
 
-TOPIC_TYPES = {
-    0: 'NEED',
-    1: 'GOAL',
-    2: 'IDEA',
-    3: 'PLAN',
-    4: 'STEP',
-    5: 'TASK'
+
+TOPIC_TYPE_CHOICES = {
+    0: TOPIC_TYPE_NEED,
+    1: TOPIC_TYPE_GOAL,
+    2: TOPIC_TYPE_IDEA,
+    3: TOPIC_TYPE_PLAN,
+    4: TOPIC_TYPE_STEP,
+    5: TOPIC_TYPE_TASK
 }

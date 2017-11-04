@@ -21,6 +21,7 @@ pytest = "*"
 slumber = "*"
 "bs4" = "*"
 mistune = "*"
+schematics = "*"
 
 
 ["dev-packages"]
