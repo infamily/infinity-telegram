@@ -1,11 +1,11 @@
 # coding: utf-8
-from werkzeug.local import Local
+import logging
 
 from inftybot.api import API
 from inftybot.intents.exceptions import IntentHandleException
 
 
-local = Local()
+logger = logging.getLogger(__name__)
 
 
 class BaseIntent(object):
@@ -14,7 +14,15 @@ class BaseIntent(object):
         self.api = kwargs.get('api', API())
         self.bot = kwargs.get('bot', None)
         self.update = kwargs.get('update', None)
-        self.data = local
+        self.kwargs = {}
+
+    @property
+    def chat_data(self):
+        return self.kwargs.get('chat_data')
+
+    @property
+    def user_data(self):
+        return self.kwargs.get('user_data')
 
     def __call__(self, *args, **kwargs):
         try:
@@ -33,7 +41,8 @@ class BaseIntent(object):
             self = cls(**kwargs)
             self.bot = bot
             self.update = update
-            return self(*args, **callback_kwargs)
+            self.kwargs = callback_kwargs
+            return self()
 
         return handler
 

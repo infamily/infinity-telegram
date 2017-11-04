@@ -7,7 +7,6 @@ from werkzeug.utils import import_string
 
 from inftybot.dispatcher import Dispatcher
 from inftybot.intents.base import BaseIntent
-from inftybot.intents.conversations import BaseConversationIntent
 
 
 def create_bot(*args, **kwargs):
@@ -70,5 +69,5 @@ def register_intents(dispatcher):
 
         dispatcher.add_handler(intent_cls.get_handler())
 
-    # todo
-    # dispatcher.add_handler(telegram.ext.InlineQueryHandler(handlers.inline_query_handler))
+        # todo
+        # dispatcher.add_handler(telegram.ext.InlineQueryHandler(handlers.inline_query_handler))
