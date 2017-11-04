@@ -43,6 +43,10 @@ class BaseIntent(object):
         pass
 
     def handle(self, *args, **kwargs):
+        """
+        This method is used as ```python-telegram-bot``` handler callback
+        see: as_callback() and __call__() methods
+        """
         raise NotImplementedError
 
     def handle_error(self, error):
