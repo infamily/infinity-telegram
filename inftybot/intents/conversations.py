@@ -9,6 +9,7 @@ from inftybot.intents.states import AUTH_STATE_EMAIL, AUTH_STATE_CAPTCHA, AUTH_S
 
 class BaseConversationIntent(BaseIntent):
     def handle(self, *args, **kwargs):
+        """No direct handling assumed"""
         pass
 
 
