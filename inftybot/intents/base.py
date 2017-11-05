@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 class BaseIntent(object):
     """Base class for intent handler"""
     def __init__(self, **kwargs):
-        self.api = kwargs.get('api', API())
-        self.bot = kwargs.get('bot', None)
-        self.update = kwargs.get('update', None)
-        self.kwargs = {}
+        self.api = kwargs.pop('api', API())
+        self.bot = kwargs.pop('bot', None)
+        self.update = kwargs.pop('update', None)
+        self.kwargs = kwargs
         self._errors = []
 
     @property
