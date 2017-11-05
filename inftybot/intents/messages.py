@@ -1,17 +1,15 @@
 # coding: utf-8
 import gettext
-import json
 import urllib.parse
 
 from slumber.exceptions import HttpClientError
 from telegram.ext import MessageHandler, Filters
 
 from inftybot import config
+from inftybot.intents import states
 from inftybot.intents.base import BaseIntent
 from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
-from inftybot.intents import states
 from inftybot.models import User
-
 
 _ = gettext.gettext
 
