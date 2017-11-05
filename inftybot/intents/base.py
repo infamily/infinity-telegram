@@ -15,7 +15,6 @@ class BaseIntent(object):
         self.update = kwargs.pop('update', None)
         self.chat_data = kwargs.pop('chat_data', {})
         self.user_data = kwargs.pop('user_data', {})
-        self.kwargs = kwargs
         self._errors = []
 
     @property
@@ -24,6 +23,8 @@ class BaseIntent(object):
 
     def __call__(self, *args, **kwargs):
         try:
+            self.chat_data = kwargs.pop('chat_data', {})
+            self.user_data = kwargs.pop('user_data', {})
             self.validate()
             return self.handle(*args, **kwargs)
         except ValidationError as e:
@@ -42,8 +43,7 @@ class BaseIntent(object):
             self = cls(**kwargs)
             self.bot = bot
             self.update = update
-            self.kwargs = callback_kwargs
-            return self()
+            return self(**callback_kwargs)
 
         return handler
 
