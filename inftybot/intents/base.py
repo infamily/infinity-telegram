@@ -2,8 +2,7 @@
 import logging
 
 from inftybot.api import API
-from inftybot.intents.exceptions import IntentHandleException
-
+from inftybot.intents.exceptions import IntentHandleException, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -15,19 +14,27 @@ class BaseIntent(object):
         self.bot = kwargs.get('bot', None)
         self.update = kwargs.get('update', None)
         self.kwargs = {}
+        self._errors = []
+
+    @property
+    def errors(self):
+        return self._errors
 
     @property
     def chat_data(self):
-        return self.kwargs.get('chat_data')
+        return self.kwargs.get('chat_data', {})
 
     @property
     def user_data(self):
-        return self.kwargs.get('user_data')
+        return self.kwargs.get('user_data', {})
 
     def __call__(self, *args, **kwargs):
         try:
             self.validate()
             return self.handle(*args, **kwargs)
+        except ValidationError as e:
+            self._errors.append(e)
+            return self.handle_error(e)
         except IntentHandleException as e:
             return self.handle_error(e)
 
