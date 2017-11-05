@@ -68,6 +68,3 @@ def register_intents(dispatcher):
             raise NotImplementedError
 
         dispatcher.add_handler(intent_cls.get_handler())
-
-        # todo
-        # dispatcher.add_handler(telegram.ext.InlineQueryHandler(handlers.inline_query_handler))
