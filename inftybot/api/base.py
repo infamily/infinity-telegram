@@ -26,7 +26,7 @@ class Session(object):
 
     @property
     def user(self):
-        return self._data.get('user', {})
+        return self._data.get('user', None)
 
     @user.setter
     def user(self, value):
@@ -34,12 +34,8 @@ class Session(object):
 
     @property
     def api_token(self):
-        return self._data.get('api_token', None)
-
-    @api_token.setter
-    def api_token(self, value):
-        self._data['api_token'] = value
+        return self.user.token
 
     @property
     def is_authenticated(self):
-        return self.api_token is not None
+        return self.user and self.api_token is not None
