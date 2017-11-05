@@ -13,20 +13,14 @@ class BaseIntent(object):
         self.api = kwargs.pop('api', API())
         self.bot = kwargs.pop('bot', None)
         self.update = kwargs.pop('update', None)
+        self.chat_data = kwargs.pop('chat_data', {})
+        self.user_data = kwargs.pop('user_data', {})
         self.kwargs = kwargs
         self._errors = []
 
     @property
     def errors(self):
         return self._errors
-
-    @property
-    def chat_data(self):
-        return self.kwargs.get('chat_data', {})
-
-    @property
-    def user_data(self):
-        return self.kwargs.get('user_data', {})
 
     def __call__(self, *args, **kwargs):
         try:
