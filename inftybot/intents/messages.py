@@ -25,7 +25,32 @@ class BaseMessageIntent(BaseIntent):
         self.update.message.reply_text(error.message)
 
 
-class AuthEmailIntent(BaseMessageIntent):
+class BaseAuthIntent(BaseMessageIntent):
+    @property
+    def user(self):
+        return self.chat_data.get('user', None)
+
+    @user.setter
+    def user(self, value):
+        self.chat_data['user'] = value
+
+    @property
+    def captcha(self):
+        return self.chat_data.get('captcha', {})
+
+    @captcha.setter
+    def captcha(self, value):
+        self.chat_data['captcha'] = value
+
+    def set_api_authentication(self, token):
+        if not self.user:
+            raise ValueError("No user provided")
+
+        self.user.token = token
+        self.api.session.user = self.user
+
+
+class AuthEmailIntent(BaseAuthIntent):
     def validate(self):
         parts = self.update.message.text.split('@')
 
@@ -38,8 +63,8 @@ class AuthEmailIntent(BaseMessageIntent):
 
         captcha = self.api.client.otp.signup.get()
 
-        self.chat_data['user'] = user
-        self.chat_data['captcha'] = captcha
+        self.user = user
+        self.captcha = captcha
 
         self.update.message.reply_text(_('Please, solve the captcha:'))
 
@@ -53,15 +78,7 @@ class AuthEmailIntent(BaseMessageIntent):
         return states.AUTH_STATE_CAPTCHA
 
 
-class AuthCaptchaIntent(BaseMessageIntent):
-    @property
-    def user(self):
-        return self.chat_data.get('user', None)
-
-    @property
-    def captcha(self):
-        return self.chat_data.get('captcha', {})
-
+class AuthCaptchaIntent(BaseAuthIntent):
     def validate(self):
         payload = {
             'email': self.user.email,
@@ -84,7 +101,7 @@ class AuthCaptchaIntent(BaseMessageIntent):
         # it is not proper way
         # to assign the state on the validation stage
         # todo
-        self.user.token = response['token']
+        self.set_api_authentication(response['token'])
 
     def handle_error(self, error):
         self.update.message.reply_text(_(error.message))
