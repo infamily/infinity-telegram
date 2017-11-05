@@ -1,10 +1,9 @@
 # coding: utf-8
 from unittest import TestCase
 
-from mock import patch
-
 from inftybot.intents import messages, states
 from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
+from inftybot.intents.messages import BaseAuthIntent
 from inftybot.models import User
 from inftybot.tests.base import load_tg_updates, BotMixin, APIMixin, load_api_responses, patch_api_request, mock_update
 from inftybot.utils import update_from_dict
@@ -29,6 +28,18 @@ class BaseIntentTestCase(BotMixin, APIMixin, TestCase):
             api=self.api, **kwargs
         )
         return intent
+
+
+class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
+    intent_cls = BaseAuthIntent
+
+    def test_set_authentication_ensure_session_token_provided(self):
+        intent = BaseAuthIntent(api=self.api)
+        user = User()
+        user.email = 'example@email.com'
+        intent.user = user
+        intent.set_api_authentication('auth_token')
+        self.assertEquals(intent.api.session.api_token, 'auth_token')
 
 
 class TestAuthEMailIntent(BaseIntentTestCase):
