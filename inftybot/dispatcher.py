@@ -2,6 +2,8 @@
 import telegram
 import telegram.ext
 
+from inftybot.utils import update_from_dict
+
 
 class Dispatcher(telegram.ext.Dispatcher):
     """
@@ -10,5 +12,5 @@ class Dispatcher(telegram.ext.Dispatcher):
     """
     def process_update(self, update):
         if isinstance(update, dict):
-            update = telegram.Update.de_json(update, self.bot)
+            update = update_from_dict(self.bot, update)
         return super(Dispatcher, self).process_update(update)
