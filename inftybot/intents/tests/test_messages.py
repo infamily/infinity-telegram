@@ -30,8 +30,32 @@ class BaseIntentTestCase(BotMixin, APIMixin, TestCase):
         return intent
 
 
+class TestAuthIntent(messages.BaseAuthIntent):
+    """Dummy"""
+    def handle(self, *args, **kwargs):
+        pass
+
+
 class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
-    intent_cls = messages.BaseAuthIntent
+    intent_cls = TestAuthIntent
+
+    def test_call_intent_with_user_ensure_api_request_contains_token(self):
+        update = updates['OTP_MESSAGE']
+
+        user = User()
+        user.token = 'token'
+        user.email = 'example@email.com'
+
+        intent = self.create_intent(update)
+
+        try:
+            intent(chat_data={
+                'user': user,
+            })
+        except ValidationError:
+            pass
+
+        self.assertEqual(intent.api.session.headers['authorization'], 'Token token')
 
     def test_set_authentication_ensure_api_user_token_provided(self):
         intent = messages.BaseAuthIntent(api=self.api)
@@ -143,7 +167,7 @@ class AuthOTPIntent(BaseIntentTestCase):
         rv = intent(chat_data={
             'user': user,
         })
-        self.assertEquals(rv, None)
+        self.assertEqual(rv, None)
 
     @patch_api_request(200, '')
     def test_api_login_ok_return_state_end(self, api_response):

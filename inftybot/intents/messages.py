@@ -26,6 +26,14 @@ class BaseMessageIntent(BaseIntent):
 
 
 class BaseAuthIntent(BaseMessageIntent):
+    def _update_user_token(self):
+        if self.user and self.user.token:
+            self.set_api_authentication(self.user.token)
+
+    def before_validate(self):
+        self._update_user_token()
+        super(BaseAuthIntent, self).before_validate()
+
     @property
     def user(self):
         return self.chat_data.get('user', None)
@@ -119,9 +127,6 @@ class AuthCaptchaIntent(BaseAuthIntent):
 
 
 class AuthOTPIntent(BaseAuthIntent):
-    def before_validate(self):
-        self.set_api_authentication(self.user.token)
-
     def validate(self):
         try:
             self.api.client.otp.login.post(data={
