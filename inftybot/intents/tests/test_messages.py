@@ -33,13 +33,15 @@ class BaseIntentTestCase(BotMixin, APIMixin, TestCase):
 class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
     intent_cls = messages.BaseAuthIntent
 
-    def test_set_authentication_ensure_session_token_provided(self):
+    def test_set_authentication_ensure_api_user_token_provided(self):
         intent = messages.BaseAuthIntent(api=self.api)
         user = User()
         user.email = 'example@email.com'
         intent.user = user
         intent.set_api_authentication('auth_token')
-        self.assertEquals(intent.api.session.api_token, 'auth_token')
+        self.assertEquals(
+            intent.api.user.token, 'auth_token'
+        )
 
 
 class TestAuthEMailIntent(BaseIntentTestCase):
