@@ -80,11 +80,11 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
         update = updates['CAPTCHA_MESSAGE']
         user = User()
         user.email = 'example@email.com'
-        intent = self.create_intent(update, chat_data={
+        intent = self.create_intent(update, )
+        rv = intent(chat_data={
             'user': user,
             'captcha': {'key': ''},
         })
-        rv = intent()
         self.assertEquals(rv, states.AUTH_STATE_PASSWORD)
 
     @patch_api_request(400, api_responses['SIGNUP'])
@@ -92,11 +92,11 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
         update = updates['CAPTCHA_MESSAGE']
         user = User()
         user.email = 'example@email.com'
-        intent = self.create_intent(update, chat_data={
+        intent = self.create_intent(update)
+        rv = intent(chat_data={
             'user': user,
             'captcha': {'key': 'key'}
         })
-        rv = intent()
         self.assertEquals(rv, None)
 
     @patch_api_request(400, api_responses['SIGNUP'])
@@ -110,15 +110,3 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
         })
         with self.assertRaises(CaptchaValidationError):
             intent.validate()
-
-    @patch_api_request(200, api_responses['SIGNUP_SUCCESS'])
-    def test_valid_captha_validation_assigns_token(self, api_response):
-        update = updates['CAPTCHA_MESSAGE']
-        user = User()
-        user.email = 'example@email.com'
-        intent = self.create_intent(update, chat_data={
-            'user': user,
-            'captcha': {'key': ''},
-        })
-        intent.validate()
-        self.assertIsNotNone(intent.user.token)
