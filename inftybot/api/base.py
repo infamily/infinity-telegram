@@ -1,6 +1,7 @@
 # coding: utf-8
 """Infty2.0 REST API client"""
 import slumber
+from requests import Session
 
 from inftybot import config
 
@@ -10,19 +11,15 @@ class API(object):
     Class for acessing Infty REST API
     """
     def __init__(self, base_url=None, **kwargs):
-        session = kwargs.pop('session', None)
-
         self.base_url = base_url or config.INFTY_API_URL
-        self.client = slumber.API(self.base_url, **kwargs)
-        self.session = Session(data=session)
+        self.session = Session()
+        self.client = slumber.API(self.base_url, session=self.session, **kwargs)
+        self._data = {}
 
-
-class Session(object):
-    """
-    Represents current API session
-    """
-    def __init__(self, data=None):
-        self._data = data or {}
+    def _update_session(self):
+        self.session.headers.update({
+            'Authorization': 'Token {}'.format(self.user.token)
+        })
 
     @property
     def user(self):
@@ -31,6 +28,7 @@ class Session(object):
     @user.setter
     def user(self, value):
         self._data['user'] = value
+        self._update_session()
 
     @property
     def api_token(self):
