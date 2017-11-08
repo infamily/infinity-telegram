@@ -39,7 +39,7 @@ class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
         user.email = 'example@email.com'
         intent.user = user
         intent.set_api_authentication('auth_token')
-        self.assertEquals(
+        self.assertEqual(
             intent.api.user.token, 'auth_token'
         )
 
