@@ -25,6 +25,7 @@ class BaseIntent(object):
         try:
             self.chat_data = kwargs.pop('chat_data', {})
             self.user_data = kwargs.pop('user_data', {})
+            self.before_validate()
             self.validate()
             return self.handle(*args, **kwargs)
         except ValidationError as e:
@@ -52,6 +53,9 @@ class BaseIntent(object):
         raise NotImplementedError
 
     def validate(self):
+        pass
+
+    def before_validate(self):
         pass
 
     def handle(self, *args, **kwargs):
