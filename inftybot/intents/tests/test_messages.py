@@ -3,9 +3,9 @@ from unittest import TestCase
 
 from inftybot.intents import messages, states
 from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
-from inftybot.intents.messages import BaseAuthIntent
 from inftybot.models import User
-from inftybot.tests.base import load_tg_updates, BotMixin, APIMixin, load_api_responses, patch_api_request, mock_update
+from inftybot.tests.base import load_tg_updates, BotMixin, load_api_responses, mock_update
+from inftybot.api.tests.base import APIMixin, patch_api_request
 from inftybot.utils import update_from_dict
 
 updates = load_tg_updates()
@@ -31,10 +31,10 @@ class BaseIntentTestCase(BotMixin, APIMixin, TestCase):
 
 
 class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
-    intent_cls = BaseAuthIntent
+    intent_cls = messages.BaseAuthIntent
 
     def test_set_authentication_ensure_session_token_provided(self):
-        intent = BaseAuthIntent(api=self.api)
+        intent = messages.BaseAuthIntent(api=self.api)
         user = User()
         user.email = 'example@email.com'
         intent.user = user
@@ -110,3 +110,49 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
         })
         with self.assertRaises(CaptchaValidationError):
             intent.validate()
+
+
+class AuthOTPIntent(BaseIntentTestCase):
+    intent_cls = messages.AuthOTPIntent
+
+    @patch_api_request(403, api_responses['OTP_403'])
+    def test_api_403_error_raises(self, api_response):
+        update = updates['OTP_MESSAGE']
+
+        user = User()
+        user.token = 'token'
+        user.email = 'example@email.com'
+
+        intent = self.create_intent(update, chat_data={
+            'user': user,
+        })
+        with self.assertRaises(ValidationError):
+            intent.validate()
+
+    @patch_api_request(403, api_responses['OTP_403'])
+    def test_api_403_returns_no_state(self, api_response):
+        update = updates['OTP_MESSAGE']
+
+        user = User()
+        user.token = 'token'
+        user.email = 'example@email.com'
+
+        intent = self.create_intent(update)
+        rv = intent(chat_data={
+            'user': user,
+        })
+        self.assertEquals(rv, None)
+
+    @patch_api_request(200, '')
+    def test_api_login_ok_return_state_end(self, api_response):
+        update = updates['OTP_MESSAGE']
+
+        user = User()
+        user.token = 'token'
+        user.email = 'example@email.com'
+
+        intent = self.create_intent(update)
+        rv = intent(chat_data={
+            'user': user,
+        })
+        self.assertEquals(rv, states.STATE_END)

@@ -47,7 +47,7 @@ class BaseAuthIntent(BaseMessageIntent):
             raise ValueError("No user provided")
 
         self.user.token = token
-        self.api.session.user = self.user
+        self.api.user = self.user
 
 
 class AuthEmailIntent(BaseAuthIntent):
@@ -68,11 +68,10 @@ class AuthEmailIntent(BaseAuthIntent):
 
         self.update.message.reply_text(_('Please, solve the captcha:'))
 
-        captha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, captcha['image_url'])
-
+        captcha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, captcha['image_url'])
         self.bot.sendPhoto(
             chat_id=self.update.message.chat_id,
-            photo=captha_url
+            photo=captcha_url
         )
 
         return states.AUTH_STATE_CAPTCHA
@@ -92,10 +91,12 @@ class AuthCaptchaIntent(BaseAuthIntent):
             )
         except HttpClientError as e:
             response = getattr(e, 'response')
-            new_captcha = response.json()
-            self.chat_data['captcha'] = new_captcha
+            response_data = response.json()
+            errors = response_data.pop('errors', '')
+            self.chat_data['captcha'] = response_data
             raise CaptchaValidationError(
-                _("Bad captcha. Please, solve again"), captcha=new_captcha
+                errors or _("Bad captcha. Please, solve again"),
+                captcha=response_data
             )
 
         # it is not proper way
@@ -105,10 +106,11 @@ class AuthCaptchaIntent(BaseAuthIntent):
 
     def handle_error(self, error):
         self.update.message.reply_text(_(error.message))
-        captha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, error.captcha['image_url'])
+
+        captcha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, error.captcha['image_url'])
         self.bot.sendPhoto(
             chat_id=self.update.message.chat_id,
-            photo=captha_url
+            photo=captcha_url
         )
 
     def handle(self, *args, **kwargs):
@@ -116,17 +118,24 @@ class AuthCaptchaIntent(BaseAuthIntent):
         return states.AUTH_STATE_PASSWORD
 
 
-class AuthOTPIntent(BaseMessageIntent):
+class AuthOTPIntent(BaseAuthIntent):
+    def before_validate(self):
+        self.set_api_authentication(self.user.token)
+
     def validate(self):
-        # validate otp
-        pass
+        try:
+            self.api.client.otp.login.post(data={
+                'password': self.update.message.text,
+            })
+            assert True
+        except HttpClientError:
+            raise ValidationError(
+                _("Wrong authentication credentials")
+            )
+
+    def handle_error(self, error):
+        self.update.message.reply_text(_("Login failed"))
 
     def handle(self, *args, **kwargs):
-        try:
-            assert True
-            self.update.message.reply_text(_('Login success'))
-            return states.STATE_END
-        except AssertionError:
-            self.update.message.reply_text(_("Login failed"))
-
-        self.update.message.reply_text(_("OTP?"))
+        self.update.message.reply_text(_('Login success'))
+        return states.STATE_END
