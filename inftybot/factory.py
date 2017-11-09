@@ -48,6 +48,7 @@ def get_intents_conf():
         {
             'cls': 'inftybot.intents.conversations.LoginConversationIntent',
         },
+        'inftybot.intents.conversations.TopicConversationIntent',
         'inftybot.intents.commands.StartCommandIntent',
         'inftybot.intents.inlines.SearchTopicsInlineIntent'
     ]

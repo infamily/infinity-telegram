@@ -141,3 +141,11 @@ class AuthOTPIntent(CaptchaMixin, BaseAuthenticatedIntent):
     def handle(self, *args, **kwargs):
         self.update.message.reply_text(_('Login success'))
         return states.STATE_END
+
+
+class TopicTitleIntent(BaseAuthenticatedIntent):
+    pass
+
+
+class TopicBodyIntent(BaseAuthenticatedIntent):
+    pass
