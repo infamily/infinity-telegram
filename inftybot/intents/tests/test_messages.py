@@ -30,13 +30,13 @@ class BaseIntentTestCase(BotMixin, APIMixin, TestCase):
         return intent
 
 
-class TestAuthIntent(messages.BaseAuthIntent):
+class TestAuthIntent(messages.BaseAuthenticatedIntent):
     """Dummy"""
     def handle(self, *args, **kwargs):
         pass
 
 
-class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
+class AuthenticatedIntentSetAuthenticationTestCase(BaseIntentTestCase):
     intent_cls = TestAuthIntent
 
     def test_call_intent_with_user_ensure_api_request_contains_token(self):
@@ -58,7 +58,7 @@ class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
         self.assertEqual(intent.api.session.headers['authorization'], 'Token token')
 
     def test_set_authentication_ensure_api_user_token_provided(self):
-        intent = messages.BaseAuthIntent(api=self.api)
+        intent = TestAuthIntent(api=self.api)
         user = User()
         user.email = 'example@email.com'
         intent.user = user

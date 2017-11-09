@@ -25,30 +25,15 @@ class BaseMessageIntent(BaseIntent):
         self.update.message.reply_text(error.message)
 
 
-class BaseAuthIntent(BaseMessageIntent):
+class BaseAuthenticatedIntent(BaseMessageIntent):
+    """Intent with Infty API authentication"""
     def _update_user_token(self):
         if self.user and self.user.token:
             self.set_api_authentication(self.user.token)
 
     def before_validate(self):
         self._update_user_token()
-        super(BaseAuthIntent, self).before_validate()
-
-    @property
-    def user(self):
-        return self.chat_data.get('user', None)
-
-    @user.setter
-    def user(self, value):
-        self.chat_data['user'] = value
-
-    @property
-    def captcha(self):
-        return self.chat_data.get('captcha', {})
-
-    @captcha.setter
-    def captcha(self, value):
-        self.chat_data['captcha'] = value
+        super(BaseAuthenticatedIntent, self).before_validate()
 
     def set_api_authentication(self, token):
         if not self.user:
@@ -58,7 +43,19 @@ class BaseAuthIntent(BaseMessageIntent):
         self.api.user = self.user
 
 
-class AuthEmailIntent(BaseAuthIntent):
+class CaptchaMixin(object):
+    @property
+    def captcha(self):
+        chat_data = getattr(self, 'chat_data', {})
+        return chat_data.get('captcha', {})
+
+    @captcha.setter
+    def captcha(self, value):
+        chat_data = getattr(self, 'chat_data', {})
+        chat_data['captcha'] = value
+
+
+class AuthEmailIntent(CaptchaMixin, BaseAuthenticatedIntent):
     def validate(self):
         parts = self.update.message.text.split('@')
 
@@ -85,7 +82,7 @@ class AuthEmailIntent(BaseAuthIntent):
         return states.AUTH_STATE_CAPTCHA
 
 
-class AuthCaptchaIntent(BaseAuthIntent):
+class AuthCaptchaIntent(CaptchaMixin, BaseAuthenticatedIntent):
     def validate(self):
         payload = {
             'email': self.user.email,
@@ -126,7 +123,7 @@ class AuthCaptchaIntent(BaseAuthIntent):
         return states.AUTH_STATE_PASSWORD
 
 
-class AuthOTPIntent(BaseAuthIntent):
+class AuthOTPIntent(CaptchaMixin, BaseAuthenticatedIntent):
     def validate(self):
         try:
             self.api.client.otp.login.post(data={

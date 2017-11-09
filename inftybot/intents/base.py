@@ -18,6 +18,14 @@ class BaseIntent(object):
         self._errors = []
 
     @property
+    def user(self):
+        return self.chat_data.get('user', None)
+
+    @user.setter
+    def user(self, value):
+        self.chat_data['user'] = value
+
+    @property
     def errors(self):
         return self._errors
 
