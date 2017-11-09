@@ -3,8 +3,8 @@ import telegram
 from telegram import Update
 
 
-def process_update(bot, update):
+def update_from_dict(bot, update_dict):
     """Makes an Update object from dict"""
-    if not isinstance(update, Update):
-        update = telegram.Update.de_json(update, bot)
-    return update
+    if not isinstance(update_dict, Update):
+        update_dict = telegram.Update.de_json(update_dict, bot)
+    return update_dict

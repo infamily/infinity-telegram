@@ -1,10 +1,17 @@
 # coding: utf-8
+import gettext
+import urllib.parse
+
+from slumber.exceptions import HttpClientError
 from telegram.ext import MessageHandler, Filters
 
+from inftybot import config
+from inftybot.intents import states
 from inftybot.intents.base import BaseIntent
-from inftybot.intents.exceptions import ValidationError
-from inftybot.intents.states import AUTH_STATE_CAPTCHA, AUTH_STATE_PASSWORD, STATE_END
+from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
 from inftybot.models import User
+
+_ = gettext.gettext
 
 
 class BaseMessageIntent(BaseIntent):
@@ -18,49 +25,122 @@ class BaseMessageIntent(BaseIntent):
         self.update.message.reply_text(error.message)
 
 
-class AuthEmailIntent(BaseMessageIntent):
+class BaseAuthIntent(BaseMessageIntent):
+    def _update_user_token(self):
+        if self.user and self.user.token:
+            self.set_api_authentication(self.user.token)
+
+    def before_validate(self):
+        self._update_user_token()
+        super(BaseAuthIntent, self).before_validate()
+
+    @property
+    def user(self):
+        return self.chat_data.get('user', None)
+
+    @user.setter
+    def user(self, value):
+        self.chat_data['user'] = value
+
+    @property
+    def captcha(self):
+        return self.chat_data.get('captcha', {})
+
+    @captcha.setter
+    def captcha(self, value):
+        self.chat_data['captcha'] = value
+
+    def set_api_authentication(self, token):
+        if not self.user:
+            raise ValueError("No user provided")
+
+        self.user.token = token
+        self.api.user = self.user
+
+
+class AuthEmailIntent(BaseAuthIntent):
     def validate(self):
-        if '@' not in self.update.message.text:
+        parts = self.update.message.text.split('@')
+
+        if len(parts) != 2:
             raise ValidationError("Please, enter valid email")
 
     def handle(self, *args, **kwargs):
         user = User()
         user.email = self.update.message.text
-        captcha = None
 
-        self.data.user = user
-        self.data.captcha = captcha
+        captcha = self.api.client.otp.signup.get()
 
-        self.update.message.reply_text('Please, solve the captcha:')
-        # self.bot.sendPhoto(
-        #     chat_id=self.update.message.chat_id,
-        #     photo=None
-        # )
-        return AUTH_STATE_CAPTCHA
+        self.user = user
+        self.captcha = captcha
+
+        self.update.message.reply_text(_('Please, solve the captcha:'))
+
+        captcha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, captcha['image_url'])
+        self.bot.sendPhoto(
+            chat_id=self.update.message.chat_id,
+            photo=captcha_url
+        )
+
+        return states.AUTH_STATE_CAPTCHA
 
 
-class AuthCaptchaIntent(BaseMessageIntent):
+class AuthCaptchaIntent(BaseAuthIntent):
     def validate(self):
-        # validate captcha
-        pass
+        payload = {
+            'email': self.user.email,
+            'captcha_0': self.captcha['key'],
+            'captcha_1': self.update.message.text,
+        }
 
-    def handle(self, *args, **kwargs):
-        user = self.data.user
-        self.update.message.reply_text("Ok. Then, enter the OTP".format(user.email))
-        return AUTH_STATE_PASSWORD
-
-
-class AuthOTPIntent(BaseMessageIntent):
-    def validate(self):
-        # validate otp
-        pass
-
-    def handle(self, *args, **kwargs):
         try:
-            assert True
-            self.update.message.reply_text('Login success')
-            return STATE_END
-        except AssertionError:
-            self.update.message.reply_text("Login failed")
+            response = self.api.client.otp.signup.post(
+                data=payload
+            )
+        except HttpClientError as e:
+            response = getattr(e, 'response')
+            response_data = response.json()
+            errors = response_data.pop('errors', '')
+            self.chat_data['captcha'] = response_data
+            raise CaptchaValidationError(
+                errors or _("Bad captcha. Please, solve again"),
+                captcha=response_data
+            )
 
-        self.update.message.reply_text("OTP?")
+        # it is not proper way
+        # to assign the state on the validation stage
+        # todo
+        self.set_api_authentication(response['token'])
+
+    def handle_error(self, error):
+        self.update.message.reply_text(_(error.message))
+
+        captcha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, error.captcha['image_url'])
+        self.bot.sendPhoto(
+            chat_id=self.update.message.chat_id,
+            photo=captcha_url
+        )
+
+    def handle(self, *args, **kwargs):
+        self.update.message.reply_text(_("Ok. Then, enter the OTP"))
+        return states.AUTH_STATE_PASSWORD
+
+
+class AuthOTPIntent(BaseAuthIntent):
+    def validate(self):
+        try:
+            self.api.client.otp.login.post(data={
+                'password': self.update.message.text,
+            })
+            assert True
+        except HttpClientError:
+            raise ValidationError(
+                _("Wrong authentication credentials")
+            )
+
+    def handle_error(self, error):
+        self.update.message.reply_text(_("Login failed"))
+
+    def handle(self, *args, **kwargs):
+        self.update.message.reply_text(_('Login success'))
+        return states.STATE_END

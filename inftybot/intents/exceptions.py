@@ -21,3 +21,9 @@ class UnauthenticatedException(IntentHandleException):
 
 class ValidationError(IntentHandleException):
     pass
+
+
+class CaptchaValidationError(ValidationError):
+    def __init__(self, *args, **kwargs):
+        self.captcha = kwargs.pop('captcha', None)
+        super(CaptchaValidationError, self).__init__(*args)

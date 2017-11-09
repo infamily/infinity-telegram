@@ -3,18 +3,25 @@ import json
 import os
 from unittest import TestCase
 
-from mock import patch
+from mock import patch, MagicMock
 from telegram import User
 
-from inftybot.api import API
 from inftybot.factory import create_bot
 
 
-def load_tg_updates():
+def load_json_file(filename):
     current_dir = os.path.dirname(__file__)
-    requests_file = '{}/tg_updates.json'.format(current_dir)
-    with open(requests_file, 'r') as fp:
+    path = '{}/{}'.format(current_dir, filename)
+    with open(path, 'r') as fp:
         return json.load(fp)
+
+
+def load_tg_updates():
+    return load_json_file('tg_updates.json')
+
+
+def load_api_responses():
+    return load_json_file('api_responses.json')
 
 
 class BotMixin(TestCase):
@@ -26,6 +33,7 @@ class BotMixin(TestCase):
         bot_info = User.de_json(self.BOT_INFO, bot)
         bot.bot = bot_info
         bot.get_me = lambda: bot_info
+        mock_bot(bot)
         return bot
 
     def setUp(self):
@@ -44,23 +52,16 @@ class MockResponse(object):
         self.headers = headers or {}
 
     def json(self):
+        if isinstance(self.content, dict):
+            return self.content
         return json.loads(self.content)
 
 
-def patch_requests(response_status_code, response_content=None):
-    response = MockResponse(response_status_code, response_content)
-    return patch('requests.sessions.Session.send', return_value=response)
+def mock_update(update):
+    update.message.reply_text = MagicMock()
+    return update
 
 
-class APIMixin(TestCase):
-    def create_api_client(self):
-        api = API(base_url='http://example.com/api/v1')
-        return api
-
-
-class AuthenticatedAPIMixin(APIMixin):
-    def create_api_client(self):
-        api = super(AuthenticatedAPIMixin, self).create_api_client()
-        api.session.api_token = 'test_token'
-        api.session.user = {}
-        return api
+def mock_bot(bot):
+    bot.sendPhoto = MagicMock()
+    return bot

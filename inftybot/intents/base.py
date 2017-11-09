@@ -1,25 +1,36 @@
 # coding: utf-8
-from werkzeug.local import Local
+import logging
 
 from inftybot.api import API
-from inftybot.intents.exceptions import IntentHandleException
+from inftybot.intents.exceptions import IntentHandleException, ValidationError
 
-
-local = Local()
+logger = logging.getLogger(__name__)
 
 
 class BaseIntent(object):
     """Base class for intent handler"""
     def __init__(self, **kwargs):
-        self.api = kwargs.get('api', API())
-        self.bot = kwargs.get('bot', None)
-        self.update = kwargs.get('update', None)
-        self.data = local
+        self.api = kwargs.pop('api', API())
+        self.bot = kwargs.pop('bot', None)
+        self.update = kwargs.pop('update', None)
+        self.chat_data = kwargs.pop('chat_data', {})
+        self.user_data = kwargs.pop('user_data', {})
+        self._errors = []
+
+    @property
+    def errors(self):
+        return self._errors
 
     def __call__(self, *args, **kwargs):
         try:
+            self.chat_data = kwargs.pop('chat_data', {})
+            self.user_data = kwargs.pop('user_data', {})
+            self.before_validate()
             self.validate()
             return self.handle(*args, **kwargs)
+        except ValidationError as e:
+            self._errors.append(e)
+            return self.handle_error(e)
         except IntentHandleException as e:
             return self.handle_error(e)
 
@@ -33,7 +44,7 @@ class BaseIntent(object):
             self = cls(**kwargs)
             self.bot = bot
             self.update = update
-            return self(*args, **callback_kwargs)
+            return self(**callback_kwargs)
 
         return handler
 
@@ -42,6 +53,9 @@ class BaseIntent(object):
         raise NotImplementedError
 
     def validate(self):
+        pass
+
+    def before_validate(self):
         pass
 
     def handle(self, *args, **kwargs):

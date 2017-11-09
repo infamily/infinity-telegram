@@ -22,6 +22,7 @@ slumber = "*"
 "bs4" = "*"
 mistune = "*"
 schematics = "*"
+blinker = "*"
 
 
 ["dev-packages"]

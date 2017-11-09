@@ -23,5 +23,5 @@ class LoginConversationIntent(BaseConversationIntent):
                 AUTH_STATE_CAPTCHA: [AuthCaptchaIntent.get_handler()],
                 AUTH_STATE_PASSWORD: [AuthOTPIntent.get_handler()],
             },
-            fallbacks=[CancelCommandIntent.get_handler()]
+            fallbacks=[CancelCommandIntent.get_handler()],
         )

@@ -104,5 +104,111 @@
         }
       ]
     }
+  },
+  "LOGIN_COMMAND": {
+    "update_id": 739983796,
+    "message": {
+      "message_id": 1064,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1509892141,
+      "text": "/login",
+      "entities": [
+        {
+          "offset": 0,
+          "length": 6,
+          "type": "bot_command"
+        }
+      ]
+    }
+  },
+  "EMAIL_MESSAGE": {
+    "update_id": 739983797,
+    "message": {
+      "message_id": 1066,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1509892207,
+      "text": "atorich@gmail.com",
+      "entities": [
+        {
+          "offset": 0,
+          "length": 17,
+          "type": "email"
+        }
+      ]
+    }
+  },
+  "CAPTCHA_MESSAGE": {
+    "update_id": 739983798,
+    "message": {
+      "message_id": 1069,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1509892287,
+      "text": "passed"
+    }
+  },
+  "OTP_MESSAGE": {
+    "update_id": 739983960,
+    "message": {
+      "message_id": 1418,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1510173849,
+      "text": "OAR6oM084Qk4"
+    }
   }
 }
