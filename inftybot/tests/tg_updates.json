@@ -211,6 +211,144 @@
       "text": "OAR6oM084Qk4"
     }
   },
-  "NEW_TOPIC": {"update_id": 739984026, "message": {"message_id": 1518, "from": {"id": 317865952, "is_bot": false, "first_name": "Kuznetsov", "last_name": "Eugene", "username": "e_kuznetsov", "language_code": "en-US"}, "chat": {"id": 317865952, "first_name": "Kuznetsov", "last_name": "Eugene", "username": "e_kuznetsov", "type": "private"}, "date": 1510503363, "text": "/newtopic", "entities": [{"offset": 0, "length": 9, "type": "bot_command"}]}},
-  "TOPIC_TYPE_NEED": {"update_id": 739984022, "callback_query": {"id": "1365223870412400152", "from": {"id": 317865952, "is_bot": false, "first_name": "Kuznetsov", "last_name": "Eugene", "username": "e_kuznetsov", "language_code": "en-US"}, "message": {"message_id": 1512, "from": {"id": 305561733, "is_bot": true, "first_name": "DummyBot", "username": "dummy_dummy_bot"}, "chat": {"id": 317865952, "first_name": "Kuznetsov", "last_name": "Eugene", "username": "e_kuznetsov", "type": "private"}, "date": 1510502375, "text": "Please, choose:"}, "chat_instance": "4419899338569566463", "data": "need"}}
+  "NEW_TOPIC": {
+    "update_id": 739984026,
+    "message": {
+      "message_id": 1518,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1510503363,
+      "text": "/newtopic",
+      "entities": [
+        {
+          "offset": 0,
+          "length": 9,
+          "type": "bot_command"
+        }
+      ]
+    }
+  },
+  "TOPIC_TYPE_NEED": {
+    "update_id": 739984022,
+    "callback_query": {
+      "id": "1365223870412400152",
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "message": {
+        "message_id": 1512,
+        "from": {
+          "id": 305561733,
+          "is_bot": true,
+          "first_name": "DummyBot",
+          "username": "dummy_dummy_bot"
+        },
+        "chat": {
+          "id": 317865952,
+          "first_name": "Kuznetsov",
+          "last_name": "Eugene",
+          "username": "e_kuznetsov",
+          "type": "private"
+        },
+        "date": 1510502375,
+        "text": "Please, choose:"
+      },
+      "chat_instance": "4419899338569566463",
+      "data": "need"
+    }
+  },
+  "TOPIC_TITLE": {
+    "update_id": 739984128,
+    "message": {
+      "message_id": 1668,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1510511546,
+      "text": "Topic title"
+    }
+  },
+  "TOPIC_BODY": {
+    "update_id": 739984128,
+    "message": {
+      "message_id": 1668,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1510511546,
+      "text": "Topic body"
+    }
+  },
+  "TOPIC_DONE": {
+    "update_id": 739984129,
+    "message": {
+      "message_id": 1672,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1510511554,
+      "text": "/done",
+      "entities": [
+        {
+          "offset": 0,
+          "length": 5,
+          "type": "bot_command"
+        }
+      ]
+    }
+  }
 }

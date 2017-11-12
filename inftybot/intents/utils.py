@@ -10,3 +10,13 @@ def render_topic(topic):
         type=constants.TOPIC_TYPE_CHOICES.get(topic.type),
         topic=topic,
     )
+
+
+def render_model_errors(error):
+    message_list = []
+    for field, messages in error.messages.items():
+        for message in messages:
+            message_list.append(
+                "{}: {}".format(field, message)
+            )
+    return "\n".join(message_list)

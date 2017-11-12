@@ -10,9 +10,10 @@ class Model(BaseModel):
 
 
 class Topic(Model):
+    pk = IntType(required=False)
     type = IntType(required=True)
-    title = StringType(required=True)
-    body = StringType(required=True)
+    title = StringType(required=True, min_length=1)
+    body = StringType(required=True, min_length=1)
     url = URLType(required=False)
     parents = ListType(IntType, required=False)
 

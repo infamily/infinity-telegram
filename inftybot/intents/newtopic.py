@@ -1,13 +1,16 @@
 # coding: utf-8
 import gettext
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler
 
 from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
-    CancelCommandIntent
+    CancelCommandIntent, BaseIntent
+from schematics.exceptions import DataError
 from inftybot.intents.exceptions import ValidationError
+from inftybot.intents.utils import render_topic, render_model_errors
+from inftybot.models import Topic
 
 _ = gettext.gettext
 
@@ -40,13 +43,37 @@ class TopicCreateCommandIntent(BaseCommandIntent):
         return states.TOPIC_STATE_TYPE
 
 
-class TopicDoneCommandIntent(BaseCommandIntent):
+class NewTopicMixin(BaseIntent):
+    """Mixin adds new topic model to the chat data if necessary"""
+    def before_validate(self):
+        self.chat_data.setdefault('topic', Topic())
+        super(NewTopicMixin, self).before_handle()
+
+
+class TopicDoneCommandIntent(NewTopicMixin, BaseCommandIntent):
     """Sends created topic to the Infty API, resets topic creation context"""
     @classmethod
     def get_handler(cls):
         return CommandHandler("done", cls.as_callback(), pass_chat_data=True)
 
+    def validate(self):
+        topic = self.chat_data['topic']
+
+        try:
+            topic.validate()
+        except DataError as e:
+            errors = render_model_errors(e)
+            raise ValidationError(errors)
+
+    def handle_error(self, error):
+        self.update.message.reply_text(_("Please, check this:"))
+        self.update.message.reply_text(error.message)
+
     def handle(self, *args, **kwargs):
+        topic = self.chat_data['topic']
+
+        rv = self.api.client.topics.post(data=topic.to_native())
+
         # todo
         # handle creation
         # handle editing
@@ -57,19 +84,49 @@ class TopicDoneCommandIntent(BaseCommandIntent):
         return states.STATE_END
 
 
-class TopicTypeIntent(BaseCallbackIntent):
+class TopicTypeIntent(NewTopicMixin, BaseCallbackIntent):
     def handle(self, *args, **kwargs):
-        pass
+        topic = self.chat_data['topic']
+        topic.type = int(self.update.callback_query.data)
+        self.chat_data['topic'] = topic
+        self.bot.sendMessage(
+            chat_id=self.update.callback_query.message.chat_id,
+            text=_("Well! Please, tell me the topic title"),
+        )
+        return states.TOPIC_STATE_TITLE
 
 
-class TopicTitleIntent(BaseMessageIntent):
+class TopicTitleIntent(NewTopicMixin, BaseMessageIntent):
     def handle(self, *args, **kwargs):
-        pass
+        topic = self.chat_data['topic']
+        topic.title = self.update.message.text
+        self.chat_data['topic'] = topic
+        self.update.message.reply_text(
+            _("Ok! Please, input the topic body")
+        )
+        return states.TOPIC_STATE_BODY
 
 
-class TopicBodyIntent(BaseMessageIntent):
+class TopicBodyIntent(NewTopicMixin, BaseMessageIntent):
     def handle(self, *args, **kwargs):
-        pass
+        topic = self.chat_data['topic']
+        topic.body = self.update.message.text
+        self.chat_data['topic'] = topic
+
+        self.update.message.reply_text(
+            _("Good! Please, check:")
+        )
+
+        confirmation = render_topic(topic)
+        self.update.message.reply_text(
+            confirmation,
+            parse_mode=ParseMode.MARKDOWN,
+        )
+
+        self.update.message.reply_text(
+            _("If it seems ok, please enter /done command, "
+              "either enter /edit command")
+        )
 
 
 class TopicConversationIntent(BaseConversationIntent):
