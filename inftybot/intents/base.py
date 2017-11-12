@@ -35,15 +35,20 @@ class BaseIntent(object):
         return self._errors
 
     def __call__(self, *args, **kwargs):
+        self.chat_data = kwargs.pop('chat_data', {})
+        self.user_data = kwargs.pop('user_data', {})
+        self.before_validate()
+
         try:
-            self.chat_data = kwargs.pop('chat_data', {})
-            self.user_data = kwargs.pop('user_data', {})
-            self.before_validate()
             self.validate()
-            return self.handle(*args, **kwargs)
         except ValidationError as e:
             self._errors.append(e)
             return self.handle_error(e)
+
+        self.before_handle()
+
+        try:
+            return self.handle(*args, **kwargs)
         except IntentHandleException as e:
             return self.handle_error(e)
 
@@ -69,6 +74,9 @@ class BaseIntent(object):
         pass
 
     def before_validate(self):
+        pass
+
+    def before_handle(self):
         pass
 
     def handle(self, *args, **kwargs):
