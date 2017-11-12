@@ -15,7 +15,7 @@ class Topic(Model):
     title = StringType(required=True, min_length=1)
     body = StringType(required=True, min_length=1)
     url = URLType(required=False)
-    parents = ListType(IntType, required=False)
+    parents = ListType(IntType, required=True, default=[])
 
 
 class User(Model):

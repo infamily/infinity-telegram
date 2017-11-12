@@ -6,7 +6,9 @@
   "SIGNUP_SUCCESS": {
     "token": "6353a59259e1ea178b521c376538a79a1b8745fa"
   },
-  "OTP_403": {
+  "403": {
     "details": "Authentication credentials were not provided."
-  }
+  },
+  "TOPICS_POST_400": {},
+  "TOPICS_POST_200": {}
 }

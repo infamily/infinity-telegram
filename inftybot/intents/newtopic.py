@@ -1,15 +1,16 @@
 # coding: utf-8
 import gettext
 
+from slumber.exceptions import HttpClientError, HttpServerError
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler
 
 from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
-    CancelCommandIntent, BaseIntent
+    CancelCommandIntent, BaseIntent, AuthenticatedMixin
 from schematics.exceptions import DataError
-from inftybot.intents.exceptions import ValidationError
-from inftybot.intents.utils import render_topic, render_model_errors
+from inftybot.intents.exceptions import ValidationError, APIResourceError
+from inftybot.intents.utils import render_topic, render_model_errors, render_error_list
 from inftybot.models import Topic
 
 _ = gettext.gettext
@@ -43,14 +44,14 @@ class TopicCreateCommandIntent(BaseCommandIntent):
         return states.TOPIC_STATE_TYPE
 
 
-class NewTopicMixin(BaseIntent):
+class NewTopicIntent(AuthenticatedMixin, BaseIntent):
     """Mixin adds new topic model to the chat data if necessary"""
     def before_validate(self):
         self.chat_data.setdefault('topic', Topic())
-        super(NewTopicMixin, self).before_handle()
+        super(NewTopicIntent, self).before_validate()
 
 
-class TopicDoneCommandIntent(NewTopicMixin, BaseCommandIntent):
+class TopicDoneCommandIntent(NewTopicIntent, BaseCommandIntent):
     """Sends created topic to the Infty API, resets topic creation context"""
     @classmethod
     def get_handler(cls):
@@ -72,19 +73,19 @@ class TopicDoneCommandIntent(NewTopicMixin, BaseCommandIntent):
     def handle(self, *args, **kwargs):
         topic = self.chat_data['topic']
 
-        rv = self.api.client.topics.post(data=topic.to_native())
+        try:
+            rv = self.api.client.topics.post(data=topic.to_native())
+        except (HttpClientError, HttpServerError):
+            # intercept 4xx and 5xx both
+            raise APIResourceError('Internal error')
 
-        # todo
-        # handle creation
-        # handle editing
-        # handle remove ?
         self.update.message.reply_text(
-            _("Done")
+            _("Done. Your topic: {}".format(rv.get('url')))
         )
         return states.STATE_END
 
 
-class TopicTypeIntent(NewTopicMixin, BaseCallbackIntent):
+class TopicTypeIntent(NewTopicIntent, BaseCallbackIntent):
     def handle(self, *args, **kwargs):
         topic = self.chat_data['topic']
         topic.type = int(self.update.callback_query.data)
@@ -96,7 +97,7 @@ class TopicTypeIntent(NewTopicMixin, BaseCallbackIntent):
         return states.TOPIC_STATE_TITLE
 
 
-class TopicTitleIntent(NewTopicMixin, BaseMessageIntent):
+class TopicTitleIntent(NewTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.chat_data['topic']
         topic.title = self.update.message.text
@@ -107,7 +108,7 @@ class TopicTitleIntent(NewTopicMixin, BaseMessageIntent):
         return states.TOPIC_STATE_BODY
 
 
-class TopicBodyIntent(NewTopicMixin, BaseMessageIntent):
+class TopicBodyIntent(NewTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.chat_data['topic']
         topic.body = self.update.message.text
