@@ -126,7 +126,7 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
 class AuthOTPIntent(BaseIntentTestCase):
     intent_cls = inftybot.intents.login.AuthOTPIntent
 
-    @patch_api_request(403, api_responses['OTP_403'])
+    @patch_api_request(403, api_responses['403'])
     def test_api_403_error_raises(self, api_response):
         update = updates['OTP_MESSAGE']
 
@@ -140,7 +140,7 @@ class AuthOTPIntent(BaseIntentTestCase):
         with self.assertRaises(ValidationError):
             intent.validate()
 
-    @patch_api_request(403, api_responses['OTP_403'])
+    @patch_api_request(403, api_responses['403'])
     def test_api_403_returns_no_state(self, api_response):
         update = updates['OTP_MESSAGE']
 
