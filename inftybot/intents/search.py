@@ -8,6 +8,8 @@ from telegram.ext import InlineQueryHandler
 from inftybot import config
 from inftybot.intents import constants
 from inftybot.intents.base import BaseInlineQuery
+from inftybot.intents.utils import render_topic
+from inftybot.models import Topic
 
 
 class SearchTopicsInlineIntent(BaseInlineQuery):
@@ -39,21 +41,16 @@ class SearchTopicsInlineIntent(BaseInlineQuery):
         self.update.inline_query.answer(results, cache_time=config.INLINE_QUERY_CACHE_TIME)
 
 
-def format_message_text(result):
-    template = "`{type}:` *{title}*\n\n{body}\n\n*URL:* {url}\n" \
-               "_Reply to this message to post a comment on Infinity._"
-
-    return template.format(
-        type=constants.TOPIC_TYPE_CHOICES.get(result.get('type')),
-        title=result.get('title'),
-        body=result.get('body'),
-        url=result.get('url')
-    )
-
-
 def process_result(result):
     description = result.get('body', '')[:config.SEARCH_PREVIEW_LENGTH]
-    message_text = format_message_text(result)
+
+    topic = Topic()
+    topic.type = result.get('type')
+    topic.title = result.get('title')
+    topic.body = result.get('body')
+    topic.url = result.get('url')
+
+    message_text = render_topic(topic)
 
     return telegram.InlineQueryResultArticle(
         id=uuid4(),
