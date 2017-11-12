@@ -3,44 +3,16 @@ import gettext
 import urllib.parse
 
 from slumber.exceptions import HttpClientError
-from telegram.ext import MessageHandler, Filters
+from telegram.ext import CommandHandler, ConversationHandler
 
 from inftybot import config
 from inftybot.intents import states
-from inftybot.intents.base import BaseIntent
+from inftybot.intents.base import AuthenticatedMixin, BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, \
+    BaseMessageIntent
 from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
 from inftybot.models import User
 
 _ = gettext.gettext
-
-
-class BaseMessageIntent(BaseIntent):
-    @classmethod
-    def get_handler(cls):
-        return MessageHandler(
-            Filters.text, cls.as_callback(), pass_chat_data=True
-        )
-
-    def handle_error(self, error):
-        self.update.message.reply_text(error.message)
-
-
-class BaseAuthenticatedIntent(BaseMessageIntent):
-    """Intent with Infty API authentication"""
-    def _update_user_token(self):
-        if self.user and self.user.token:
-            self.set_api_authentication(self.user.token)
-
-    def before_validate(self):
-        self._update_user_token()
-        super(BaseAuthenticatedIntent, self).before_validate()
-
-    def set_api_authentication(self, token):
-        if not self.user:
-            raise ValueError("No user provided")
-
-        self.user.token = token
-        self.api.user = self.user
 
 
 class CaptchaMixin(object):
@@ -55,7 +27,7 @@ class CaptchaMixin(object):
         chat_data['captcha'] = value
 
 
-class AuthEmailIntent(CaptchaMixin, BaseAuthenticatedIntent):
+class AuthEmailIntent(CaptchaMixin, AuthenticatedMixin, BaseMessageIntent):
     def validate(self):
         parts = self.update.message.text.split('@')
 
@@ -82,7 +54,7 @@ class AuthEmailIntent(CaptchaMixin, BaseAuthenticatedIntent):
         return states.AUTH_STATE_CAPTCHA
 
 
-class AuthCaptchaIntent(CaptchaMixin, BaseAuthenticatedIntent):
+class AuthCaptchaIntent(CaptchaMixin, AuthenticatedMixin, BaseMessageIntent):
     def validate(self):
         payload = {
             'email': self.user.email,
@@ -123,7 +95,7 @@ class AuthCaptchaIntent(CaptchaMixin, BaseAuthenticatedIntent):
         return states.AUTH_STATE_PASSWORD
 
 
-class AuthOTPIntent(CaptchaMixin, BaseAuthenticatedIntent):
+class AuthOTPIntent(CaptchaMixin, AuthenticatedMixin, BaseMessageIntent):
     def validate(self):
         try:
             self.api.client.otp.login.post(data={
@@ -143,9 +115,25 @@ class AuthOTPIntent(CaptchaMixin, BaseAuthenticatedIntent):
         return states.STATE_END
 
 
-class TopicTitleIntent(BaseAuthenticatedIntent):
-    pass
+class LoginCommandIntent(BaseCommandIntent):
+    @classmethod
+    def get_handler(cls):
+        return CommandHandler("login", cls.as_callback(), pass_chat_data=True)
+
+    def handle(self, *args, **kwargs):
+        self.update.message.reply_text(_("What's your email?"))
+        return states.AUTH_STATE_EMAIL
 
 
-class TopicBodyIntent(BaseAuthenticatedIntent):
-    pass
+class LoginConversationIntent(BaseConversationIntent):
+    @classmethod
+    def get_handler(cls):
+        return ConversationHandler(
+            entry_points=[LoginCommandIntent.get_handler()],
+            states={
+                states.AUTH_STATE_EMAIL: [AuthEmailIntent.get_handler()],
+                states.AUTH_STATE_CAPTCHA: [AuthCaptchaIntent.get_handler()],
+                states.AUTH_STATE_PASSWORD: [AuthOTPIntent.get_handler()],
+            },
+            fallbacks=[CancelCommandIntent.get_handler()],
+        )

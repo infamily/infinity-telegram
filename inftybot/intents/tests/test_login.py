@@ -1,8 +1,10 @@
 # coding: utf-8
 from unittest import TestCase, skip
 
+import inftybot.intents.base
+import inftybot.intents.login
 from inftybot.api.tests.base import patch_api_request
-from inftybot.intents import messages, states, conversations
+from inftybot.intents import states
 from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
 from inftybot.intents.tests.base import BaseIntentTestCase
 from inftybot.models import User
@@ -13,7 +15,7 @@ updates = load_tg_updates()
 api_responses = load_api_responses()
 
 
-class TestAuthIntent(messages.BaseAuthenticatedIntent):
+class TestAuthIntent(inftybot.intents.base.AuthenticatedMixin):
     """Dummy"""
     def handle(self, *args, **kwargs):
         pass
@@ -52,7 +54,7 @@ class AuthenticatedIntentSetAuthenticationTestCase(BaseIntentTestCase):
 
 
 class TestAuthEMailIntent(BaseIntentTestCase):
-    intent_cls = messages.AuthEmailIntent
+    intent_cls = inftybot.intents.login.AuthEmailIntent
 
     def test_validate_email_valid_passes(self):
         update = updates['EMAIL_MESSAGE']
@@ -82,7 +84,7 @@ class TestAuthEMailIntent(BaseIntentTestCase):
 
 
 class TestAuthCaptchaIntent(BaseIntentTestCase):
-    intent_cls = messages.AuthCaptchaIntent
+    intent_cls = inftybot.intents.login.AuthCaptchaIntent
 
     @patch_api_request(200, api_responses['SIGNUP_SUCCESS'])
     def test_valid_captcha_returns_auth_state_password(self, api_response):
@@ -122,7 +124,7 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
 
 
 class AuthOTPIntent(BaseIntentTestCase):
-    intent_cls = messages.AuthOTPIntent
+    intent_cls = inftybot.intents.login.AuthOTPIntent
 
     @patch_api_request(403, api_responses['OTP_403'])
     def test_api_403_error_raises(self, api_response):
@@ -188,7 +190,7 @@ class LoginChainTestCase(BotMixin, TestCase):
 
         update = updates['LOGIN_COMMAND']
         intent = self.create_intent(
-            conversations.LoginConversationIntent,
+            inftybot.intents.login.LoginConversationIntent,
             update=update
         )
 
@@ -196,7 +198,7 @@ class LoginChainTestCase(BotMixin, TestCase):
 
         update = updates['EMAIL_MESSAGE']
         intent = self.create_intent(
-            messages.AuthEmailIntent,
+            inftybot.intents.login.AuthEmailIntent,
             update=update
         )
 
@@ -206,7 +208,7 @@ class LoginChainTestCase(BotMixin, TestCase):
 
         update = updates['CAPTCHA_MESSAGE']
         intent = self.create_intent(
-            messages.AuthCaptchaIntent,
+            inftybot.intents.login.AuthCaptchaIntent,
             update=update
         )
 
@@ -219,7 +221,7 @@ class LoginChainTestCase(BotMixin, TestCase):
 
         update = updates['OTP_MESSAGE']
         intent = self.create_intent(
-            messages.AuthOTPIntent,
+            inftybot.intents.login.AuthOTPIntent,
             update=update,
         )
 

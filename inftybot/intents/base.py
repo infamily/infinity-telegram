@@ -1,10 +1,15 @@
 # coding: utf-8
+import gettext
 import logging
 
+from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackQueryHandler
+
 from inftybot.api import API
+from inftybot.intents import states
 from inftybot.intents.exceptions import IntentHandleException, ValidationError
 
 logger = logging.getLogger(__name__)
+_ = gettext.gettext
 
 
 class BaseIntent(object):
@@ -46,7 +51,7 @@ class BaseIntent(object):
     def as_callback(cls, **init_kwargs):
         """Hello, django as_view()"""
 
-        def handler(bot, update, *args, **callback_kwargs):
+        def handler(bot, update, **callback_kwargs):
             kwargs = {'bot': bot, 'update': update}
             kwargs.update(init_kwargs)
             self = cls(**kwargs)
@@ -75,3 +80,135 @@ class BaseIntent(object):
 
     def handle_error(self, error):
         pass
+
+
+class BaseInlineQuery(BaseIntent):
+    def handle(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @classmethod
+    def get_handler(cls):
+        raise NotImplementedError
+
+    def __init__(self, **kwargs):
+        super(BaseInlineQuery, self).__init__(**kwargs)
+        lang, query = self.parse_query()
+        self.lang = lang
+        self.query = query
+
+    def handle_error(self, error):
+        raise NotImplementedError
+
+    def parse_query(self):
+        """
+        Parse ```update.inline_query.query``` for lang and query parts
+        :return:
+        """
+        return parse_query(self.update.inline_query.query)
+
+
+def parse_query(query):
+    """
+    Parse inline query for lang and query parts
+    :return:
+    """
+    try:
+        lang, query = query.split(':', 1)
+    except ValueError:
+        lang = None
+
+    return lang, query
+
+
+class BaseMessageIntent(BaseIntent):
+    def handle(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @classmethod
+    def get_handler(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def get_handler(cls):
+        return MessageHandler(
+            Filters.text, cls.as_callback(), pass_chat_data=True
+        )
+
+    def handle_error(self, error):
+        self.update.message.reply_text(error.message)
+
+
+class BaseCommandIntent(BaseIntent):
+    def handle(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @classmethod
+    def get_handler(cls):
+        raise NotImplementedError
+
+    def handle_error(self, error):
+        self.update.message.reply_text(error.message)
+
+
+class BaseCallbackIntent(BaseIntent):
+    """Base intent class for callback query (buttons, etc.)"""
+    def handle(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @classmethod
+    def get_handler(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def get_handler(cls):
+        return CallbackQueryHandler(
+            cls.as_callback(), pass_chat_data=True
+        )
+
+    def handle_error(self, error):
+        self.update.message.reply_text(error.message)
+
+
+class BaseConversationIntent(BaseIntent):
+    @classmethod
+    def get_handler(cls):
+        raise NotImplementedError
+
+    def handle(self, *args, **kwargs):
+        """No direct handling assumed"""
+        pass
+
+
+class CancelCommandIntent(BaseCommandIntent):
+    @classmethod
+    def get_handler(cls):
+        return CommandHandler("cancel", cls.as_callback(), pass_chat_data=True)
+
+    def handle(self, *args, **kwargs):
+        self.update.message.reply_text(_("Canceled"))
+        return states.STATE_END
+
+
+class AuthenticatedMixin(BaseIntent):
+    """Intent with Infty API authentication"""
+    def handle(self, *args, **kwargs):
+        return super(AuthenticatedMixin, self).handle()
+
+    @classmethod
+    def get_handler(cls):
+        return super(AuthenticatedMixin, cls).get_handler()
+
+    def _update_user_token(self):
+        if self.user and self.user.token:
+            self.set_api_authentication(self.user.token)
+
+    def before_validate(self):
+        self._update_user_token()
+        super(AuthenticatedMixin, self).before_validate()
+
+    def set_api_authentication(self, token):
+        if not self.user:
+            raise ValueError("No user provided")
+
+        self.user.token = token
+        self.api.user = self.user
