@@ -12,11 +12,17 @@ def render_topic(topic):
     )
 
 
-def render_model_errors(error):
+def render_error_list(errors):
     message_list = []
-    for field, messages in error.messages.items():
+
+    for field, messages in errors:
         for message in messages:
             message_list.append(
                 "{}: {}".format(field, message)
             )
-    return "\n".join(message_list)
+
+    return message_list
+
+
+def render_model_errors(error):
+    return render_error_list(error.messages.items())
