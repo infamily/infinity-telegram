@@ -166,7 +166,10 @@ class BaseCallbackIntent(BaseIntent):
         )
 
     def handle_error(self, error):
-        self.update.message.reply_text(error.message)
+        self.bot.sendMessage(
+            chat_id=self.update.callback_query.message.chat_id,
+            text=error.message,
+        )
 
 
 class BaseConversationIntent(BaseIntent):

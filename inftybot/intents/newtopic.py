@@ -7,6 +7,7 @@ from telegram.ext import CommandHandler, ConversationHandler
 from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
     CancelCommandIntent
+from inftybot.intents.exceptions import ValidationError
 
 _ = gettext.gettext
 
