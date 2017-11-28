@@ -16,6 +16,8 @@ TOPIC_TYPE_CHOICES = {
     TOPIC_TYPE_TASK: 'Task'
 }
 
+TOPIC_EDIT_NEW = 'new'
+TOPIC_EDIT_EXISTED = 'existed'
 
 TOPIC_PART_TYPE = 'type'
 TOPIC_PART_TITLE = 'title'
