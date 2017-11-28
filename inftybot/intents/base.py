@@ -21,6 +21,7 @@ class BaseIntent(object):
         self.chat_data = kwargs.pop('chat_data', {})
         self.user_data = kwargs.pop('user_data', {})
         self._errors = []
+        self.instantiate()
 
     @property
     def user(self):
@@ -74,10 +75,15 @@ class BaseIntent(object):
     def get_handler(cls):
         raise NotImplementedError
 
+    def instantiate(self):
+        """Setup method"""
+        pass
+
     def validate(self):
         pass
 
     def before_validate(self):
+        # todo change before_validate to instantiate
         pass
 
     def before_handle(self):
@@ -218,10 +224,10 @@ class AuthenticatedMixin(AuthenticationMixin):
     """
     def _update_user_token(self):
         if not self.user:
-            raise AuthenticationError("No user provided. Please, report it.")
+            raise AuthenticationError("Please, /login first")
 
         if not self.user.token:
-            raise AuthenticationError("No user token provided. Please, report it.")
+            raise AuthenticationError("Please, /login first")
 
         self.set_api_authentication(self.user.token)
 
