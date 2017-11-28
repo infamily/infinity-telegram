@@ -8,7 +8,7 @@ from telegram.ext import CommandHandler, ConversationHandler
 from inftybot import config
 from inftybot.intents import states
 from inftybot.intents.base import AuthenticatedMixin, BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, \
-    BaseMessageIntent
+    BaseMessageIntent, AuthenticationMixin
 from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
 from inftybot.models import User
 
@@ -27,7 +27,7 @@ class CaptchaMixin(object):
         chat_data['captcha'] = value
 
 
-class AuthEmailIntent(CaptchaMixin, AuthenticatedMixin, BaseMessageIntent):
+class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
     def validate(self):
         parts = self.update.message.text.split('@')
 
@@ -54,7 +54,7 @@ class AuthEmailIntent(CaptchaMixin, AuthenticatedMixin, BaseMessageIntent):
         return states.AUTH_STATE_CAPTCHA
 
 
-class AuthCaptchaIntent(CaptchaMixin, AuthenticatedMixin, BaseMessageIntent):
+class AuthCaptchaIntent(CaptchaMixin, AuthenticationMixin, BaseMessageIntent):
     def validate(self):
         payload = {
             'email': self.user.email,
