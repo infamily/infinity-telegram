@@ -29,5 +29,9 @@ class CaptchaValidationError(ValidationError):
         super(CaptchaValidationError, self).__init__(*args)
 
 
+class AuthenticationError(IntentHandleException):
+    pass
+
+
 class APIResourceError(IntentHandleException):
     pass
