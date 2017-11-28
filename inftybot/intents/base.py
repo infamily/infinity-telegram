@@ -6,7 +6,7 @@ from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackQueryH
 
 from inftybot.api import API
 from inftybot.intents import states
-from inftybot.intents.exceptions import IntentHandleException, ValidationError
+from inftybot.intents.exceptions import IntentHandleException, ValidationError, AuthenticationError
 
 logger = logging.getLogger(__name__)
 _ = gettext.gettext
@@ -37,7 +37,11 @@ class BaseIntent(object):
     def __call__(self, *args, **kwargs):
         self.chat_data = kwargs.pop('chat_data', {})
         self.user_data = kwargs.pop('user_data', {})
-        self.before_validate()
+
+        try:
+            self.before_validate()
+        except IntentHandleException as e:
+            return self.handle_error(e)
 
         try:
             self.validate()
@@ -200,26 +204,27 @@ class CancelCommandIntent(BaseCommandIntent):
         return states.STATE_END
 
 
-class AuthenticatedMixin(BaseIntent):
-    """Intent with Infty API authentication"""
-    def handle(self, *args, **kwargs):
-        return super(AuthenticatedMixin, self).handle()
-
-    @classmethod
-    def get_handler(cls):
-        return super(AuthenticatedMixin, cls).get_handler()
-
-    def _update_user_token(self):
-        if self.user and self.user.token:
-            self.set_api_authentication(self.user.token)
-
-    def before_validate(self):
-        self._update_user_token()
-        super(AuthenticatedMixin, self).before_validate()
-
+class AuthenticationMixin(BaseIntent):
+    """Adds set_api_authentication method"""
     def set_api_authentication(self, token):
-        if not self.user:
-            raise ValueError("No user provided")
-
         self.user.token = token
         self.api.user = self.user
+
+
+class AuthenticatedMixin(AuthenticationMixin):
+    """
+    Intent with Infty API authentication
+    Checks current user and its token
+    """
+    def _update_user_token(self):
+        if not self.user:
+            raise AuthenticationError("No user provided. Please, report it.")
+
+        if not self.user.token:
+            raise AuthenticationError("No user token provided. Please, report it.")
+
+        self.set_api_authentication(self.user.token)
+
+    def before_validate(self):
+        super(AuthenticatedMixin, self).before_validate()
+        self._update_user_token()
