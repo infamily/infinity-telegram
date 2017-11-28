@@ -8,7 +8,7 @@ from inftybot.api import API
 from inftybot.api.tests.base import patch_api_request
 from inftybot.intents.constants import TOPIC_TYPE_NEED
 from inftybot.intents.exceptions import ValidationError
-from inftybot.intents.newtopic import TopicDoneCommandIntent
+from inftybot.intents.basetopic import TopicDoneCommandIntent
 from inftybot.intents.tests.base import BaseIntentTestCase
 from inftybot.models import Topic, User
 from inftybot.tests.base import load_tg_updates, load_api_responses, BotMixin

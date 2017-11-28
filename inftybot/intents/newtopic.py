@@ -1,43 +1,27 @@
 # coding: utf-8
 import gettext
 
-from slumber.exceptions import HttpClientError, HttpServerError
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler
 
-from inftybot.intents import constants, states
+from inftybot.intents import states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
     CancelCommandIntent, BaseIntent, AuthenticatedMixin
-from schematics.exceptions import DataError
-from inftybot.intents.exceptions import ValidationError, APIResourceError
-from inftybot.intents.utils import render_topic, render_model_errors, render_error_list
+from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent
+from inftybot.intents.utils import render_topic
 from inftybot.models import Topic
 
 _ = gettext.gettext
 
 
-class TopicCreateCommandIntent(BaseCommandIntent):
+class TopicCreateCommandIntent(AuthenticatedMixin, BaseCommandIntent):
     """Enters topic creation context"""
     @classmethod
     def get_handler(cls):
         return CommandHandler("newtopic", cls.as_callback(), pass_chat_data=True)
 
-    def get_keyboard(self):
-        return [
-            [
-                InlineKeyboardButton("Need", callback_data=constants.TOPIC_TYPE_NEED),
-                InlineKeyboardButton("Goal", callback_data=constants.TOPIC_TYPE_GOAL),
-                InlineKeyboardButton("Idea", callback_data=constants.TOPIC_TYPE_IDEA)
-            ],
-            [
-                InlineKeyboardButton("Plan", callback_data=constants.TOPIC_TYPE_PLAN),
-                InlineKeyboardButton("Step", callback_data=constants.TOPIC_TYPE_STEP),
-                InlineKeyboardButton("Task", callback_data=constants.TOPIC_TYPE_TASK)
-            ]
-        ]
-
     def handle(self, *args, **kwargs):
-        keyboard = self.get_keyboard()
+        keyboard = CHOOSE_TYPE_KEYBOARD
         self.update.message.reply_text(
             _("Please, choose:"), reply_markup=InlineKeyboardMarkup(keyboard)
         )
@@ -47,42 +31,8 @@ class TopicCreateCommandIntent(BaseCommandIntent):
 class NewTopicIntent(AuthenticatedMixin, BaseIntent):
     """Mixin adds new topic model to the chat data if necessary"""
     def before_validate(self):
-        self.chat_data.setdefault('topic', Topic())
         super(NewTopicIntent, self).before_validate()
-
-
-class TopicDoneCommandIntent(NewTopicIntent, BaseCommandIntent):
-    """Sends created topic to the Infty API, resets topic creation context"""
-    @classmethod
-    def get_handler(cls):
-        return CommandHandler("done", cls.as_callback(), pass_chat_data=True)
-
-    def validate(self):
-        topic = self.chat_data['topic']
-
-        try:
-            topic.validate()
-        except DataError as e:
-            errors = render_model_errors(e)
-            raise ValidationError(errors)
-
-    def handle_error(self, error):
-        self.update.message.reply_text(_("Please, check this:"))
-        self.update.message.reply_text(error.message)
-
-    def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
-
-        try:
-            rv = self.api.client.topics.post(data=topic.to_native())
-        except (HttpClientError, HttpServerError):
-            # intercept 4xx and 5xx both
-            raise APIResourceError('Internal error')
-
-        self.update.message.reply_text(
-            _("Done. Your topic: {}".format(rv.get('url')))
-        )
-        return states.STATE_END
+        self.chat_data.setdefault('topic', Topic())
 
 
 class TopicTypeIntent(NewTopicIntent, BaseCallbackIntent):
