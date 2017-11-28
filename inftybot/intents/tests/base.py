@@ -2,8 +2,17 @@
 from unittest import TestCase
 
 from inftybot.api.tests.base import APIMixin
+from inftybot.models import User
 from inftybot.tests.base import BotMixin, mock_update
 from inftybot.utils import update_from_dict
+
+
+class UserMixin(TestCase):
+    def setUp(self):
+        super(UserMixin, self).setUp()
+        self.user = User()
+        self.user.email = 'email@example.com'
+        self.user.token = 'test_token'
 
 
 class BaseIntentTestCase(BotMixin, APIMixin, TestCase):
