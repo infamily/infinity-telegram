@@ -10,8 +10,6 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin
 from inftybot.intents.exceptions import ValidationError, APIResourceError
 from inftybot.intents.utils import render_model_errors
-from inftybot.models import Topic
-
 
 _ = gettext.gettext
 
@@ -31,21 +29,13 @@ CHOOSE_TYPE_KEYBOARD = [
 
 
 class BaseTopicIntent(BaseIntent):
-    def before_validate(self):
-        # todo load topic from db or from memory (new topic)
-        # self.chat_data.setdefault('topic', Topic())
-        # super(EditTopicIntent, self).before_validate()
-        topic = Topic()
+    @property
+    def topic(self):
+        return self.chat_data.get('topic', None)
 
-        topic.title = 'title'
-        topic.body = 'body'
-        topic.type = constants.TOPIC_TYPE_TASK
-
-        self.chat_data.setdefault('topic', topic)
-
-    def validate(self):
-        if 'topic' not in self.chat_data:
-            raise ValidationError(_("Sorry, I've missed the essence :( Please, report it"))
+    @topic.setter
+    def topic(self, value):
+        self.chat_data['topic'] = value
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
