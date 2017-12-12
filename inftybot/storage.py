@@ -86,6 +86,11 @@ class StorageData(object):
     def get(self, item, default=None):
         return self._data.get(item, default)
 
+    def update(self, mapping):
+        """Updates the data and marks object is_changed=True"""
+        self.is_changed = True
+        return self._data.update(mapping)
+
     def store(self, force=False):
         """Handle data saving (when is_changed or forced)"""
         if self.is_changed or force:
