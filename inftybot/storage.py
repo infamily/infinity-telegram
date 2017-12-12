@@ -2,6 +2,8 @@
 import boto3
 from werkzeug.utils import import_string
 
+from inftybot.intents.signals import handle_success
+
 storage_registry = []
 
 
@@ -46,11 +48,20 @@ def drop_tables(registry):
         storage_cls().delete_table()
 
 
+@handle_success.connect
+def store_data(sender, **kwargs):
+    """Stores user & chat data on the intent handle success"""
+    if isinstance(sender.user_data, StorageData):
+        sender.user_data.store()
+
+    if isinstance(sender.chat_data, StorageData):
+        sender.chat_data.store()
+
+
 class StorageData(object):
     """
-    Object that behaves like a dict but it is possible to trigger update data in the DynamoDB the following methods:
+    Object that behaves like a dict, but possible to trigger update data in the DynamoDB by the following methods:
         * call store() directly
-        * on the object's native __del__ stage
     """
     def __init__(self, storage, key, data=None):
         self._storage = storage
@@ -74,10 +85,6 @@ class StorageData(object):
     def __iter__(self):
         """Needed to dict() casting"""
         return iter(self._data.items())
-
-    def __del__(self):
-        """Every deletion it will trigger store() method"""
-        self.store()
 
     def __bool__(self):
         """Check that there is no data"""
