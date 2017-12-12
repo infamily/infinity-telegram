@@ -21,6 +21,7 @@ TESTING = False
 
 EXTENSIONS = [
     'apps.telegram_bot.base.TelegramBot',
+    'inftybot.contrib.flask.base.Inftybot',
 ]
 
 
@@ -34,6 +35,7 @@ TELEGRAM_BOT_FACTORY_PARAMS = env('TELEGRAM_BOT_FACTORY_PARAMS', {
 
 TELEGRAM_BOT_DISPATCHER_FACTORY = env('TELEGRAM_BOT_DISPATCHER_FACTORY', 'inftybot.factory.create_dispatcher')
 TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS = env('TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS', {
+    'class': 'inftybot.dispatcher.DynamoDispatcher',
     'workers': 1,  # because AWS Lambda is stateless
 })
 
