@@ -1,4 +1,5 @@
 # coding: utf-8
+import datetime
 import gettext
 import logging
 
@@ -7,6 +8,7 @@ from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackQueryH
 from inftybot.api import API
 from inftybot.intents import states
 from inftybot.intents.exceptions import IntentHandleException, ValidationError, AuthenticationError
+from inftybot.intents.signals import handle_success
 from inftybot.models import User
 
 logger = logging.getLogger(__name__)
@@ -29,11 +31,12 @@ class BaseIntent(object):
         data = self.chat_data.get('user', None)
         return User.from_native(data)
 
-    @user.setter
-    def user(self, value):
-        if isinstance(value, User):
-            value = value.to_native()
-        self.chat_data['user'] = value
+    def set_user(self, user):
+        if isinstance(user, User):
+            data = user.to_native()
+        else:
+            data = user
+        self.chat_data['user'] = data
 
     @property
     def errors(self):
@@ -57,9 +60,12 @@ class BaseIntent(object):
         self.before_handle()
 
         try:
-            return self.handle(*args, **kwargs)
+            return_value = self.handle(*args, **kwargs)
         except IntentHandleException as e:
             return self.handle_error(e)
+        else:
+            handle_success.send(self, return_value=return_value)
+            return return_value
 
     @classmethod
     def as_callback(cls, **init_kwargs):
@@ -208,14 +214,21 @@ class CancelCommandIntent(BaseCommandIntent):
 
 class AuthenticationMixin(BaseIntent):
     """Adds set_api_authentication method"""
-    def set_api_authentication(self, token):
+    def update_user_data(self, user):
         """
-        Update current user token and then update ```self.chat_data['user']```
-        via property.setter and ```self.api.user```
+        Update current user_data from ```self.chat_data['user']``` and + authenticated_at
         """
-        user = self.user
-        user.token = token
-        self.user = user
+        user_data = user.to_native()
+        user_data['authenticated_at'] = datetime.datetime.utcnow().isoformat()
+        self.user_data.update(user_data)
+
+    def authenticate(self, user):
+        if not user.token:
+            raise AuthenticationError("Please, /login first")
+        self.update_user_data(user)
+        self.set_api_authentication(user)
+
+    def set_api_authentication(self, user):
         self.api.user = user
 
 
@@ -224,12 +237,9 @@ class AuthenticatedMixin(AuthenticationMixin):
     Intent with Infty API authentication
     Checks current user and its token
     """
-    def _update_user_token(self):
-        if not self.user.token:
-            raise AuthenticationError("Please, /login first")
-
-        self.set_api_authentication(self.user.token)
+    def is_authenticated(self):
+        return self.api.is_authenticated
 
     def before_validate(self):
         super(AuthenticatedMixin, self).before_validate()
-        self._update_user_token()
+        self.authenticate(self.user)
