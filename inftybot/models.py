@@ -6,7 +6,11 @@ from schematics.types import IntType, StringType, URLType, ListType, EmailType
 
 class Model(BaseModel):
     """Simple data model"""
-    pass
+    @classmethod
+    def from_native(cls, value):
+        instance = cls()
+        instance.import_data(value)
+        return instance
 
 
 class Topic(Model):
