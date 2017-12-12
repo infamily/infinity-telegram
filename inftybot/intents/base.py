@@ -149,7 +149,7 @@ class BaseMessageIntent(BaseIntent):
     @classmethod
     def get_handler(cls):
         return MessageHandler(
-            Filters.text, cls.as_callback(), pass_chat_data=True
+            Filters.text, cls.as_callback(), pass_chat_data=True, pass_user_data=True
         )
 
     def handle_error(self, error):
@@ -176,7 +176,7 @@ class BaseCallbackIntent(BaseIntent):
     @classmethod
     def get_handler(cls):
         return CallbackQueryHandler(
-            cls.as_callback(), pass_chat_data=True
+            cls.as_callback(), pass_chat_data=True, pass_user_data=True
         )
 
     def handle_error(self, error):
@@ -199,7 +199,7 @@ class BaseConversationIntent(BaseIntent):
 class CancelCommandIntent(BaseCommandIntent):
     @classmethod
     def get_handler(cls):
-        return CommandHandler("cancel", cls.as_callback(), pass_chat_data=True)
+        return CommandHandler("cancel", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
         self.update.message.reply_text(_("Canceled"))
@@ -225,9 +225,6 @@ class AuthenticatedMixin(AuthenticationMixin):
     Checks current user and its token
     """
     def _update_user_token(self):
-        if not self.user:
-            raise AuthenticationError("Please, /login first")
-
         if not self.user.token:
             raise AuthenticationError("Please, /login first")
 
