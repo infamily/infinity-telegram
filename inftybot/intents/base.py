@@ -175,10 +175,6 @@ class BaseCallbackIntent(BaseIntent):
 
     @classmethod
     def get_handler(cls):
-        raise NotImplementedError
-
-    @classmethod
-    def get_handler(cls):
         return CallbackQueryHandler(
             cls.as_callback(), pass_chat_data=True
         )
