@@ -46,7 +46,7 @@ class DynamoStorageTestCase(TestCase):
 
     def tearDown(self):
         pass
-        # self.delete_table()
+        self.delete_table()
 
 
 class UserDataStorageTestCase(DynamoStorageTestCase):
