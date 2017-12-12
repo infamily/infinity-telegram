@@ -7,6 +7,7 @@ from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackQueryH
 from inftybot.api import API
 from inftybot.intents import states
 from inftybot.intents.exceptions import IntentHandleException, ValidationError, AuthenticationError
+from inftybot.models import User
 
 logger = logging.getLogger(__name__)
 _ = gettext.gettext
@@ -25,10 +26,13 @@ class BaseIntent(object):
 
     @property
     def user(self):
-        return self.chat_data.get('user', None)
+        data = self.chat_data.get('user', None)
+        return User.from_native(data)
 
     @user.setter
     def user(self, value):
+        if isinstance(value, User):
+            value = value.to_native()
         self.chat_data['user'] = value
 
     @property
@@ -144,10 +148,6 @@ class BaseMessageIntent(BaseIntent):
 
     @classmethod
     def get_handler(cls):
-        raise NotImplementedError
-
-    @classmethod
-    def get_handler(cls):
         return MessageHandler(
             Filters.text, cls.as_callback(), pass_chat_data=True
         )
@@ -213,8 +213,14 @@ class CancelCommandIntent(BaseCommandIntent):
 class AuthenticationMixin(BaseIntent):
     """Adds set_api_authentication method"""
     def set_api_authentication(self, token):
-        self.user.token = token
-        self.api.user = self.user
+        """
+        Update current user token and then update ```self.chat_data['user']```
+        via property.setter and ```self.api.user```
+        """
+        user = self.user
+        user.token = token
+        self.user = user
+        self.api.user = user
 
 
 class AuthenticatedMixin(AuthenticationMixin):
