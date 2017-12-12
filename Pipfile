@@ -23,7 +23,6 @@ slumber = "*"
 mistune = "*"
 schematics = "*"
 blinker = "*"
-flask-dynamo = "*"
 "boto3" = "*"
 
 
