@@ -20,8 +20,7 @@ TESTING = False
 
 
 EXTENSIONS = [
-    'apps.telegram_bot.base.TelegramBot',
-    'inftybot.contrib.flask.base.Inftybot',
+    'inftybot.contrib.flask.base.TelegramBot',
 ]
 
 

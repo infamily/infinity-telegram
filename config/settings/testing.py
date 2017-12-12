@@ -20,7 +20,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'apps.telegram_bot': {
+        'telegram_bot': {
             'handlers': ['default'],
             'level': 'DEBUG',
             'propagate': True

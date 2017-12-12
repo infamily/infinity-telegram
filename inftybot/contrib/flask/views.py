@@ -3,7 +3,7 @@ import json
 import logging
 
 from flask import Blueprint, request, current_app, jsonify, make_response
-from .base import get_telegram_ext
+from inftybot.contrib.flask.base import get_telegram_ext
 
 blueprint = Blueprint(__name__, __name__)
 logger = logging.getLogger(__name__)
