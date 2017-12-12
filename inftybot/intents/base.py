@@ -3,6 +3,7 @@ import datetime
 import gettext
 import logging
 
+from schematics.exceptions import DataError
 from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 
 from inftybot.api import API
@@ -29,7 +30,11 @@ class BaseIntent(object):
     @property
     def user(self):
         data = self.chat_data.get('user', None)
-        return User.from_native(data)
+
+        try:
+            return User.from_native(data)
+        except DataError as e:
+            self._errors.append(e)
 
     def set_user(self, user):
         if isinstance(user, User):
@@ -223,10 +228,15 @@ class AuthenticationMixin(BaseIntent):
         self.user_data.update(user_data)
 
     def authenticate(self, user):
-        if not user.token:
+        if not (user and user.token):
             raise AuthenticationError("Please, /login first")
+
         self.update_user_data(user)
         self.set_api_authentication(user)
+
+    def unauthenticate(self):
+        self.user_data.clear()
+        self.chat_data.clear()
 
     def set_api_authentication(self, user):
         self.api.user = user
