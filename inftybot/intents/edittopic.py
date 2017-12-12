@@ -42,7 +42,7 @@ class TopicEditCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
     """Enters topic edit context"""
     @classmethod
     def get_handler(cls):
-        return CommandHandler("edit", cls.as_callback(), pass_chat_data=True)
+        return CommandHandler("edit", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def get_keyboard(self):
         keyboard = [[], []]
@@ -101,7 +101,7 @@ class TopicEditIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
     """Intent (CallbackHandler) for start edit topic"""
     @classmethod
     def get_handler(cls):
-        return CallbackQueryHandler(cls.as_callback(), pass_chat_data=True)
+        return CallbackQueryHandler(cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
         topic_part_mapping = {

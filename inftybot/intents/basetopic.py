@@ -42,7 +42,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
     """Sends created topic to the Infty API, resets topic creation context"""
     @classmethod
     def get_handler(cls):
-        return CommandHandler("done", cls.as_callback(), pass_chat_data=True)
+        return CommandHandler("done", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def validate(self):
         topic = self.chat_data['topic']
