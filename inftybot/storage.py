@@ -109,7 +109,39 @@ class StorageData(object):
             self._storage.update(self._key, self._data)
 
 
-class DynamoDBStorage(object):
+class BaseStorate(object):
+    def insert(self, obj):
+        raise NotImplementedError
+
+    def update(self, key, obj):
+        raise NotImplementedError
+
+    def get(self, key):
+        raise NotImplementedError
+
+    def delete(self, key):
+        raise NotImplementedError
+
+    def get_query_key(self, item):
+        raise NotImplementedError
+
+    def __getitem__(self, item):
+        """Makes possible to call ```storage[user_id]```"""
+        key = self.get_query_key(item)
+        return self.get(key)
+
+    def __setitem__(self, item, value):
+        """Makes possible to set ```storage[user_id]=data```"""
+        key = self.get_query_key(item)
+        return self.update(key, value)
+
+    def __delitem__(self, key):
+        """Makes possible to delete the whole object ```del storage[user_id]```"""
+        key = self.get_query_key(key)
+        return self.delete(key)
+
+
+class DynamoDBStorage(BaseStorate):
     table_name = None
     key_schema = None
     attribute_definitions = None
@@ -190,21 +222,6 @@ class DynamoDBStorage(object):
         """Delete single item from the DB"""
         response = self._table.delete_item(Key=key)
         return response.get('ResponseMetadata', {}).get('HTTPStatusCode', -1) == 200
-
-    def __getitem__(self, item):
-        """Makes possible to call ```storage[user_id]```"""
-        key = self.get_query_key(item)
-        return self.get(key)
-
-    def __setitem__(self, item, value):
-        """Makes possible to set ```storage[user_id]=data```"""
-        key = self.get_query_key(item)
-        return self.update(key, value)
-
-    def __delitem__(self, key):
-        """Makes possible to delete the whole object ```del storage[user_id]```"""
-        key = self.get_query_key(key)
-        return self.delete(key)
 
 
 class UserDataStorage(DynamoDBStorage):
