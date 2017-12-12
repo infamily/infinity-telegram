@@ -1,42 +1,27 @@
 # coding: utf-8
-from unittest import TestCase
+from unittest import TestCase, skip
 
-from inftybot.intents import messages, states
+import inftybot.intents.base
+import inftybot.intents.login
+from inftybot.api.tests.base import patch_api_request
+from inftybot.intents import states
 from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
+from inftybot.intents.tests.base import BaseIntentTestCase
 from inftybot.models import User
-from inftybot.tests.base import load_tg_updates, BotMixin, load_api_responses, mock_update
-from inftybot.api.tests.base import APIMixin, patch_api_request
+from inftybot.tests.base import load_tg_updates, load_api_responses, BotMixin, mock_update
 from inftybot.utils import update_from_dict
 
 updates = load_tg_updates()
 api_responses = load_api_responses()
 
 
-class BaseIntentTestCase(BotMixin, APIMixin, TestCase):
-    intent_cls = None
-
-    def setUp(self):
-        super(BaseIntentTestCase, self).setUp()
-        self.bot = self.create_bot()
-        self.api = self.create_api_client()
-
-    def create_intent(self, update, **kwargs):
-        update = update_from_dict(self.bot, update)
-        mock_update(update)
-        intent = self.intent_cls(
-            bot=self.bot, update=update,
-            api=self.api, **kwargs
-        )
-        return intent
-
-
-class TestAuthIntent(messages.BaseAuthIntent):
+class TestAuthIntent(inftybot.intents.base.AuthenticatedMixin):
     """Dummy"""
     def handle(self, *args, **kwargs):
         pass
 
 
-class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
+class AuthenticatedIntentSetAuthenticationTestCase(BaseIntentTestCase):
     intent_cls = TestAuthIntent
 
     def test_call_intent_with_user_ensure_api_request_contains_token(self):
@@ -58,7 +43,7 @@ class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
         self.assertEqual(intent.api.session.headers['authorization'], 'Token token')
 
     def test_set_authentication_ensure_api_user_token_provided(self):
-        intent = messages.BaseAuthIntent(api=self.api)
+        intent = TestAuthIntent(api=self.api)
         user = User()
         user.email = 'example@email.com'
         intent.user = user
@@ -69,7 +54,7 @@ class AuthIntentSetAuthenticationTestCase(BaseIntentTestCase):
 
 
 class TestAuthEMailIntent(BaseIntentTestCase):
-    intent_cls = messages.AuthEmailIntent
+    intent_cls = inftybot.intents.login.AuthEmailIntent
 
     def test_validate_email_valid_passes(self):
         update = updates['EMAIL_MESSAGE']
@@ -99,7 +84,7 @@ class TestAuthEMailIntent(BaseIntentTestCase):
 
 
 class TestAuthCaptchaIntent(BaseIntentTestCase):
-    intent_cls = messages.AuthCaptchaIntent
+    intent_cls = inftybot.intents.login.AuthCaptchaIntent
 
     @patch_api_request(200, api_responses['SIGNUP_SUCCESS'])
     def test_valid_captcha_returns_auth_state_password(self, api_response):
@@ -139,9 +124,9 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
 
 
 class AuthOTPIntent(BaseIntentTestCase):
-    intent_cls = messages.AuthOTPIntent
+    intent_cls = inftybot.intents.login.AuthOTPIntent
 
-    @patch_api_request(403, api_responses['OTP_403'])
+    @patch_api_request(403, api_responses['403'])
     def test_api_403_error_raises(self, api_response):
         update = updates['OTP_MESSAGE']
 
@@ -155,7 +140,7 @@ class AuthOTPIntent(BaseIntentTestCase):
         with self.assertRaises(ValidationError):
             intent.validate()
 
-    @patch_api_request(403, api_responses['OTP_403'])
+    @patch_api_request(403, api_responses['403'])
     def test_api_403_returns_no_state(self, api_response):
         update = updates['OTP_MESSAGE']
 
@@ -182,3 +167,67 @@ class AuthOTPIntent(BaseIntentTestCase):
             'user': user,
         })
         self.assertEquals(rv, states.STATE_END)
+
+
+@skip
+class LoginChainTestCase(BotMixin, TestCase):
+    def setUp(self):
+        super(LoginChainTestCase, self).setUp()
+        self.bot = self.create_bot()
+
+    def create_intent(self, cls, update, **kwargs):
+        update = update_from_dict(self.bot, update)
+        mock_update(update)
+        intent = cls(
+            bot=self.bot, update=update,
+            **kwargs
+        )
+        return intent
+
+    def test_login_conversation(self):
+        user = User()
+        user.email = 'atorich@gmail.com'
+
+        update = updates['LOGIN_COMMAND']
+        intent = self.create_intent(
+            inftybot.intents.login.LoginConversationIntent,
+            update=update
+        )
+
+        rv = intent()
+
+        update = updates['EMAIL_MESSAGE']
+        intent = self.create_intent(
+            inftybot.intents.login.AuthEmailIntent,
+            update=update
+        )
+
+        rv = intent(chat_data={
+            'user': user,
+        })
+
+        update = updates['CAPTCHA_MESSAGE']
+        intent = self.create_intent(
+            inftybot.intents.login.AuthCaptchaIntent,
+            update=update
+        )
+
+        rv = intent(chat_data={
+            'user': user,
+            'captcha': {'key': 'captcakey', 'image_url': ''}
+        })
+
+        user = intent.user
+
+        update = updates['OTP_MESSAGE']
+        intent = self.create_intent(
+            inftybot.intents.login.AuthOTPIntent,
+            update=update,
+        )
+
+        rv = intent(chat_data={
+            'user': user,
+            'captcha': {'key': 'captcakey', 'image_url': ''}
+        })
+
+        assert True

@@ -45,11 +45,11 @@ def create_intent(conf_object):
 def get_intents_conf():
     # todo do not hardcode it there
     return [
-        {
-            'cls': 'inftybot.intents.conversations.LoginConversationIntent',
-        },
-        'inftybot.intents.commands.StartCommandIntent',
-        'inftybot.intents.inlines.SearchTopicsInlineIntent'
+        'inftybot.intents.login.LoginConversationIntent',
+        'inftybot.intents.newtopic.TopicConversationIntent',
+        'inftybot.intents.edittopic.TopicConversationIntent',
+        'inftybot.intents.start.StartCommandIntent',
+        'inftybot.intents.search.SearchTopicsInlineIntent'
     ]
 
 

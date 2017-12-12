@@ -27,3 +27,11 @@ class CaptchaValidationError(ValidationError):
     def __init__(self, *args, **kwargs):
         self.captcha = kwargs.pop('captcha', None)
         super(CaptchaValidationError, self).__init__(*args)
+
+
+class AuthenticationError(IntentHandleException):
+    pass
+
+
+class APIResourceError(IntentHandleException):
+    pass
