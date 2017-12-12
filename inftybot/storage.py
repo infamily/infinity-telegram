@@ -110,6 +110,7 @@ class StorageData(object):
 
 
 class DynamoDBStorage(object):
+    """Base class for storages"""
     table_name = None
     key_schema = None
     attribute_definitions = None
