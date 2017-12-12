@@ -17,7 +17,8 @@ class DynamoStorageTestCase(TestCase):
 
     def create_storage(self):
         cls = self.storage_cls
-        cls.table_name = 'test_{}'.format(cls.table_name)
+        if not cls.table_name.startswith('test_'):
+            cls.table_name = 'test_{}'.format(cls.table_name)
         return self.storage_cls()
 
     def create_table(self):
