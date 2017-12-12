@@ -90,6 +90,11 @@ class StorageData(object):
         """Check that there is no data"""
         return bool(self._data)
 
+    def setdefault(self, key, default):
+        """Sets default the data by key and marks object is_changed=True"""
+        self.is_changed = True
+        return self._data.setdefault(key, default)
+
     def get(self, item, default=None):
         return self._data.get(item, default)
 
