@@ -65,13 +65,6 @@ class UserDataStorageTestCase(DynamoStorageTestCase):
         value = self.storage[123]['test']
         self.assertEqual(value, 1)
 
-    def test_update_returned_item_storage_updated_after_delete(self):
-        self.storage[123] = {'test': 1}
-        data = self.storage[123]
-        data['test'] = 2
-        del data
-        self.assertEqual(self.storage[123]['test'], 2)
-
     def test_update_storage_with_storage_data_as_data(self):
         self.storage[123] = {'test': 1}
         data = self.storage[123]
