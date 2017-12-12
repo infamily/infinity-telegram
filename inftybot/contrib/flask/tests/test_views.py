@@ -5,7 +5,7 @@ from flask_testing import TestCase
 from mock import MagicMock
 
 from app import create_app
-from apps.telegram_bot.base import EXTENSION_NAME
+from inftybot.contrib.flask.base import EXTENSION_NAME
 
 
 class WebhookHandlerTestCase(TestCase):
