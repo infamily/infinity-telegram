@@ -228,7 +228,7 @@ class AuthenticationMixin(BaseIntent):
         self.user_data.update(user_data)
 
     def authenticate(self, user):
-        if not (user and user.token):
+        if not user or not user.token:
             raise AuthenticationError("Please, /login first")
 
         self.update_user_data(user)
