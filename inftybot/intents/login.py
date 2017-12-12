@@ -121,21 +121,36 @@ class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
         return states.STATE_END
 
 
-class LoginCommandIntent(BaseCommandIntent):
+class LoginCommandIntent(AuthenticatedMixin, BaseCommandIntent):
     @classmethod
     def get_handler(cls):
         return CommandHandler("login", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
+        self.update.message.reply_text(_("I know you!"))
+        return states.STATE_END
+
+    def handle_error(self, error):
         self.update.message.reply_text(_("What's your email?"))
         return states.AUTH_STATE_EMAIL
+
+
+class LogoutCommandIntent(AuthenticatedMixin, BaseCommandIntent):
+    @classmethod
+    def get_handler(cls):
+        return CommandHandler("logout", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
+
+    def handle(self, *args, **kwargs):
+        self.unauthenticate()
+        self.update.message.reply_text(_("See you!"))
+        return states.STATE_END
 
 
 class LoginConversationIntent(BaseConversationIntent):
     @classmethod
     def get_handler(cls):
         return ConversationHandler(
-            entry_points=[LoginCommandIntent.get_handler()],
+            entry_points=[LoginCommandIntent.get_handler(), LogoutCommandIntent.get_handler()],
             states={
                 states.AUTH_STATE_EMAIL: [AuthEmailIntent.get_handler()],
                 states.AUTH_STATE_CAPTCHA: [AuthCaptchaIntent.get_handler()],
