@@ -1,4 +1,5 @@
 # coding: utf-8
+import datetime
 import gettext
 import urllib.parse
 
@@ -21,8 +22,7 @@ class CaptchaMixin(object):
         chat_data = getattr(self, 'chat_data', {})
         return chat_data.get('captcha', {})
 
-    @captcha.setter
-    def captcha(self, value):
+    def set_captcha(self, value):
         chat_data = getattr(self, 'chat_data', {})
         chat_data['captcha'] = value
 
@@ -44,8 +44,8 @@ class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
 
         captcha = self.api.client.otp.signup.get()
 
-        self.user = user
-        self.captcha = captcha
+        self.set_user(user)
+        self.set_captcha(captcha)
 
         self.update.message.reply_text(_('Please, solve the captcha:'))
 
@@ -74,16 +74,15 @@ class AuthCaptchaIntent(CaptchaMixin, AuthenticationMixin, BaseMessageIntent):
             response = getattr(e, 'response')
             response_data = response.json()
             errors = response_data.pop('errors', '')
-            self.chat_data['captcha'] = response_data
+            self.set_captcha(response_data)
             raise CaptchaValidationError(
                 errors or _("Bad captcha. Please, solve again"),
                 captcha=response_data
             )
-
-        # it is not proper way
-        # to assign the state on the validation stage
-        # todo
-        self.set_api_authentication(response['token'])
+        else:
+            user = self.user
+            user.token = response['token']
+            self.set_user(user)
 
     def handle_error(self, error):
         self.update.message.reply_text(_(error.message))
@@ -100,7 +99,10 @@ class AuthCaptchaIntent(CaptchaMixin, AuthenticationMixin, BaseMessageIntent):
         return states.AUTH_STATE_PASSWORD
 
 
-class AuthOTPIntent(AuthenticatedMixin, BaseMessageIntent):
+class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
+    def before_validate(self):
+        self.authenticate(self.user)
+
     def validate(self):
         try:
             self.api.client.otp.login.post(data={
@@ -122,7 +124,7 @@ class AuthOTPIntent(AuthenticatedMixin, BaseMessageIntent):
 class LoginCommandIntent(BaseCommandIntent):
     @classmethod
     def get_handler(cls):
-        return CommandHandler("login", cls.as_callback(), pass_chat_data=True)
+        return CommandHandler("login", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
         self.update.message.reply_text(_("What's your email?"))

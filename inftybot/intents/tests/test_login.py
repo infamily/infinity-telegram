@@ -42,12 +42,13 @@ class AuthenticatedIntentSetAuthenticationTestCase(BaseIntentTestCase):
 
         self.assertEqual(intent.api.session.headers['authorization'], 'Token token')
 
-    def test_set_authentication_ensure_api_user_token_provided(self):
+    def test_authenticate_ensure_api_user_token_provided(self):
         intent = TestAuthIntent(api=self.api)
         user = User()
         user.email = 'example@email.com'
-        intent.user = user
-        intent.set_api_authentication('auth_token')
+        user.token = 'auth_token'
+        intent.chat_data['user'] = user
+        intent.authenticate(intent.user)
         self.assertEqual(
             intent.api.user.token, 'auth_token'
         )

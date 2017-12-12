@@ -18,7 +18,7 @@ class TopicCreateCommandIntent(AuthenticatedMixin, BaseCommandIntent):
     """Enters topic creation context"""
     @classmethod
     def get_handler(cls):
-        return CommandHandler("newtopic", cls.as_callback(), pass_chat_data=True)
+        return CommandHandler("newtopic", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
         keyboard = CHOOSE_TYPE_KEYBOARD
