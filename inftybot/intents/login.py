@@ -26,6 +26,10 @@ class CaptchaMixin(object):
         chat_data = getattr(self, 'chat_data', {})
         chat_data['captcha'] = value
 
+    def clear_captcha(self):
+        chat_data = getattr(self, 'chat_data', {})
+        del chat_data['captcha']
+
 
 class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
     def validate(self):
@@ -91,17 +95,17 @@ class AuthCaptchaIntent(CaptchaMixin, AuthenticationMixin, BaseMessageIntent):
         )
 
     def handle(self, *args, **kwargs):
+        self.clear_captcha()
         self.update.message.reply_text(_("Ok. Then, enter the OTP"))
         return states.AUTH_STATE_PASSWORD
 
 
-class AuthOTPIntent(CaptchaMixin, AuthenticatedMixin, BaseMessageIntent):
+class AuthOTPIntent(AuthenticatedMixin, BaseMessageIntent):
     def validate(self):
         try:
             self.api.client.otp.login.post(data={
                 'password': self.update.message.text,
             })
-            assert True
         except HttpClientError:
             raise ValidationError(
                 _("Wrong authentication credentials")
