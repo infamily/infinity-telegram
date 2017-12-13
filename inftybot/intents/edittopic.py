@@ -8,6 +8,7 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
     CancelCommandIntent, AuthenticatedMixin
 from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent
+from inftybot.intents.constants import TOPIC_TYPE_CHOICES
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
 
@@ -46,11 +47,11 @@ class TopicEditCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
 
     def get_keyboard(self):
         keyboard = [[], []]
-
-        if self.topic and not self.topic.pk:
+        topic = self.get_topic()
+        if topic and not topic.pk:
             keyboard[0].append(
                 InlineKeyboardButton(
-                    "Topic {}: {}".format(self.topic.type, self.topic.title),
+                    "Topic {}: {}".format(TOPIC_TYPE_CHOICES.get(topic.type), topic.title),
                     callback_data=constants.TOPIC_EDIT_NEW,
                 )
             )
@@ -142,10 +143,9 @@ class TopicEditIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
 class EditTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
     """Edit topic type"""
     def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
         topic.type = int(self.update.callback_query.data)
-
-        self.chat_data['topic'] = topic
+        self.set_topic(topic)
 
         send_confirm(
             self.bot,
@@ -159,9 +159,9 @@ class EditTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
 class EditTitleIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
     """Edit topic title"""
     def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
         topic.title = self.update.message.text
-        self.chat_data['topic'] = topic
+        self.set_topic(topic)
 
         send_confirm(
             self.bot,
@@ -175,9 +175,9 @@ class EditTitleIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
 class EditBodyIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
     """Edit topic body"""
     def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
         topic.body = self.update.message.text
-        self.chat_data['topic'] = topic
+        self.set_topic(topic)
 
         send_confirm(
             self.bot,

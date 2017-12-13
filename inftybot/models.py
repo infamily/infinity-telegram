@@ -7,9 +7,11 @@ from schematics.types import IntType, StringType, URLType, ListType, EmailType
 class Model(BaseModel):
     """Simple data model"""
     @classmethod
-    def from_native(cls, value):
+    def from_native(cls, data, validate=False):
         instance = cls()
-        instance.import_data(value)
+        for key, value in data.items():
+            if hasattr(cls, key):
+                setattr(instance, key, value)
         return instance
 
 

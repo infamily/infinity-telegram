@@ -1,13 +1,14 @@
 # coding: utf-8
 import gettext
 
+from schematics.exceptions import DataError
 from telegram import InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler
 
 from inftybot.intents import states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
     CancelCommandIntent, BaseIntent, AuthenticatedMixin
-from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent
+from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent
 from inftybot.intents.utils import render_topic
 from inftybot.models import Topic
 
@@ -28,18 +29,19 @@ class TopicCreateCommandIntent(AuthenticatedMixin, BaseCommandIntent):
         return states.TOPIC_STATE_TYPE
 
 
-class NewTopicIntent(AuthenticatedMixin, BaseIntent):
+class NewTopicIntent(AuthenticatedMixin, BaseTopicIntent, BaseIntent):
     """Mixin adds new topic model to the chat data if necessary"""
     def before_validate(self):
         super(NewTopicIntent, self).before_validate()
-        self.chat_data.setdefault('topic', Topic())
+        topic = self.get_topic() or Topic()
+        self.set_topic(topic)
 
 
 class TopicTypeIntent(NewTopicIntent, BaseCallbackIntent):
     def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
         topic.type = int(self.update.callback_query.data)
-        self.chat_data['topic'] = topic
+        self.set_topic(topic)
         self.bot.sendMessage(
             chat_id=self.update.callback_query.message.chat_id,
             text=_("Well! Please, tell me the topic title"),
@@ -49,9 +51,9 @@ class TopicTypeIntent(NewTopicIntent, BaseCallbackIntent):
 
 class TopicTitleIntent(NewTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
         topic.title = self.update.message.text
-        self.chat_data['topic'] = topic
+        self.set_topic(topic)
         self.update.message.reply_text(
             _("Ok! Please, input the topic body")
         )
@@ -60,9 +62,9 @@ class TopicTitleIntent(NewTopicIntent, BaseMessageIntent):
 
 class TopicBodyIntent(NewTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
         topic.body = self.update.message.text
-        self.chat_data['topic'] = topic
+        self.set_topic(topic)
 
         self.update.message.reply_text(
             _("Good! Please, check:")

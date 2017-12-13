@@ -10,6 +10,7 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin
 from inftybot.intents.exceptions import ValidationError, APIResourceError
 from inftybot.intents.utils import render_model_errors
+from inftybot.models import Topic
 
 _ = gettext.gettext
 
@@ -29,13 +30,17 @@ CHOOSE_TYPE_KEYBOARD = [
 
 
 class BaseTopicIntent(BaseIntent):
-    @property
-    def topic(self):
-        return self.chat_data.get('topic', None)
+    def set_topic(self, topic):
+        if isinstance(topic, Topic):
+            data = topic.to_native()
+        else:
+            data = topic
 
-    @topic.setter
-    def topic(self, value):
-        self.chat_data['topic'] = value
+        self.chat_data['topic'] = data
+
+    def get_topic(self):
+        data = self.chat_data.get('topic')
+        return Topic.from_native(data, validate=False) if data else None
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
@@ -45,7 +50,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         return CommandHandler("done", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def validate(self):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
 
         try:
             topic.validate()
@@ -58,7 +63,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         self.update.message.reply_text(error.message)
 
     def handle(self, *args, **kwargs):
-        topic = self.chat_data['topic']
+        topic = self.get_topic()
 
         try:
             rv = self.api.client.topics.post(data=topic.to_native())
