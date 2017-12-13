@@ -70,6 +70,8 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         except (HttpClientError, HttpServerError) as e:
             # intercept 4xx and 5xx both
             raise APIResourceError('Internal error. Please, report it')
+        else:
+            self.set_topic(None)
 
         self.update.message.reply_text(
             _("Done. Your topic: {}".format(rv.get('url')))
