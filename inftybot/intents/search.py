@@ -12,7 +12,7 @@ from inftybot.intents.utils import render_topic
 from inftybot.models import Topic
 
 
-class SearchTopicsInlineIntent(BaseInlineQuery):
+class SearchTopicsMixin(BaseInlineQuery):
     @classmethod
     def get_handler(cls):
         return InlineQueryHandler(cls.as_callback())
@@ -23,7 +23,7 @@ class SearchTopicsInlineIntent(BaseInlineQuery):
             params.update({'lang': self.lang})
         return params
 
-    def handle(self):
+    def get_results(self):
         results = []
 
         if not self.query:
@@ -36,8 +36,13 @@ class SearchTopicsInlineIntent(BaseInlineQuery):
         response = self.api.client.topics.get(**params)
 
         # todo handle limit via query
-        results = [process_result(r) for r in response['results'][0:config.SEARCH_RESULTS_LIMIT]]
+        return response['results'][0:config.SEARCH_RESULTS_LIMIT]
 
+
+class SearchTopicsInlineIntent(SearchTopicsMixin, BaseInlineQuery):
+    def handle(self):
+        results = self.get_results()
+        results = (process_result(r) for r in results)
         self.update.inline_query.answer(results, cache_time=config.INLINE_QUERY_CACHE_TIME)
 
 
