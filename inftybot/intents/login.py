@@ -58,7 +58,7 @@ class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
         return states.AUTH_STATE_CAPTCHA
 
 
-class AuthCaptchaIntent(CaptchaMixin, AuthenticationMixin, BaseMessageIntent):
+class AuthCaptchaIntent(CaptchaMixin, BaseMessageIntent):
     def validate(self):
         payload = {
             'email': self.user.email,
@@ -101,7 +101,7 @@ class AuthCaptchaIntent(CaptchaMixin, AuthenticationMixin, BaseMessageIntent):
 
 class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
     def before_validate(self):
-        self.authenticate(self.user)
+        self.set_api_authentication(self.user)
 
     def validate(self):
         try:
@@ -117,20 +117,21 @@ class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
         self.update.message.reply_text(_("Login failed"))
 
     def handle(self, *args, **kwargs):
+        self.update_user_data(self.user)
         self.update.message.reply_text(_('Login success'))
         return states.STATE_END
 
 
-class LoginCommandIntent(AuthenticatedMixin, BaseCommandIntent):
+class LoginCommandIntent(BaseCommandIntent):
     @classmethod
     def get_handler(cls):
         return CommandHandler("login", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
-        self.update.message.reply_text(_("I know you!"))
-        return states.STATE_END
+        if self.user and self.user.token:
+            self.update.message.reply_text(_("I know you!"))
+            return states.STATE_END
 
-    def handle_error(self, error):
         self.update.message.reply_text(_("What's your email?"))
         return states.AUTH_STATE_EMAIL
 

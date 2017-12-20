@@ -227,25 +227,13 @@ class CancelCommandIntent(BaseCommandIntent):
 
 
 class AuthenticationMixin(BaseIntent):
-    """Adds set_api_authentication method"""
+    """Adds authentiation-process specific methods"""
     def update_user_data(self, user):
         """
         Update current user_data from ```self.chat_data['user']``` and + authenticated_at
         """
         user_data = user.to_native()
-        user_data['authenticated_at'] = datetime.datetime.utcnow().isoformat()
         self.user_data.update(user_data)
-
-    def authenticate(self, user):
-        if not user or not user.token:
-            raise AuthenticationError("Please, /login first")
-
-        self.update_user_data(user)
-        self.set_api_authentication(user)
-
-    def unauthenticate(self):
-        self.user_data.clear()
-        self.chat_data.clear()
 
     def set_api_authentication(self, user):
         self.api.user = user
@@ -256,9 +244,17 @@ class AuthenticatedMixin(AuthenticationMixin):
     Intent with Infty API authentication
     Checks current user and its token
     """
+    @property
     def is_authenticated(self):
         return self.api.is_authenticated
 
     def before_validate(self):
         super(AuthenticatedMixin, self).before_validate()
-        self.authenticate(self.user)
+        self.set_api_authentication(self.user)
+
+        if not self.is_authenticated:
+            raise AuthenticationError("Please, /login first")
+
+    def unauthenticate(self):
+        self.user_data.clear()
+        self.chat_data.clear()
