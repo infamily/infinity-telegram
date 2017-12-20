@@ -114,6 +114,15 @@ class BaseIntent(object):
     def handle_error(self, error):
         pass
 
+    def to_intent(self, intent_cls):
+        return intent_cls(
+            bot=self.bot,
+            api=self.api,
+            chat_data=self.chat_data,
+            user_data=self.user_data,
+            update=self.update,
+        )
+
 
 class BaseInlineQuery(BaseIntent):
     def handle(self, *args, **kwargs):
