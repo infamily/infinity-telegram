@@ -29,7 +29,7 @@ class BaseIntent(object):
 
     @property
     def user(self):
-        data = self.chat_data.get('user', None)
+        data = self.chat_data.get('user')
 
         try:
             return User.from_native(data)
