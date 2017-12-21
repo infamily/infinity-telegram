@@ -1,7 +1,7 @@
 # coding: utf-8
 import gettext
 
-from schematics.exceptions import DataError
+from schematics.exceptions import DataError, ValidationError as SValidationError
 from slumber.exceptions import HttpClientError, HttpServerError
 from telegram import InlineKeyboardButton
 from telegram.ext import CommandHandler
@@ -11,6 +11,7 @@ from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMi
 from inftybot.intents.exceptions import ValidationError, APIResourceError
 from inftybot.intents.utils import render_model_errors
 from inftybot.models import Topic
+from inftybot.utils import render_errors
 
 _ = gettext.gettext
 
@@ -30,6 +31,9 @@ CHOOSE_TYPE_KEYBOARD = [
 
 
 class BaseTopicIntent(BaseIntent):
+    def reset_topic(self):
+        del self.chat_data['topic']
+
     def set_topic(self, topic):
         if isinstance(topic, Topic):
             data = topic.to_native()
@@ -40,7 +44,7 @@ class BaseTopicIntent(BaseIntent):
 
     def get_topic(self):
         data = self.chat_data.get('topic')
-        return Topic.from_native(data, validate=False) if data else None
+        return Topic.from_native(data) if data else None
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
@@ -54,26 +58,38 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
 
         try:
             topic.validate()
-        except DataError as e:
+        except (DataError, SValidationError) as e:
             errors = render_model_errors(e)
             raise ValidationError(errors)
 
     def handle_error(self, error):
-        self.update.message.reply_text(_("Please, check this:"))
-        self.update.message.reply_text(error.message)
+        if isinstance(error.message, list):
+            message = render_errors(error.message)
+        else:
+            message = error.message
+
+        message = "\n\n".join((_("There are errors :/"), message))
+
+        self.update.message.reply_text(message)
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
 
+        if topic.id:
+            method = self.api.client.topics(int(topic.id)).put
+        else:
+            method = self.api.client.topics.post
+
         try:
-            rv = self.api.client.topics.post(data=topic.to_native())
+            rv = method(data=topic.to_native())
         except (HttpClientError, HttpServerError) as e:
             # intercept 4xx and 5xx both
             raise APIResourceError('Internal error. Please, report it')
         else:
-            self.set_topic(None)
+            self.reset_topic()
 
         self.update.message.reply_text(
             _("Done. Your topic: {}".format(rv.get('url')))
         )
+
         return states.STATE_END
