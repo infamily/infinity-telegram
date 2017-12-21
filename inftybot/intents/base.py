@@ -32,7 +32,7 @@ class BaseIntent(object):
         data = self.chat_data.get('user')
 
         try:
-            return User.from_native(data)
+            return User.from_native(data) if data else None
         except DataError as e:
             self._errors.append(e)
 
@@ -200,7 +200,7 @@ class BaseCallbackIntent(BaseIntent):
         )
 
     def handle_error(self, error):
-        self.bot.sendMessage(
+        self.bot.send_message(
             chat_id=self.update.callback_query.message.chat_id,
             text=error.message,
         )
