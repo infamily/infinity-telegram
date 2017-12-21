@@ -1,13 +1,13 @@
 # coding: utf-8
-import json
 from schematics.models import Model as BaseModel
-from schematics.types import IntType, StringType, URLType, ListType, EmailType
+from schematics.types import StringType as BaseStringType, IntType, URLType, ListType, EmailType
+from schematics.exceptions import ValidationError
 
 
 class Model(BaseModel):
     """Simple data model"""
     @classmethod
-    def from_native(cls, data, validate=False):
+    def from_native(cls, data):
         instance = cls()
         for key, value in data.items():
             if hasattr(cls, key):
@@ -15,8 +15,15 @@ class Model(BaseModel):
         return instance
 
 
+class StringType(BaseStringType):
+    def validate_string_not_empty(self, value):
+        if not len(value):
+            raise ValidationError("Value of {} field shouldn't be an empty string".format(self.name))
+        return value
+
+
 class Topic(Model):
-    pk = IntType(required=False)
+    id = IntType(required=False)
     type = IntType(required=True)
     title = StringType(required=True, min_length=1)
     body = StringType(required=True, min_length=1)
