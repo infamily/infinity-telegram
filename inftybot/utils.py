@@ -22,3 +22,7 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
     if footer_buttons:
         menu.append(footer_buttons)
     return menu
+
+
+def render_errors(errors):
+    return "\n".join(errors)
