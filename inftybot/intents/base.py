@@ -49,6 +49,9 @@ class BaseIntent(object):
 
     def __call__(self, *args, **kwargs):
         # todo: maybe set the value only here, in the __call__ and to remove it from __init__ ?
+        logger.debug('Run handler <{}>'.format(
+            self.__class__.__name__,
+        ))
 
         self.chat_data = kwargs.pop('chat_data', self.chat_data)
         self.user_data = kwargs.pop('user_data', self.user_data)
