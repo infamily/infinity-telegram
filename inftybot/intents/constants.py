@@ -16,9 +16,6 @@ TOPIC_TYPE_CHOICES = {
     TOPIC_TYPE_TASK: 'Task'
 }
 
-TOPIC_EDIT_CURRENT = 'current'
-TOPIC_EDIT_EXISTED = 'existed'
-
 TOPIC_PART_TYPE = 'type'
 TOPIC_PART_TITLE = 'title'
 TOPIC_PART_BODY = 'body'
@@ -29,4 +26,6 @@ TOPIC_PART_CHOIES = {
     TOPIC_PART_BODY: 'Body',
 }
 
+CURRENT_TOPIC = 'current'
 NEXT_PAGE = 'next-page'
+PREV_PAGE = 'prev-page'
