@@ -62,5 +62,4 @@ LOGGING = {
     }
 }
 
-
-SENTRY_DSN = None
+SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
