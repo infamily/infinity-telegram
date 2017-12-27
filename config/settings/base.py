@@ -39,29 +39,5 @@ TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS = env('TELEGRAM_BOT_DISPATCHER_FACTORY_PA
     'workers': 1,  # because AWS Lambda is stateless
 })
 
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-        },
-    },
-    'handlers': {
-        'default': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['default'],
-            'level': 'INFO',
-            'propagate': True
-        }
-    }
-}
-
 SENTRY_DSN = env('SENTRY_DSN', None)
 SENTRY_LOGGING_LEVEL = env('SENTRY_LOGGING_LEVEL', logging.ERROR)
