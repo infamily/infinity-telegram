@@ -1,4 +1,5 @@
 # coding: utf-
+import logging
 import os
 
 from envparse import Env
@@ -62,4 +63,5 @@ LOGGING = {
     }
 }
 
-SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
+SENTRY_DSN = env('SENTRY_DSN', None)
+SENTRY_LOGGING_LEVEL = logging.ERROR

@@ -1,4 +1,5 @@
 # coding: utf-8
+import logging
 from queue import Queue
 
 import telegram
@@ -7,6 +8,9 @@ from werkzeug.utils import import_string
 
 from inftybot.dispatcher import Dispatcher
 from inftybot.intents.base import BaseIntent
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_bot(*args, **kwargs):
