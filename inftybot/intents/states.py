@@ -13,6 +13,7 @@ TOPIC_STATE_BODY = 'body'
 TOPIC_STATE_EDIT = 'edit'
 TOPIC_STATE_EDIT_CHOOSE_TOPIC = 'edit-choose-topic'
 TOPIC_STATE_EDIT_CHOOSE_PART = 'edit-choose-part'
+TOPIC_STATE_EDIT_INPUT = 'edit-input'
 
 TOPIC_STATE_DELETE = 'delete'
 
