@@ -114,6 +114,7 @@ class BaseIntent(object):
         raise NotImplementedError
 
     def handle_error(self, error):
+        logger.error('Unhandled error in the intent {}: {}'.format(self.__class__, error))
         pass
 
     @classmethod
