@@ -48,8 +48,10 @@ class BaseIntent(object):
         return self._errors
 
     def __call__(self, *args, **kwargs):
-        self.chat_data = kwargs.pop('chat_data', {})
-        self.user_data = kwargs.pop('user_data', {})
+        # todo: maybe set the value only here, in the __call__ and to remove it from __init__ ?
+
+        self.chat_data = kwargs.pop('chat_data', self.chat_data)
+        self.user_data = kwargs.pop('user_data', self.user_data)
 
         try:
             self.before_validate()
@@ -114,14 +116,18 @@ class BaseIntent(object):
     def handle_error(self, error):
         pass
 
-    def to_intent(self, intent_cls):
-        return intent_cls(
-            bot=self.bot,
-            api=self.api,
-            chat_data=self.chat_data,
-            user_data=self.user_data,
-            update=self.update,
-        )
+    @classmethod
+    def create_from_intent(cls, intent, **kwargs):
+        instance_kwargs = {
+            'api': intent.api,
+            'bot': intent.bot,
+            'update': intent.update,
+            'user_data': intent.user_data,
+            'chat_data': intent.chat_data,
+        }
+        instance_kwargs.update(**kwargs)
+        instance = cls(**instance_kwargs)
+        return instance
 
 
 class BaseInlineQuery(BaseIntent):
@@ -204,6 +210,9 @@ class BaseCallbackIntent(BaseIntent):
             chat_id=self.update.callback_query.message.chat_id,
             text=error.message,
         )
+
+    def get_choose(self):
+        return self.update.callback_query.data
 
 
 class BaseConversationIntent(BaseIntent):
