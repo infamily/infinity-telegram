@@ -61,3 +61,6 @@ LOGGING = {
         }
     }
 }
+
+
+SENTRY_DSN = None
