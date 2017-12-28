@@ -48,8 +48,6 @@ def init_sentry(appl):
     sentry = Sentry(dsn=dsn, client=client)
     sentry.init_app(app=appl, logging=True, level=logging_level)
 
-    logger.debug("Sentry initialized")
-
 
 def update_logging(appl):
     config = appl.config.get('LOGGING', {})
