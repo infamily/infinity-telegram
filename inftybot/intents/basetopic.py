@@ -1,5 +1,6 @@
 # coding: utf-8
 import gettext
+import logging
 
 from schematics.exceptions import DataError, ValidationError as SValidationError
 from slumber.exceptions import HttpClientError, HttpServerError
@@ -10,10 +11,12 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin
 from inftybot.intents.exceptions import ValidationError, APIResourceError
 from inftybot.intents.utils import render_model_errors
-from inftybot.models import Topic
+from inftybot.models import Topic, User
 from inftybot.utils import render_errors
 
+
 _ = gettext.gettext
+logger = logging.getLogger(__name__)
 
 
 CHOOSE_TYPE_KEYBOARD = [
@@ -79,6 +82,9 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
             method = self.api.client.topics(int(topic.id)).put
         else:
             method = self.api.client.topics.post
+
+        user = User()
+        self.set_api_authentication(user)
 
         try:
             rv = method(data=topic.to_native())

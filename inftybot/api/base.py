@@ -1,9 +1,28 @@
 # coding: utf-8
 """Infty2.0 REST API client"""
+import logging
+
 import slumber
 from requests import Session
+from slumber.exceptions import HttpClientError, HttpServerError
 
 from inftybot import config
+
+
+logger = logging.getLogger(__name__)
+
+
+class APIResource(slumber.Resource):
+    def _request(self, *args, **kwargs):
+        try:
+            return super(APIResource, self)._request(*args, **kwargs)
+        except (HttpClientError, HttpServerError) as e:
+            logger.error('API response error: {}, {}'.format(str(e), e.content))
+            raise e
+
+
+class APIClient(slumber.API):
+    resource_class = APIResource
 
 
 class API(object):
@@ -13,7 +32,7 @@ class API(object):
     def __init__(self, base_url=None, **kwargs):
         self.base_url = base_url or config.INFTY_API_URL
         self.session = Session()
-        self.client = slumber.API(self.base_url, session=self.session, **kwargs)
+        self.client = APIClient(self.base_url, session=self.session, **kwargs)
         self._data = {}
 
     def _update_session(self):
