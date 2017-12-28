@@ -6,9 +6,9 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler, CallbackQueryHandler
 
 from inftybot.intents import constants, states
-from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
-    CancelCommandIntent, AuthenticatedMixin
-from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent
+from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, CancelCommandIntent, \
+    AuthenticatedMixin, BaseMessageIntent
+from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
 from inftybot.models import Topic
@@ -17,33 +17,11 @@ from inftybot.utils import build_menu
 _ = gettext.gettext
 
 
-def send_confirm(bot, chat_id, topic):
-    """Sends the topic preview"""
-    bot.sendMessage(
-        chat_id=chat_id,
-        text=_("Well! That's your topic:"),
-    )
-
-    confirmation = render_topic(topic)
-
-    bot.sendMessage(
-        chat_id=chat_id,
-        text=confirmation,
-        parse_mode=ParseMode.MARKDOWN,
-    )
-
-    bot.sendMessage(
-        chat_id=chat_id,
-        text=_(
-            "If it seems ok, please enter /done command, "
-            "either enter /edit command"
-        ),
-    )
-
-
 def format_topic(topic):
+    topic_type = constants.TOPIC_TYPE_CHOICES.get(topic.type, '<no type>')
+
     topic_str = "{}: {}".format(
-        constants.TOPIC_TYPE_CHOICES[topic.type], topic.title or '<no title>'
+        topic_type, topic.title or '<no title>'
     )
     if not topic.id:
         topic_str = "{} (draft)".format(topic_str)
@@ -278,13 +256,13 @@ class TopicEditIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
         reply_markup = None
 
         if new_state is states.TOPIC_STATE_TYPE:
-            message = _('Please, choose new type')
+            message = _('Please, choose topic type')
             keyboard = CHOOSE_TYPE_KEYBOARD
             reply_markup = InlineKeyboardMarkup(keyboard)
         elif new_state is states.TOPIC_STATE_TITLE:
-            message = _('Please, enter new title')
+            message = _('Please, enter topic title')
         elif new_state is states.TOPIC_STATE_BODY:
-            message = _('Please, enter new body')
+            message = _('Please, enter topic body')
         else:
             message = _('Unknown state. Please report it.')
 
@@ -303,7 +281,7 @@ class TopicEditIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
         )
 
 
-class EditTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
+class InputTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
     """Edit topic type"""
 
     def handle(self, *args, **kwargs):
@@ -320,7 +298,7 @@ class EditTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
         return states.TOPIC_STATE_EDIT
 
 
-class EditTitleIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
+class InputTitleIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
     """Edit topic title"""
 
     def handle(self, *args, **kwargs):
@@ -337,7 +315,7 @@ class EditTitleIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
         return states.TOPIC_STATE_EDIT
 
 
-class EditBodyIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
+class InputBodyIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
     """Edit topic body"""
 
     def handle(self, *args, **kwargs):
@@ -366,9 +344,9 @@ class TopicConversationIntent(BaseConversationIntent):
                 states.TOPIC_STATE_EDIT_CHOOSE_TOPIC: [TopicChooseCallback.get_handler()],
                 states.TOPIC_STATE_EDIT_CHOOSE_PART: [TopicPartChooseCallback.get_handler()],
                 states.TOPIC_STATE_EDIT_INPUT: [TopicEditIntent.get_handler()],
-                states.TOPIC_STATE_TYPE: [EditTypeIntent.get_handler()],
-                states.TOPIC_STATE_TITLE: [EditTitleIntent.get_handler()],
-                states.TOPIC_STATE_BODY: [EditBodyIntent.get_handler()],
+                states.TOPIC_STATE_TYPE: [InputTypeIntent.get_handler()],
+                states.TOPIC_STATE_TITLE: [InputTitleIntent.get_handler()],
+                states.TOPIC_STATE_BODY: [InputBodyIntent.get_handler()],
             },
             fallbacks=[
                 TopicDoneCommandIntent.get_handler(),

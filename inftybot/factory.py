@@ -54,6 +54,7 @@ def get_intents_conf():
         'inftybot.intents.login.LoginConversationIntent',
         'inftybot.intents.newtopic.TopicConversationIntent',
         'inftybot.intents.edittopic.TopicConversationIntent',
+        'inftybot.intents.basetopic.TopicDoneCommandIntent',
         'inftybot.intents.start.StartCommandIntent',
         'inftybot.intents.search.SearchTopicsInlineIntent'
     ]

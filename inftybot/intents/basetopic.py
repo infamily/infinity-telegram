@@ -4,16 +4,15 @@ import logging
 
 from schematics.exceptions import DataError, ValidationError as SValidationError
 from slumber.exceptions import HttpClientError, HttpServerError
-from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardButton, ParseMode
 from telegram.ext import CommandHandler
 
 from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin
 from inftybot.intents.exceptions import ValidationError, APIResourceError
-from inftybot.intents.utils import render_model_errors
+from inftybot.intents.utils import render_model_errors, render_topic
 from inftybot.models import Topic, User
 from inftybot.utils import render_errors
-
 
 _ = gettext.gettext
 logger = logging.getLogger(__name__)
@@ -31,6 +30,30 @@ CHOOSE_TYPE_KEYBOARD = [
         InlineKeyboardButton("Task", callback_data=constants.TOPIC_TYPE_TASK)
     ]
 ]
+
+
+def send_confirm(bot, chat_id, topic):
+    """Sends the topic preview"""
+    bot.sendMessage(
+        chat_id=chat_id,
+        text=_("Well! That's your topic:"),
+    )
+
+    confirmation = render_topic(topic)
+
+    bot.sendMessage(
+        chat_id=chat_id,
+        text=confirmation,
+        parse_mode=ParseMode.MARKDOWN,
+    )
+
+    bot.sendMessage(
+        chat_id=chat_id,
+        text=_(
+            "If it seems ok, please enter /done command, "
+            "either enter /edit command"
+        ),
+    )
 
 
 class BaseTopicIntent(BaseIntent):
@@ -51,13 +74,16 @@ class BaseTopicIntent(BaseIntent):
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
-    """Sends created topic to the Infty API, resets topic creation context"""
+    """Sends draft topic to the Infty API, resets topic creation context"""
     @classmethod
     def get_handler(cls):
         return CommandHandler("done", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def validate(self):
         topic = self.get_topic()
+
+        if topic is None:
+            raise ValidationError("No topics to publish. Please, use /newtopic or /edit command.")
 
         try:
             topic.validate()
@@ -71,7 +97,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         else:
             message = error.message
 
-        message = "\n\n".join((_("There are errors :/"), message))
+        message = "\n\n".join((_("Hmmm..."), message))
 
         self.update.message.reply_text(message)
 
@@ -82,9 +108,6 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
             method = self.api.client.topics(int(topic.id)).put
         else:
             method = self.api.client.topics.post
-
-        user = User()
-        self.set_api_authentication(user)
 
         try:
             rv = method(data=topic.to_native())

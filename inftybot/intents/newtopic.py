@@ -1,43 +1,38 @@
 # coding: utf-8
 import gettext
 
-from schematics.exceptions import DataError
-from telegram import InlineKeyboardMarkup, ParseMode
+from telegram import InlineKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler
 
 from inftybot.intents import states
-from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, BaseMessageIntent, \
-    CancelCommandIntent, BaseIntent, AuthenticatedMixin
-from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent
-from inftybot.intents.utils import render_topic
+from inftybot.intents.base import BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, AuthenticatedMixin, \
+    BaseCallbackIntent, BaseMessageIntent
+from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent, send_confirm
+from inftybot.intents.edittopic import TopicEditCommandIntent
 from inftybot.models import Topic
 
 _ = gettext.gettext
 
 
-class TopicCreateCommandIntent(AuthenticatedMixin, BaseCommandIntent):
+class TopicCreateCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
     """Enters topic creation context"""
     @classmethod
     def get_handler(cls):
         return CommandHandler("newtopic", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
+        self.reset_topic()
+        self.set_topic(Topic())
+
         keyboard = CHOOSE_TYPE_KEYBOARD
         self.update.message.reply_text(
             _("Please, choose:"), reply_markup=InlineKeyboardMarkup(keyboard)
         )
+
         return states.TOPIC_STATE_TYPE
 
 
-class NewTopicIntent(AuthenticatedMixin, BaseTopicIntent, BaseIntent):
-    """Mixin adds new topic model to the chat data if necessary"""
-    def before_validate(self):
-        super(NewTopicIntent, self).before_validate()
-        topic = self.get_topic() or Topic()
-        self.set_topic(topic)
-
-
-class TopicTypeIntent(NewTopicIntent, BaseCallbackIntent):
+class InputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
         topic.type = int(self.update.callback_query.data)
@@ -49,7 +44,7 @@ class TopicTypeIntent(NewTopicIntent, BaseCallbackIntent):
         return states.TOPIC_STATE_TITLE
 
 
-class TopicTitleIntent(NewTopicIntent, BaseMessageIntent):
+class InputTitleIntent(BaseTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
         topic.title = self.update.message.text
@@ -60,26 +55,19 @@ class TopicTitleIntent(NewTopicIntent, BaseMessageIntent):
         return states.TOPIC_STATE_BODY
 
 
-class TopicBodyIntent(NewTopicIntent, BaseMessageIntent):
+class InputBodyIntent(BaseTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
         topic.body = self.update.message.text
         self.set_topic(topic)
 
-        self.update.message.reply_text(
-            _("Good! Please, check:")
+        send_confirm(
+            self.bot,
+            self.update.message.chat_id,
+            topic
         )
 
-        confirmation = render_topic(topic)
-        self.update.message.reply_text(
-            confirmation,
-            parse_mode=ParseMode.MARKDOWN,
-        )
-
-        self.update.message.reply_text(
-            _("If it seems ok, please enter /done command, "
-              "either enter /edit command")
-        )
+        return states.STATE_END
 
 
 class TopicConversationIntent(BaseConversationIntent):
@@ -88,9 +76,9 @@ class TopicConversationIntent(BaseConversationIntent):
         return ConversationHandler(
             entry_points=[TopicCreateCommandIntent.get_handler()],
             states={
-                states.TOPIC_STATE_TYPE: [TopicTypeIntent.get_handler()],
-                states.TOPIC_STATE_TITLE: [TopicTitleIntent.get_handler()],
-                states.TOPIC_STATE_BODY: [TopicBodyIntent.get_handler()],
+                states.TOPIC_STATE_TYPE: [InputTypeIntent.get_handler()],
+                states.TOPIC_STATE_TITLE: [InputTitleIntent.get_handler()],
+                states.TOPIC_STATE_BODY: [InputBodyIntent.get_handler()],
             },
             fallbacks=[
                 TopicDoneCommandIntent.get_handler(),
