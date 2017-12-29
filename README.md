@@ -1,3 +1,11 @@
+# Introduction
+```pipenv``` (https://github.com/pypa/pipenv) is used instead of standard pip.
+
+If you want to get native requirements.txt, use ```pipenv lock``` with ```-r``` key
+
+```pipenv lock -r > requirements.txt```
+
+
 # Configuration
 All various (and sensitive) settings can be defined via .env file.
 
@@ -31,7 +39,7 @@ To drop DynamoDB tables use:
 FLASK_APP=app.py flask drop_tables
 ```
 
-# Deployment guide
+# AWS Deployment guide
 
 1. AWS cli command-line tool should be installed
 https://aws.amazon.com/cli/
