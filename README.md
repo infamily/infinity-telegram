@@ -33,15 +33,18 @@ Notice: Flask app can be resolved as "app.app"
 NB! AWS Lambda service has own way to define environment variables.
 Variables defined this way have more priority, for example:
 
-```.env
+```
+(.env file)
 TEST=foo
 ```
 
-```Lambda function variables
+```
+(Lambda function variables)
 TEST=bar
 ```
 
-```python
+```
+(interpreter)
 >>> os.getenv('TEST')
 bar
 ```
