@@ -16,4 +16,6 @@ zappa init
 
 Notice: Flask app can be resolved as "app.app"
 
-5. zappa deploy <<environment>>
+5. Use ```zappa deploy dev``` or ```zappa deploy production``` for deploy the code
+
+6. Use ```zappa update dev``` or ```zappa update production``` for update deployment
