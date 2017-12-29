@@ -8,6 +8,29 @@ SENTRY_DSN=https://token:token@sentry.io/12345678
 SENTRY_LOGGING_LEVEL=40
 ```
 
+# Set telegram webhook
+```
+FLASK_APP=app.py flask set_webhook https://example.com/telegram/webhook
+```
+Note the ```telegram/webhook``` url part
+
+Also you can get current webhook info
+```
+FLASK_APP=app.py flask webhook_info
+```
+
+
+# Database initialize
+To create DynamoDB tables use
+```
+FLASK_APP=app.py flask create_tables
+```
+
+To drop DynamoDB tables use:
+```
+FLASK_APP=app.py flask drop_tables
+```
+
 # Deployment guide
 
 1. AWS cli command-line tool should be installed
@@ -16,8 +39,7 @@ https://aws.amazon.com/cli/
 2. AWS cli should be configured
 
 3. IAM account for deployment should have AdministratorAccess policy OR read more about needed policies
-https://github.com/Miserlou/Zappa/issues/849
-https://github.com/Miserlou/Zappa/issues/244
+https://github.com/Miserlou/Zappa/issues/849 and https://github.com/Miserlou/Zappa/issues/244
 
 4. Initialize zappa with
 ```
