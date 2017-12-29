@@ -1,6 +1,9 @@
 # Introduction
 ```pipenv``` (https://github.com/pypa/pipenv) is used instead of standard pip.
 
+Setup development environment:
+```pipenv install```
+
 If you want to get native requirements.txt, use ```pipenv lock``` with ```-r``` key
 
 ```pipenv lock -r > requirements.txt```
