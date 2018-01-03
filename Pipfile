@@ -24,7 +24,7 @@ mistune = "*"
 schematics = "*"
 blinker = "*"
 "boto3" = "*"
-raven = {extras = ["flask"]}
+raven = "*"
 
 
 ["dev-packages"]
