@@ -19,28 +19,6 @@ SENTRY_DSN=https://token:token@sentry.io/12345678
 SENTRY_LOGGING_LEVEL=40
 ```
 
-# Set telegram webhook
-```
-FLASK_APP=app.py flask set_webhook https://example.com/telegram/webhook
-```
-Note the ```telegram/webhook``` url part
-
-Also you can get current webhook info
-```
-FLASK_APP=app.py flask webhook_info
-```
-
-
-# Database initialize
-To create DynamoDB tables use
-```
-FLASK_APP=app.py flask create_tables
-```
-
-To drop DynamoDB tables use:
-```
-FLASK_APP=app.py flask drop_tables
-```
 
 # AWS Deployment guide
 
@@ -80,4 +58,26 @@ TEST=bar
 (interpreter)
 >>> os.getenv('TEST')
 bar
+```
+
+# Database initialize
+To create DynamoDB tables use
+```
+FLASK_APP=app.py flask create_tables
+```
+
+To drop DynamoDB tables use:
+```
+FLASK_APP=app.py flask drop_tables
+```
+
+# Set telegram webhook
+```
+FLASK_APP=app.py flask set_webhook https://example.com/telegram/webhook
+```
+Note the ```telegram/webhook``` url part
+
+Also you can get current webhook info
+```
+FLASK_APP=app.py flask webhook_info
 ```
