@@ -15,29 +15,29 @@ settings_module = env('SETTINGS_MODULE', 'config.settings.local')
 
 
 def create_app():
-    appl = Flask(__name__)
-    appl.config.from_object(settings_module)
-    update_logging(appl)
-    init_sentry(appl)
-    register_extensions(appl)
-    return appl
+    app = Flask(__name__)
+    app.config.from_object(settings_module)
+    update_logging(app)
+    init_sentry(app)
+    register_extensions(app)
+    return app
 
 
-def register_extensions(appl):
-    for path in appl.config.get('EXTENSIONS', []):
+def register_extensions(app):
+    for path in app.config.get('EXTENSIONS', []):
         cls = import_string(path)
         extension = cls()
-        extension.init_app(appl)
+        extension.init_app(app)
 
 
-def init_sentry(appl):
-    dsn = appl.config.get('SENTRY_DSN')
+def init_sentry(app):
+    dsn = app.config.get('SENTRY_DSN')
 
     if not dsn:
         return
 
     try:
-        logging_level = int(appl.config.get('SENTRY_LOGGING_LEVEL'))
+        logging_level = int(app.config.get('SENTRY_LOGGING_LEVEL'))
     except ValueError:
         logging_level = logging.ERROR
 
@@ -46,14 +46,14 @@ def init_sentry(appl):
     })
 
     sentry = Sentry(dsn=dsn, client=client)
-    sentry.init_app(app=appl, logging=True, level=logging_level)
+    sentry.init_app(app=app, logging=True, level=logging_level)
 
 
-def update_logging(appl):
-    config = appl.config.get('LOGGING', {})
+def update_logging(app):
+    config = app.config.get('LOGGING', {})
     if not config:
         return
     dictConfig(config)
 
 
-app = create_app()
+appl = create_app()
