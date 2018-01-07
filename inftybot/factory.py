@@ -6,6 +6,7 @@ import telegram
 import telegram.ext
 from werkzeug.utils import import_string
 
+from inftybot import config
 from inftybot.dispatcher import Dispatcher
 from inftybot.intents.base import BaseIntent
 
@@ -50,14 +51,7 @@ def create_intent(conf_object):
 
 def get_intents_conf():
     # todo do not hardcode it there
-    return [
-        'inftybot.intents.login.LoginConversationIntent',
-        'inftybot.intents.newtopic.TopicConversationIntent',
-        'inftybot.intents.edittopic.TopicConversationIntent',
-        'inftybot.intents.basetopic.TopicDoneCommandIntent',
-        'inftybot.intents.start.StartCommandIntent',
-        'inftybot.intents.search.SearchTopicsInlineIntent'
-    ]
+    return config.INTENTS
 
 
 def register_intents(dispatcher):
