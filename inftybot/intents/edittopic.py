@@ -212,11 +212,7 @@ class TopicPartChooseCallback(AuthenticatedMixin, TopicRetrieveMixin, BaseTopicI
     """Choose topic part for edit"""
     def get_keyboard(self):
         return [
-            [
-                InlineKeyboardButton("Type", callback_data=constants.TOPIC_PART_TYPE),
-                InlineKeyboardButton("Title", callback_data=constants.TOPIC_PART_TITLE),
-                InlineKeyboardButton("Body", callback_data=constants.TOPIC_PART_BODY)
-            ],
+            [InlineKeyboardButton(c[1], callback_data=c[0]) for c in constants.TOPIC_PART_CHOIES],
         ]
 
     def handle(self, *args, **kwargs):
