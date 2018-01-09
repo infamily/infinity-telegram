@@ -350,5 +350,7 @@
         }
       ]
     }
-  }
+  },
+  "REPLY_TO_INLINE_TOPIC": {"update_id": 83362070, "message": {"message_id": 5057, "from": {"id": 317865952, "is_bot": false, "first_name": "Kuznetsov", "last_name": "Eugene", "username": "e_kuznetsov", "language_code": "en-US"}, "chat": {"id": -318238322, "title": "Dummy Group", "type": "group", "all_members_are_administrators": true}, "date": 1515313342, "reply_to_message": {"message_id": 5051, "from": {"id": 317865952, "is_bot": false, "first_name": "Kuznetsov", "last_name": "Eugene", "username": "e_kuznetsov", "language_code": "en-US"}, "chat": {"id": -318238322, "title": "Dummy Group", "type": "group", "all_members_are_administrators": true}, "date": 1515311996, "text": "Goal: .:no:Testing Telegram\n\n.:en\nHello World!\n\nURL: http://test.wfx.io/api/v1/topics/658/\nReply to this message to post a comment on Infinity.", "entities": [{"offset": 0, "length": 5, "type": "code"}, {"offset": 6, "length": 21, "type": "bold"}, {"offset": 48, "length": 4, "type": "bold"}, {"offset": 53, "length": 37, "type": "url"}, {"offset": 91, "length": 52, "type": "italic"}]}, "text": "reply"}},
+  "REPLY_TO_REGULAR_MESSAGE": null
 }
