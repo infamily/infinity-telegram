@@ -37,7 +37,12 @@ def create_dispatcher(bot, workers=1, **kwargs):
     :return:
     """
     dispatcher_cls_str = kwargs.pop('class', None)
-    dispatcher_cls = import_string(dispatcher_cls_str, silent=True) or Dispatcher
+
+    try:
+        dispatcher_cls = import_string(dispatcher_cls_str)
+    except ImportError:
+        dispatcher_cls = import_string(config.DISPATCHER_DEFAULT_CLASS)
+
     dispatcher = dispatcher_cls(bot, Queue(), workers=workers, **kwargs)
     register_intents(dispatcher)
     return dispatcher

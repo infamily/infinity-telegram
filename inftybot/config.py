@@ -19,5 +19,8 @@ INTENTS = [
     'inftybot.intents.edittopic.TopicConversationIntent',
     'inftybot.intents.basetopic.TopicDoneCommandIntent',
     'inftybot.intents.start.StartCommandIntent',
-    'inftybot.intents.search.SearchTopicsInlineIntent'
+    'inftybot.intents.search.SearchTopicsInlineIntent',
+    'inftybot.intents.comment.ReplyIntent',
 ]
+
+DISPATCHER_DEFAULT_CLASS = 'inftybot.dispatcher.Dispatcher'
