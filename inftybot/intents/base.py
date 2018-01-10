@@ -278,23 +278,37 @@ class AuthenticatedMixin(AuthenticationMixin):
 
 class ObjectListKeyboardMixin(APIResponsePaginator, BaseIntent):
     """
-    Intent mixin for handle paginated data retrieved from API
+    Mixin is used in ```Intents```.
+    Handles paginated data retrieved from API
     """
-    @property
-    def current_page(self):
+    def get_current_page(self):
         return int(self.chat_data.get('current_page', 1))
 
-    @current_page.setter
-    def current_page(self, value):
+    def set_current_page(self, value):
         self.chat_data['current_page'] = int(value) or 1
 
     def filter_list(self, lst):
+        """
+        Returns list ```lst``` filtered some way
+        Needed, for example, to exclude current (choosen) item from the whole list
+        Returns the same list ```lst``` by default but can be redefined
+        """
         return lst
 
-    def format_object(self, obj):
+    @staticmethod
+    def format_object(obj):
+        """
+        Formats every item in the ```self.iterable``` when putting it as keyboard button text
+        """
         return str(obj)
 
     def get_keyboard(self, column_count=2):
+        """
+        Returns TG bot's keyboard splitted on ```column_count``` columns
+        Keyboard content will be populated from ```self.iterable``` object
+        :param column_count:
+        :return:
+        """
         if not self.iterable:
             self.iterable = self.fetch()
 

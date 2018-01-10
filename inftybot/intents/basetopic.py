@@ -57,22 +57,6 @@ def send_confirm(bot, chat_id, topic):
     )
 
 
-def format_topic(topic):
-    topic_type = inftybot.constants.TOPIC_TYPE_CHOICES.get(topic.type, '<no type>')
-
-    topic_str = "{}: {}".format(
-        topic_type, topic.title or '<no title>'
-    )
-    if not topic.id:
-        topic_str = "{} (draft)".format(topic_str)
-
-    return topic_str
-
-
-def format_category(obj):
-    return "{}".format(obj.name)
-
-
 class BaseTopicIntent(BaseIntent):
     def reset_topic(self):
         if 'topic' in self.chat_data:
@@ -96,9 +80,6 @@ class TopicCategoryListMixin(ObjectListKeyboardMixin, BaseTopicIntent):
 
     def get_extra_params(self):
         return {'category': '1'}
-
-    def format_object(self, obj):
-        return format_category(obj)
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):

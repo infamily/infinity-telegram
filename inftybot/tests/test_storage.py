@@ -8,7 +8,6 @@ from botocore.exceptions import ClientError
 
 from inftybot import storage
 
-
 logger = logging.getLogger(__name__)
 
 

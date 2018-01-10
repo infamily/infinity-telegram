@@ -8,7 +8,6 @@ from slumber.exceptions import HttpClientError, HttpServerError
 
 from inftybot import config
 
-
 logger = logging.getLogger(__name__)
 
 

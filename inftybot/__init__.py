@@ -3,7 +3,6 @@ import logging
 
 from telegram.error import TelegramError
 
-
 logger = logging.getLogger(__name__)
 
 

@@ -8,7 +8,7 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, CancelCommandIntent, \
     AuthenticatedMixin, BaseMessageIntent, ObjectListKeyboardMixin
 from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
-    format_topic, TopicCategoryListMixin
+    TopicCategoryListMixin
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
 from inftybot.models import Topic
@@ -32,9 +32,6 @@ class TopicListKeyboardMixin(ObjectListKeyboardMixin, BaseTopicIntent):
     def get_extra_params(self):
         return {'owner': 'me'}
 
-    def format_object(self, obj):
-        return format_topic(obj)
-
     def filter_list(self, lst):
         """Filters out current (choosed) topic"""
         current_object = self.get_topic()
@@ -50,7 +47,8 @@ class TopicEditCommandIntent(AuthenticatedMixin, TopicListKeyboardMixin, BaseCom
         return CommandHandler("edit", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
-        self.current_page = 1
+        self.set_current_page(1)
+
         message_text = _("Please, choose the topic for editing")
         keyboard = self.get_keyboard()
 
@@ -78,15 +76,19 @@ class TopicChooseCallback(AuthenticatedMixin, TopicListKeyboardMixin, TopicRetri
     def handle_pagination(self):
         choose = self.get_choose()
 
+        current_page = self.get_current_page()
+
         if choose == constants.NEXT_PAGE:
             # we've choosed next page
-            self.current_page = self.current_page + 1
+            current_page = current_page + 1
         elif choose == constants.PREV_PAGE:
             # we've choosed prev page
-            self.current_page = self.current_page - 1
+            current_page = current_page - 1
+
+        self.set_current_page(current_page)
 
         keyboard = self.get_keyboard()
-        message_text = _("Page {}".format(self.current_page))
+        message_text = _("Page {}".format(current_page))
 
         self.bot.send_message(
             chat_id=self.update.effective_chat.id,

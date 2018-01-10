@@ -1,8 +1,9 @@
 # coding: utf-8
-from schematics.models import Model as BaseModel
-from schematics.types import StringType as BaseStringType, IntType, URLType, ListType, EmailType, BaseType, \
-    serializable, Serializable
 from schematics.exceptions import ValidationError
+from schematics.models import Model as BaseModel
+from schematics.types import StringType as BaseStringType, IntType, URLType, ListType, EmailType, serializable, \
+    Serializable
+
 from inftybot import constants
 
 
@@ -47,6 +48,9 @@ class Type(BaseModel):
     name = StringType(required=True)
     definition = StringType(required=False)
 
+    def __str__(self):
+        return self.name
+
 
 class Topic(Model):
     class Meta:
@@ -64,7 +68,21 @@ class Topic(Model):
     def type_str(self):
         return constants.TOPIC_TYPE_CHOICES.get(self.type)
 
+    def __str__(self):
+        topic_type = constants.TOPIC_TYPE_CHOICES.get(self.type, '<no type>')
+
+        topic_str = "{}: {}".format(
+            topic_type, self.title or '<no title>'
+        )
+        if not self.id:
+            topic_str = "{} (draft)".format(topic_str)
+
+        return topic_str
+
 
 class User(Model):
     email = EmailType(required=True)
     token = StringType(required=False)
+
+    def __str__(self):
+        return '<User: {}>'.format(self.email)

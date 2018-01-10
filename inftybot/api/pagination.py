@@ -7,7 +7,13 @@ from inftybot.models import from_native
 class APIResponsePaginator(object):
     """
     Paginates results list from the API
-    Every fetch() call will retrieve portion of a data regarding get_current_page()
+    Every fetch() call will retrieve portion of a data regarding ```get_current_page()```
+
+    API calls will use ```api``` high-level API wrapper (see ```inftybot.api.base.API``` class)
+    API endpoint will be determined regarding ```model```'s Meta property: ```plural```
+
+    Every item in paginated result (list) will be instantiated with ```model``` cls using ```from_native``` method
+    (see ```inftybot.models.from_native()```)
     """
     model = None
     api = None
@@ -19,32 +25,22 @@ class APIResponsePaginator(object):
         self.prev_page_url = None
 
     @property
-    def has_next_page(self):
-        return bool(self.next_page_url)
-
-    @property
     def has_prev_page(self):
         return bool(self.prev_page_url)
 
     @property
-    def current_page(self):
+    def has_next_page(self):
+        return bool(self.next_page_url)
+
+    def get_current_page(self):
         raise NotImplementedError
-
-    @current_page.setter
-    def current_page(self, value):
-        raise NotImplementedError
-
-    def get_next_page(self):
-        return self.next_page_url.split('page')[-1] if self.next_page_url else None
-
-    def get_prev_page(self):
-        return self.prev_page_url.split('page')[-1] if self.prev_page_url else None
 
     def get_extra_params(self):
         return {}
 
     def fetch(self):
-        params = {'page': self.current_page}
+        """Fetch portion of the data (current page) from the API"""
+        params = {'page': self.get_current_page()}
         params.update(self.get_extra_params())
 
         resource = getattr(self.api.client, self.model.Meta.plural)
