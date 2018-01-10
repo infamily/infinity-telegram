@@ -7,6 +7,7 @@ from inftybot import constants
 
 
 def from_native(cls, data):
+    """Create instance of cls poplated with data"""
     instance = cls()
     for key, value in data.items():
         try:
