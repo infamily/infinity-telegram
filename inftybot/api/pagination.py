@@ -5,6 +5,10 @@ from inftybot.models import from_native
 
 
 class APIResponsePaginator(object):
+    """
+    Paginates results list from the API
+    Every fetch() call will retrieve portion of a data regarding get_current_page()
+    """
     model = None
     api = None
 
