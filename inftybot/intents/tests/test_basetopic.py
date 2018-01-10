@@ -3,7 +3,7 @@ import json
 
 from inftybot.api.tests.base import patch_api_request
 from inftybot.intents.basetopic import TopicDoneCommandIntent
-from inftybot.intents.constants import TOPIC_TYPE_NEED
+from inftybot.constants import TOPIC_TYPE_NEED
 from inftybot.intents.exceptions import ValidationError
 from inftybot.intents.tests.base import BaseIntentTestCase, UserMixin
 from inftybot.intents.tests.test_newtopic import updates
