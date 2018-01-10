@@ -1,16 +1,19 @@
 # coding: utf-8
-import datetime
 import gettext
 import logging
 
 from schematics.exceptions import DataError
+from telegram import InlineKeyboardButton
 from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 
 from inftybot.api import API
+from inftybot.api.pagination import APIResponsePaginator
+from inftybot.intents import constants
 from inftybot.intents import states
 from inftybot.intents.exceptions import IntentHandleException, ValidationError, AuthenticationError
 from inftybot.intents.signals import handle_success
 from inftybot.models import User
+from inftybot.utils import build_menu
 
 logger = logging.getLogger(__name__)
 _ = gettext.gettext
@@ -271,3 +274,54 @@ class AuthenticatedMixin(AuthenticationMixin):
     def unauthenticate(self):
         self.user_data.clear()
         self.chat_data.clear()
+
+
+class ObjectListKeyboardMixin(APIResponsePaginator, BaseIntent):
+    """
+    Intent mixin for handle paginated data retrieved from API
+    """
+    @property
+    def current_page(self):
+        return int(self.chat_data.get('current_page', 1))
+
+    @current_page.setter
+    def current_page(self, value):
+        self.chat_data['current_page'] = int(value) or 1
+
+    def filter_list(self, lst):
+        return lst
+
+    def format_object(self, obj):
+        return str(obj)
+
+    def get_keyboard(self, column_count=2):
+        if not self.iterable:
+            self.iterable = self.fetch()
+
+        buttons, header_buttons, footer_buttons = [], [], []
+
+        for obj in self.filter_list(self.iterable):
+            buttons.append(
+                InlineKeyboardButton(
+                    self.format_object(obj),
+                    callback_data=obj.id or obj.url,
+                )
+            )
+
+        if self.has_prev_page:
+            footer_buttons.append(
+                InlineKeyboardButton(
+                    "<<", callback_data=constants.PREV_PAGE,
+                )
+            )
+
+        if self.has_next_page:
+            footer_buttons.append(
+                InlineKeyboardButton(
+                    ">>", callback_data=constants.NEXT_PAGE,
+                )
+            )
+
+        return build_menu(
+            buttons, column_count, header_buttons=header_buttons, footer_buttons=footer_buttons
+        )

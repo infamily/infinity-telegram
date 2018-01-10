@@ -7,11 +7,12 @@ from slumber.exceptions import HttpClientError, HttpServerError
 from telegram import InlineKeyboardButton, ParseMode
 from telegram.ext import CommandHandler
 
-from inftybot.intents import constants, states
-from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin
+import inftybot.constants
+from inftybot.intents import states
+from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin, ObjectListKeyboardMixin
 from inftybot.intents.exceptions import ValidationError, APIResourceError
 from inftybot.intents.utils import render_model_errors, render_topic
-from inftybot.models import Topic, User
+from inftybot.models import Topic, Type
 from inftybot.utils import render_errors
 
 _ = gettext.gettext
@@ -20,14 +21,14 @@ logger = logging.getLogger(__name__)
 
 CHOOSE_TYPE_KEYBOARD = [
     [
-        InlineKeyboardButton("Need", callback_data=constants.TOPIC_TYPE_NEED),
-        InlineKeyboardButton("Goal", callback_data=constants.TOPIC_TYPE_GOAL),
-        InlineKeyboardButton("Idea", callback_data=constants.TOPIC_TYPE_IDEA)
+        InlineKeyboardButton("Need", callback_data=inftybot.constants.TOPIC_TYPE_NEED),
+        InlineKeyboardButton("Goal", callback_data=inftybot.constants.TOPIC_TYPE_GOAL),
+        InlineKeyboardButton("Idea", callback_data=inftybot.constants.TOPIC_TYPE_IDEA)
     ],
     [
-        InlineKeyboardButton("Plan", callback_data=constants.TOPIC_TYPE_PLAN),
-        InlineKeyboardButton("Step", callback_data=constants.TOPIC_TYPE_STEP),
-        InlineKeyboardButton("Task", callback_data=constants.TOPIC_TYPE_TASK)
+        InlineKeyboardButton("Plan", callback_data=inftybot.constants.TOPIC_TYPE_PLAN),
+        InlineKeyboardButton("Step", callback_data=inftybot.constants.TOPIC_TYPE_STEP),
+        InlineKeyboardButton("Task", callback_data=inftybot.constants.TOPIC_TYPE_TASK)
     ]
 ]
 
@@ -56,6 +57,22 @@ def send_confirm(bot, chat_id, topic):
     )
 
 
+def format_topic(topic):
+    topic_type = inftybot.constants.TOPIC_TYPE_CHOICES.get(topic.type, '<no type>')
+
+    topic_str = "{}: {}".format(
+        topic_type, topic.title or '<no title>'
+    )
+    if not topic.id:
+        topic_str = "{} (draft)".format(topic_str)
+
+    return topic_str
+
+
+def format_category(obj):
+    return "{}".format(obj.name)
+
+
 class BaseTopicIntent(BaseIntent):
     def reset_topic(self):
         if 'topic' in self.chat_data:
@@ -72,6 +89,16 @@ class BaseTopicIntent(BaseIntent):
     def get_topic(self):
         data = self.chat_data.get('topic')
         return Topic.from_native(data) if data else None
+
+
+class TopicCategoryListMixin(ObjectListKeyboardMixin, BaseTopicIntent):
+    model = Type
+
+    def get_extra_params(self):
+        return {'category': '1'}
+
+    def format_object(self, obj):
+        return format_category(obj)
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
