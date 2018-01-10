@@ -1,6 +1,7 @@
 # coding: utf-8
 from schematics.models import Model as BaseModel
-from schematics.types import StringType as BaseStringType, IntType, URLType, ListType, EmailType, BaseType, serializable
+from schematics.types import StringType as BaseStringType, IntType, URLType, ListType, EmailType, BaseType, \
+    serializable, Serializable
 from schematics.exceptions import ValidationError
 from inftybot import constants
 
@@ -8,8 +9,13 @@ from inftybot import constants
 def from_native(cls, data):
     instance = cls()
     for key, value in data.items():
-        if hasattr(cls, key):
-            setattr(instance, key, value)
+        try:
+            field = getattr(cls, key)
+        except AttributeError:
+            continue
+        if isinstance(field, Serializable):
+            continue
+        setattr(instance, key, value)
     return instance
 
 
