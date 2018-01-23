@@ -2,7 +2,7 @@
 import os
 
 INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'https://net.wfx.io')
-INFTY_API_URL = os.environ.get('INFTY_API_URL', 'https://net.wfx.io/api/')
+INFTY_API_URL = os.environ.get('INFTY_API_URL', 'https://net.wfx.io/api/v1/')
 
 # INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'http://localhost:8001')
 # INFTY_API_URL = os.environ.get('INFTY_API_URL', 'http://localhost:8001/api/v1')
