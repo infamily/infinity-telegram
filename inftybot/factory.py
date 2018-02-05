@@ -6,6 +6,7 @@ import telegram
 import telegram.ext
 from werkzeug.utils import import_string
 
+from inftybot import config
 from inftybot.dispatcher import Dispatcher
 from inftybot.intents.base import BaseIntent
 
@@ -36,7 +37,12 @@ def create_dispatcher(bot, workers=1, **kwargs):
     :return:
     """
     dispatcher_cls_str = kwargs.pop('class', None)
-    dispatcher_cls = import_string(dispatcher_cls_str, silent=True) or Dispatcher
+
+    try:
+        dispatcher_cls = import_string(dispatcher_cls_str)
+    except ImportError:
+        dispatcher_cls = import_string(config.DISPATCHER_DEFAULT_CLASS)
+
     dispatcher = dispatcher_cls(bot, Queue(), workers=workers, **kwargs)
     register_intents(dispatcher)
     return dispatcher
@@ -50,14 +56,7 @@ def create_intent(conf_object):
 
 def get_intents_conf():
     # todo do not hardcode it there
-    return [
-        'inftybot.intents.login.LoginConversationIntent',
-        'inftybot.intents.newtopic.TopicConversationIntent',
-        'inftybot.intents.edittopic.TopicConversationIntent',
-        'inftybot.intents.basetopic.TopicDoneCommandIntent',
-        'inftybot.intents.start.StartCommandIntent',
-        'inftybot.intents.search.SearchTopicsInlineIntent'
-    ]
+    return config.INTENTS
 
 
 def register_intents(dispatcher):

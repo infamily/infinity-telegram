@@ -4,7 +4,13 @@ from unittest import TestCase
 from mock import patch, MagicMock
 from telegram import Update
 
+from inftybot import config
 from inftybot.dispatcher import Dispatcher, DynamoDispatcher
+from inftybot.factory import create_dispatcher
+
+
+class TestDispatcher(Dispatcher):
+    pass
 
 
 class DispatcherTestCase(TestCase):
@@ -30,3 +36,11 @@ class DynamoDispatcherUserDataTestCase(TestCase):
     def test_get_chat_data_from_dynamo_db(self, m):
         _ = self.dispatcher.chat_data[self.user_id]
         self.assertEqual(m.call_count, 1)
+
+
+class DispatcherDefaultClassFallbackTestCase(TestCase):
+    def test_provided_default_dispatcher_class_is_used(self):
+        config.DISPATCHER_DEFAULT_CLASS = 'test_dispatcher.TestDispatcher'
+
+        dispatcher = create_dispatcher(MagicMock())
+        self.assertIsInstance(dispatcher, TestDispatcher)
