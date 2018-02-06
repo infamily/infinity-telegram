@@ -21,6 +21,7 @@ INTENTS = [
     'inftybot.intents.start.StartCommandIntent',
     'inftybot.intents.search.SearchTopicsInlineIntent',
     'inftybot.intents.comment.ReplyIntent',
+    'inftybot.intents.listcategories.ListCategoriesCommandIntent',
 ]
 
 DISPATCHER_DEFAULT_CLASS = 'inftybot.dispatcher.Dispatcher'
