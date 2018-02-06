@@ -36,7 +36,12 @@ def create_dispatcher(bot, workers=1, **kwargs):
     :return:
     """
     dispatcher_cls_str = kwargs.pop('class', None)
-    dispatcher_cls = import_string(dispatcher_cls_str, silent=True) or Dispatcher
+
+    try:
+        dispatcher_cls = import_string(dispatcher_cls_str)
+    except ImportError:
+        dispatcher_cls = import_string(config.DISPATCHER_DEFAULT_CLASS)
+
     dispatcher = dispatcher_cls(bot, Queue(), workers=workers, **kwargs)
 
     if config.TELEGRAM_ERROR_HANDLER:
@@ -55,14 +60,7 @@ def create_intent(conf_object):
 
 def get_intents_conf():
     # todo do not hardcode it there
-    return [
-        'inftybot.intents.login.LoginConversationIntent',
-        'inftybot.intents.newtopic.TopicConversationIntent',
-        'inftybot.intents.edittopic.TopicConversationIntent',
-        'inftybot.intents.basetopic.TopicDoneCommandIntent',
-        'inftybot.intents.start.StartCommandIntent',
-        'inftybot.intents.search.SearchTopicsInlineIntent'
-    ]
+    return config.INTENTS
 
 
 def register_intents(dispatcher):

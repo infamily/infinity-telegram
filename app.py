@@ -56,4 +56,4 @@ def update_logging(app):
     dictConfig(config)
 
 
-appl = create_app()
+app = create_app()

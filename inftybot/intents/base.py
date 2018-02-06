@@ -32,10 +32,14 @@ class BaseIntent(object):
 
     @property
     def user(self):
-        data = self.chat_data.get('user')
+        # todo maybe it is necessary not to use property, but use get_user() always instead?
+        return self.get_user()
+
+    def get_user(self):
+        data = dict(self.user_data)
 
         try:
-            return User.from_native(data) if data else None
+            return User.from_native(data)
         except DataError as e:
             self._errors.append(e)
 
@@ -44,7 +48,7 @@ class BaseIntent(object):
             data = user.to_native()
         else:
             data = user
-        self.chat_data['user'] = data
+        self.user_data.update(data)
 
     @property
     def errors(self):
