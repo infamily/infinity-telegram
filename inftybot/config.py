@@ -27,3 +27,7 @@ INTENTS = [
 DISPATCHER_DEFAULT_CLASS = 'inftybot.dispatcher.Dispatcher'
 
 TELEGRAM_ERROR_HANDLER = 'inftybot.error_callback'
+
+JINJA_EXTENSIONS = [
+    'inftybot.contrib.jinja2.ext.StringExtension',
+]
