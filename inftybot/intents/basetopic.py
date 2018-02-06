@@ -59,7 +59,10 @@ def send_confirm(bot, chat_id, topic):
 
 class BaseTopicIntent(BaseIntent):
     def reset_topic(self):
-        del self.chat_data['topic']
+        try:
+            del self.chat_data['topic']
+        except KeyError:
+            pass
 
     def set_topic(self, topic):
         if isinstance(topic, Topic):
