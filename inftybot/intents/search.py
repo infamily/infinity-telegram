@@ -6,7 +6,6 @@ from telegram import InputTextMessageContent, ParseMode
 from telegram.ext import InlineQueryHandler
 
 from inftybot import config
-from inftybot.intents import constants
 from inftybot.intents.base import BaseInlineQuery
 from inftybot.intents.utils import render_topic
 from inftybot.models import Topic

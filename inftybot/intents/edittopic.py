@@ -1,32 +1,20 @@
 # coding: utf-8
 import gettext
 
-from slumber.exceptions import HttpClientError
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler, CallbackQueryHandler
 
+from inftybot.api.utils import get_model_resource
 from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, CancelCommandIntent, \
-    AuthenticatedMixin, BaseMessageIntent
-from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm
+    AuthenticatedMixin, BaseMessageIntent, ObjectListKeyboardMixin
+from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
+    TopicCategoryListMixin
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
-from inftybot.models import Topic
-from inftybot.utils import build_menu
+from inftybot.models import Topic, Type
 
 _ = gettext.gettext
-
-
-def format_topic(topic):
-    topic_type = constants.TOPIC_TYPE_CHOICES.get(topic.type, '<no type>')
-
-    topic_str = "{}: {}".format(
-        topic_type, topic.title or '<no title>'
-    )
-    if not topic.id:
-        topic_str = "{} (draft)".format(topic_str)
-
-    return topic_str
 
 
 class TopicRetrieveMixin(BaseTopicIntent):
@@ -38,109 +26,21 @@ class TopicRetrieveMixin(BaseTopicIntent):
         return Topic.from_native(response)
 
 
-class TopicListRetrieveMixin(BaseTopicIntent):
-    """
-    todo: bad design, needs refactor: split it to Mixin & ApiResponsePaginator, maybe
-    """
+class TopicListKeyboardMixin(ObjectListKeyboardMixin, BaseTopicIntent):
+    """Mixin for provide current user owned topic list in the keyboard"""
+    model = Topic
 
-    def __init__(self, **kwargs):
-        super(TopicListRetrieveMixin, self).__init__(**kwargs)
-        self.topics = []
-        self.next_page_url = None
-        self.prev_page_url = None
+    def get_extra_params(self):
+        return {'owner': 'me'}
 
-    @property
-    def has_next_page(self):
-        return bool(self.next_page_url)
-
-    @property
-    def has_prev_page(self):
-        return bool(self.prev_page_url)
-
-    def get_keyboard(self):
-        if not self.topics:
-            self.topics = self.fetch_topics()
-
-        current_topic = self.get_topic()
-        current_topic_id = current_topic.id if current_topic else None
-
-        buttons, header_buttons, footer_buttons = [], [], []
-
-        for topic in filter(lambda t: t.id != current_topic_id or None, self.topics):
-            buttons.append(
-                InlineKeyboardButton(
-                    format_topic(topic),
-                    callback_data=topic.id,
-                )
-            )
-
-        if current_topic:
-            header_buttons.append(
-                InlineKeyboardButton(
-                    _("(Current) {}").format(
-                        format_topic(current_topic)
-                    ), callback_data=constants.CURRENT_TOPIC,
-                )
-            )
-
-        if self.has_prev_page:
-            footer_buttons.append(
-                InlineKeyboardButton(
-                    "<<", callback_data=constants.PREV_PAGE,
-                )
-            )
-
-        if self.has_next_page:
-            footer_buttons.append(
-                InlineKeyboardButton(
-                    ">>", callback_data=constants.NEXT_PAGE,
-                )
-            )
-
-        return build_menu(
-            buttons, 2, header_buttons=header_buttons, footer_buttons=footer_buttons
-        )
-
-    def fetch_topics(self):
-        """
-        Loads topics from API
-        Returns List[Topic]
-        """
-        params = {'owner': 'me', 'page': self.current_page}
-
-        try:
-            response = self.api.client.topics.get(**params)
-        except HttpClientError as e:
-            return []
-
-        if response['next']:
-            self.next_page_url = response['next']
-        else:
-            self.next_page_url = None
-
-        if response['previous']:
-            self.prev_page_url = response['previous']
-        else:
-            self.prev_page_url = None
-
-        return [Topic.from_native(data) for data in response['results']]
-
-    @property
-    def current_page(self):
-        return int(self.chat_data.get('current_page', 1))
-
-    @current_page.setter
-    def current_page(self, value):
-        self.chat_data['current_page'] = int(value) or 1
-
-    def get_next_page(self):
-        return self.next_page_url.split('page')[-1] if self.next_page_url else None
-
-    def get_prev_page(self):
-        return self.prev_page_url.split('page')[-1] if self.prev_page_url else None
+    def filter_list(self, lst):
+        """Filters out current (choosed) topic"""
+        current_object = self.get_topic()
+        current_object_id = current_object.id if current_object else None
+        return filter(lambda t: t.id != current_object_id or None, lst)
 
 
-class TopicEditCommandIntent(AuthenticatedMixin, TopicListRetrieveMixin, BaseTopicIntent, BaseCommandIntent):
+class TopicEditCommandIntent(AuthenticatedMixin, TopicListKeyboardMixin, BaseCommandIntent):
     """Enters topic edit context"""
 
     @classmethod
@@ -148,9 +48,18 @@ class TopicEditCommandIntent(AuthenticatedMixin, TopicListRetrieveMixin, BaseTop
         return CommandHandler("edit", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
-        self.current_page = 1
+        self.set_current_page(1)
+
         message_text = _("Please, choose the topic for editing")
         keyboard = self.get_keyboard()
+
+        current_object = self.get_topic()
+        if current_object:
+            keyboard.insert(0, [InlineKeyboardButton(
+                _("(Current) {}").format(
+                    self.format_object(current_object)
+                ), callback_data=constants.CURRENT_TOPIC,
+            )])
 
         self.bot.send_message(
             chat_id=self.update.effective_chat.id,
@@ -161,21 +70,26 @@ class TopicEditCommandIntent(AuthenticatedMixin, TopicListRetrieveMixin, BaseTop
         return states.TOPIC_STATE_EDIT_CHOOSE_TOPIC
 
 
-class TopicChooseCallback(AuthenticatedMixin, TopicListRetrieveMixin, TopicRetrieveMixin, BaseTopicIntent, BaseCallbackIntent):
+class TopicChooseCallback(AuthenticatedMixin, TopicListKeyboardMixin, TopicRetrieveMixin, BaseTopicIntent,
+                          BaseCallbackIntent):
     """Choose topic to edit"""
 
     def handle_pagination(self):
         choose = self.get_choose()
 
+        current_page = self.get_current_page()
+
         if choose == constants.NEXT_PAGE:
             # we've choosed next page
-            self.current_page = self.current_page + 1
+            current_page = current_page + 1
         elif choose == constants.PREV_PAGE:
             # we've choosed prev page
-            self.current_page = self.current_page - 1
+            current_page = current_page - 1
+
+        self.set_current_page(current_page)
 
         keyboard = self.get_keyboard()
-        message_text = _("Page {}".format(self.current_page))
+        message_text = _("Page {}".format(current_page))
 
         self.bot.send_message(
             chat_id=self.update.effective_chat.id,
@@ -210,13 +124,10 @@ class TopicChooseCallback(AuthenticatedMixin, TopicListRetrieveMixin, TopicRetri
 
 class TopicPartChooseCallback(AuthenticatedMixin, TopicRetrieveMixin, BaseTopicIntent, BaseCallbackIntent):
     """Choose topic part for edit"""
+
     def get_keyboard(self):
         return [
-            [
-                InlineKeyboardButton("Type", callback_data=constants.TOPIC_PART_TYPE),
-                InlineKeyboardButton("Title", callback_data=constants.TOPIC_PART_TITLE),
-                InlineKeyboardButton("Body", callback_data=constants.TOPIC_PART_BODY)
-            ],
+            [InlineKeyboardButton(label, callback_data=value) for value, label in constants.TOPIC_PART_CHOIES],
         ]
 
     def handle(self, *args, **kwargs):
@@ -238,18 +149,22 @@ class TopicPartChooseCallback(AuthenticatedMixin, TopicRetrieveMixin, BaseTopicI
         return states.TOPIC_STATE_EDIT_INPUT
 
 
-class TopicEditIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
+class TopicEditIntent(AuthenticatedMixin, TopicCategoryListMixin, BaseTopicIntent, BaseCallbackIntent):
     """Intent (CallbackHandler) for start edit topic"""
 
     @classmethod
     def get_handler(cls):
         return CallbackQueryHandler(cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
+    def get_extra_params(self):
+        return {'lang': 'en'}
+
     def handle(self, *args, **kwargs):
         topic_part_mapping = {
             constants.TOPIC_PART_TYPE: states.TOPIC_STATE_TYPE,
             constants.TOPIC_PART_TITLE: states.TOPIC_STATE_TITLE,
             constants.TOPIC_PART_BODY: states.TOPIC_STATE_BODY,
+            constants.TOPIC_PART_CATEGORY: states.TOPIC_STATE_CATEGORY,
         }
 
         new_state = topic_part_mapping.get(self.update.callback_query.data)
@@ -259,6 +174,8 @@ class TopicEditIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
             message = _('Please, choose topic type')
             keyboard = CHOOSE_TYPE_KEYBOARD
             reply_markup = InlineKeyboardMarkup(keyboard)
+        elif new_state is states.TOPIC_STATE_CATEGORY:
+            message = _('Please, enter topic categories')
         elif new_state is states.TOPIC_STATE_TITLE:
             message = _('Please, enter topic title')
         elif new_state is states.TOPIC_STATE_BODY:
@@ -279,6 +196,23 @@ class TopicEditIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
             chat_id=self.update.callback_query.message.chat_id,
             text=error.message,
         )
+
+
+class InputCategoryIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
+    """Edit topic category"""
+
+    def handle(self, *args, **kwargs):
+        topic = self.get_topic()
+        topic.categories_str = self.update.message.text
+        self.set_topic(topic)
+
+        send_confirm(
+            self.bot,
+            self.update.message.chat_id,
+            topic
+        )
+
+        return states.TOPIC_STATE_EDIT
 
 
 class InputTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
@@ -344,6 +278,7 @@ class TopicConversationIntent(BaseConversationIntent):
                 states.TOPIC_STATE_EDIT_CHOOSE_TOPIC: [TopicChooseCallback.get_handler()],
                 states.TOPIC_STATE_EDIT_CHOOSE_PART: [TopicPartChooseCallback.get_handler()],
                 states.TOPIC_STATE_EDIT_INPUT: [TopicEditIntent.get_handler()],
+                states.TOPIC_STATE_CATEGORY: [InputCategoryIntent.get_handler()],
                 states.TOPIC_STATE_TYPE: [InputTypeIntent.get_handler()],
                 states.TOPIC_STATE_TITLE: [InputTitleIntent.get_handler()],
                 states.TOPIC_STATE_BODY: [InputBodyIntent.get_handler()],
