@@ -36,7 +36,7 @@ class BaseIntent(object):
         data = dict(self.user_data)
 
         try:
-            return User.from_native(data) if data else None
+            return User.from_native(data)
         except DataError as e:
             self._errors.append(e)
 
@@ -45,7 +45,7 @@ class BaseIntent(object):
             data = user.to_native()
         else:
             data = user
-        self.chat_data['user'] = data
+        self.user_data.update(data)
 
     @property
     def errors(self):
