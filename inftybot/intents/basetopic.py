@@ -122,7 +122,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
             rv = method(data=topic.to_native())
         except (HttpClientError, HttpServerError) as e:
             # intercept 4xx and 5xx both
-            raise APIResourceError('Internal error. Please, report it')
+            raise APIResourceError('Failed to save the topic. Please, report it :/')
         else:
             self.reset_topic()
 

@@ -60,7 +60,7 @@ class Topic(Model):
     type = IntType(required=True)
     title = StringType(required=True, min_length=1)
     body = StringType(required=True, min_length=1)
-    categories = ListType(StringType, default=[], required=False)
+    categories_str = StringType(required=False)
     url = URLType(required=False)
     parents = ListType(StringType, required=True, default=[])
 

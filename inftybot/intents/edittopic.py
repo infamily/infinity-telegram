@@ -4,6 +4,7 @@ import gettext
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler, CallbackQueryHandler
 
+from inftybot.api.utils import get_model_resource
 from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, CancelCommandIntent, \
     AuthenticatedMixin, BaseMessageIntent, ObjectListKeyboardMixin
@@ -11,7 +12,7 @@ from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, 
     TopicCategoryListMixin
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
-from inftybot.models import Topic
+from inftybot.models import Topic, Type
 
 _ = gettext.gettext
 
@@ -174,9 +175,7 @@ class TopicEditIntent(AuthenticatedMixin, TopicCategoryListMixin, BaseTopicInten
             keyboard = CHOOSE_TYPE_KEYBOARD
             reply_markup = InlineKeyboardMarkup(keyboard)
         elif new_state is states.TOPIC_STATE_CATEGORY:
-            message = _('Please, choose topic category')
-            keyboard = self.get_keyboard()
-            reply_markup = InlineKeyboardMarkup(keyboard)
+            message = _('Please, enter topic categories')
         elif new_state is states.TOPIC_STATE_TITLE:
             message = _('Please, enter topic title')
         elif new_state is states.TOPIC_STATE_BODY:
@@ -199,17 +198,17 @@ class TopicEditIntent(AuthenticatedMixin, TopicCategoryListMixin, BaseTopicInten
         )
 
 
-class InputCategoryIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
+class InputCategoryIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
     """Edit topic category"""
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.categories.append(self.update.callback_query.data)
+        topic.categories_str = self.update.message.text
         self.set_topic(topic)
 
         send_confirm(
             self.bot,
-            self.update.callback_query.message.chat_id,
+            self.update.message.chat_id,
             topic
         )
 
