@@ -1,6 +1,7 @@
 # coding: utf-8
 from slumber.exceptions import HttpClientError
 
+from inftybot.api.utils import get_model_resource
 from inftybot.models import from_native
 
 
@@ -43,7 +44,7 @@ class APIResponsePaginator(object):
         params = {'page': self.get_current_page()}
         params.update(self.get_extra_params())
 
-        resource = getattr(self.api.client, self.model.Meta.plural)
+        resource = get_model_resource(self.api, self.model)
 
         try:
             response = resource.get(**params)
