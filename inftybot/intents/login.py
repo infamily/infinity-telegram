@@ -21,9 +21,11 @@ class CaptchaMixin(object):
         chat_data = getattr(self, 'chat_data', {})
         return chat_data.get('captcha', {})
 
-    def set_captcha(self, value):
+    def set_captcha(self, value, force_store=False):
         chat_data = getattr(self, 'chat_data', {})
         chat_data['captcha'] = value
+        if force_store:
+            chat_data.store(True)
 
     def clear_captcha(self):
         chat_data = getattr(self, 'chat_data', {})
@@ -41,7 +43,7 @@ class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
         user = User()
         user.email = self.update.message.text
 
-        captcha = self.api.client.otp.signup.get()
+        captcha = self.api.client.captcha.get()
 
         self.set_user(user)
         self.set_captcha(captcha)
@@ -61,27 +63,25 @@ class AuthCaptchaIntent(CaptchaMixin, BaseMessageIntent):
     def validate(self):
         payload = {
             'email': self.user.email,
-            'captcha_0': self.captcha['key'],
-            'captcha_1': self.update.message.text,
+            'captcha': {
+                'hashkey': self.captcha['key'],
+                'response': self.update.message.text,
+            }
         }
 
         try:
-            response = self.api.client.otp.signup.post(
+            self.api.client.signup.post(
                 data=payload
             )
         except HttpClientError as e:
-            response = getattr(e, 'response')
-            response_data = response.json()
-            errors = response_data.pop('errors', '')
-            self.set_captcha(response_data)
+            captcha = self.api.client.captcha.get()
+            # we need to force store data because it stored on handle_success
+            # but this case is not success (see `inftybot.storage.store_data`)
+            self.set_captcha(captcha, True)
             raise CaptchaValidationError(
-                errors or _("Bad captcha. Please, solve again"),
-                captcha=response_data
+                _("Bad captcha. Please, solve again"),
+                captcha=captcha,
             )
-        else:
-            user = self.user
-            user.token = response['token']
-            self.set_user(user)
 
     def handle_error(self, error):
         self.update.message.reply_text(_(error.message))
@@ -99,18 +99,21 @@ class AuthCaptchaIntent(CaptchaMixin, BaseMessageIntent):
 
 
 class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
-    def before_validate(self):
-        self.set_api_authentication(self.user)
-
     def validate(self):
         try:
-            self.api.client.otp.login.post(data={
-                'password': self.update.message.text,
-            })
-        except HttpClientError:
+            payload = {
+                'email': self.user.email,
+                'one_time_password': self.update.message.text,
+            }
+            response = self.api.client.signin.post(data=payload)
+        except HttpClientError as e:
             raise ValidationError(
                 _("Wrong authentication credentials")
             )
+        else:
+            user = self.user
+            user.token = response['auth_token']
+            self.set_user(user)
 
     def handle_error(self, error):
         self.update.message.reply_text(_("Login failed"))
