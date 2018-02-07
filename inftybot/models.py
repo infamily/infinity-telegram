@@ -66,6 +66,7 @@ class Topic(Model):
 
     @serializable
     def categories_str(self):
+        """Used as data field when send to the API"""
         return self.categories_names
 
     @serializable
