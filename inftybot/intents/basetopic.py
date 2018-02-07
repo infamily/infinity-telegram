@@ -33,6 +33,10 @@ CHOOSE_TYPE_KEYBOARD = [
 ]
 
 
+def prepare_categories(value):
+    return list(filter(lambda v: v, (v.strip() for v in value.split(','))))
+
+
 def send_confirm(bot, chat_id, topic):
     """Sends the topic preview"""
     bot.sendMessage(

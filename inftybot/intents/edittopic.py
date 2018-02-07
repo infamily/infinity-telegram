@@ -9,7 +9,7 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, CancelCommandIntent, \
     AuthenticatedMixin, BaseMessageIntent, ObjectListKeyboardMixin
 from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
-    TopicCategoryListMixin
+    TopicCategoryListMixin, prepare_categories
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
 from inftybot.models import Topic, Type
@@ -175,7 +175,10 @@ class TopicEditIntent(AuthenticatedMixin, TopicCategoryListMixin, BaseTopicInten
             keyboard = CHOOSE_TYPE_KEYBOARD
             reply_markup = InlineKeyboardMarkup(keyboard)
         elif new_state is states.TOPIC_STATE_CATEGORY:
-            message = _('Please, enter topic categories')
+            message = _(
+                'Please, enter some categories (comma-separated). '
+                'Use /listcategories to check the available ones'
+            )
         elif new_state is states.TOPIC_STATE_TITLE:
             message = _('Please, enter topic title')
         elif new_state is states.TOPIC_STATE_BODY:
@@ -203,7 +206,7 @@ class InputCategoryIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.categories_str = self.update.message.text
+        topic.categories_names = prepare_categories(self.update.message.text)
         self.set_topic(topic)
 
         send_confirm(
