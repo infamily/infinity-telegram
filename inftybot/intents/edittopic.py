@@ -175,7 +175,10 @@ class TopicEditIntent(AuthenticatedMixin, TopicCategoryListMixin, BaseTopicInten
             keyboard = CHOOSE_TYPE_KEYBOARD
             reply_markup = InlineKeyboardMarkup(keyboard)
         elif new_state is states.TOPIC_STATE_CATEGORY:
-            message = _('Please, enter topic categories')
+            message = _(
+                'Please, enter some categories (comma-separated). '
+                'Use /listcategories to check the available ones'
+            )
         elif new_state is states.TOPIC_STATE_TITLE:
             message = _('Please, enter topic title')
         elif new_state is states.TOPIC_STATE_BODY:

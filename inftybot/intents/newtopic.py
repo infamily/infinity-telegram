@@ -39,7 +39,10 @@ class InputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
         self.set_topic(topic)
         self.bot.sendMessage(
             chat_id=self.update.callback_query.message.chat_id,
-            text=_("Please, enter some categories (comma-separated)"),
+            text=_(
+                "Please, enter some categories (comma-separated). "
+                "Use /listcategories to check the available ones"
+            ),
         )
         return states.TOPIC_STATE_CATEGORY
 
