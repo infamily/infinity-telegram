@@ -9,7 +9,7 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, CancelCommandIntent, \
     AuthenticatedMixin, BaseMessageIntent, ObjectListKeyboardMixin
 from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
-    TopicCategoryListMixin
+    TopicCategoryListMixin, prepare_categories
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
 from inftybot.models import Topic, Type
@@ -203,7 +203,7 @@ class InputCategoryIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.categories_str = self.update.message.text
+        topic.categories_names = prepare_categories(self.update.message.text)
         self.set_topic(topic)
 
         send_confirm(

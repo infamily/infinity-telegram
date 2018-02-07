@@ -1,5 +1,5 @@
-{% if categories_str %}
-`Categories:` {{categories_str|split(',')|strip(' ')|exclude('')|join(', ')}}
+{% if categories_names %}
+`Categories:` {{categories_names|join(', ')}}
 {%- endif %}
 
 `{{type_str}}:` *{{title}}*

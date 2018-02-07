@@ -60,9 +60,13 @@ class Topic(Model):
     type = IntType(required=True)
     title = StringType(required=True, min_length=1)
     body = StringType(required=True, min_length=1)
-    categories_str = StringType(required=False)
+    categories_names = ListType(StringType, required=False, default=[])
     url = URLType(required=False)
     parents = ListType(StringType, required=True, default=[])
+
+    @serializable
+    def categories_str(self):
+        return self.categories_names
 
     @serializable
     def type_str(self):
