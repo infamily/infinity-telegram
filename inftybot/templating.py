@@ -20,4 +20,3 @@ template_environment = create_template_environment()
 def render_template(template_name, context):
     template = template_environment.get_template(template_name)
     return template.render(**context)
-
