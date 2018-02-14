@@ -2,6 +2,9 @@
 # flake8: noqa
 from unittest import TestCase, skip
 
+from mock import patch, MagicMock
+from slumber.exceptions import HttpClientError
+
 import inftybot.intents.base
 import inftybot.intents.login
 from inftybot.api.tests.base import patch_api_request
@@ -62,7 +65,7 @@ class TestAuthEMailIntent(BaseIntentTestCase):
         with self.assertRaises(ValidationError):
             intent.validate()
 
-    @patch_api_request(200, api_responses['SIGNUP'])
+    @patch_api_request(200, api_responses['CAPTCHA_GET'])
     def test_valid_email_returns_auth_state_captcha(self, api_response):
         update = updates['EMAIL_MESSAGE']
         intent = self.create_intent(update)
@@ -92,27 +95,29 @@ class TestAuthCaptchaIntent(BaseIntentTestCase):
         })
         self.assertEquals(rv, states.AUTH_STATE_PASSWORD)
 
-    @patch_api_request(400, api_responses['SIGNUP'])
+    @patch_api_request(400, api_responses['CAPTCHA_GET'])
     def test_invalid_captcha_returns_no_state(self, api_response):
         update = updates['CAPTCHA_MESSAGE']
         user = User()
         user.email = 'example@email.com'
         intent = self.create_intent(update)
+        intent.set_user(user)
+
+        intent.handle_error = MagicMock(return_value=None)
         rv = intent(chat_data={
-            'user': user,
             'captcha': {'key': 'key'}
         })
         self.assertEquals(rv, None)
 
-    @patch_api_request(400, api_responses['SIGNUP'])
+    @patch_api_request(400, api_responses['CAPTCHA_GET'])
     def test_invalid_captcha_validation_error_raises(self, api_response):
         update = updates['CAPTCHA_MESSAGE']
         user = User()
         user.email = 'example@email.com'
         intent = self.create_intent(update, chat_data={
-            'user': user,
             'captcha': {'key': 'key'}
         })
+        intent.set_user(user)
         with self.assertRaises(CaptchaValidationError):
             intent.validate()
 
@@ -148,7 +153,7 @@ class AuthOTPIntent(BaseIntentTestCase):
         })
         self.assertEqual(rv, None)
 
-    @patch_api_request(200, '')
+    @patch_api_request(200, api_responses['SIGNIN_SUCCESS'])
     def test_api_login_ok_return_state_end(self, api_response):
         update = updates['OTP_MESSAGE']
 
@@ -157,9 +162,8 @@ class AuthOTPIntent(BaseIntentTestCase):
         user.email = 'example@email.com'
 
         intent = self.create_intent(update)
-        rv = intent(chat_data={
-            'user': user,
-        })
+        intent.set_user(user)
+        rv = intent()
         self.assertEquals(rv, states.STATE_END)
 
 
