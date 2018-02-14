@@ -25,6 +25,7 @@ schematics = "*"
 blinker = "*"
 "boto3" = "*"
 raven = "*"
+"flake8" = "*"
 
 
 ["dev-packages"]
