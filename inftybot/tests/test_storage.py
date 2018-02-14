@@ -9,7 +9,6 @@ from botocore.exceptions import ClientError
 
 from inftybot import storage
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -77,6 +76,10 @@ class UserDataStorageTestCase(DynamoStorageTestCase):
         self.storage[123] = {'test': 1}
         del self.storage[123]
         self.assertFalse(self.storage[123])
+
+    def test_delete_storage_unexisted_data_ok(self):
+        self.storage[123] = {'test': 1}
+        del self.storage[1234]
 
 
 class StorageDataTestCase(DynamoStorageTestCase):

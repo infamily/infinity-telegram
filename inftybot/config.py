@@ -1,8 +1,8 @@
 # coding: utf-8
 import os
 
-INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'https://net.wfx.io')
-INFTY_API_URL = os.environ.get('INFTY_API_URL', 'https://net.wfx.io/api/v1/')
+INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'https://dev.wfx.io')
+INFTY_API_URL = os.environ.get('INFTY_API_URL', 'https://dev.wfx.io')
 
 # INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'http://localhost:8001')
 # INFTY_API_URL = os.environ.get('INFTY_API_URL', 'http://localhost:8001/api/v1')
@@ -21,6 +21,14 @@ INTENTS = [
     'inftybot.intents.start.StartCommandIntent',
     'inftybot.intents.search.SearchTopicsInlineIntent',
     'inftybot.intents.comment.ReplyIntent',
+    'inftybot.intents.listcategories.ListCategoriesCommandIntent',
+    'inftybot.intents.reset.ResetCommandIntent',
 ]
 
 DISPATCHER_DEFAULT_CLASS = 'inftybot.dispatcher.Dispatcher'
+
+TELEGRAM_ERROR_HANDLER = 'inftybot.error_callback'
+
+JINJA_EXTENSIONS = [
+    'inftybot.contrib.jinja2.ext.StringExtension',
+]

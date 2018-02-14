@@ -7,7 +7,8 @@ from telegram.ext import CommandHandler, ConversationHandler
 from inftybot.intents import states
 from inftybot.intents.base import BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, AuthenticatedMixin, \
     BaseCallbackIntent, BaseMessageIntent
-from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent, send_confirm
+from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent, send_confirm, \
+    prepare_categories
 from inftybot.models import Topic
 
 _ = gettext.gettext
@@ -25,7 +26,7 @@ class TopicCreateCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandI
 
         keyboard = CHOOSE_TYPE_KEYBOARD
         self.update.message.reply_text(
-            _("Please, choose:"), reply_markup=InlineKeyboardMarkup(keyboard)
+            _("Please, choose type:"), reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
         return states.TOPIC_STATE_TYPE
@@ -38,7 +39,22 @@ class InputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
         self.set_topic(topic)
         self.bot.sendMessage(
             chat_id=self.update.callback_query.message.chat_id,
-            text=_("Well! Please, tell me the topic title"),
+            text=_(
+                "Please, enter some categories (comma-separated). "
+                "Use /listcategories to check the available ones"
+            ),
+        )
+        return states.TOPIC_STATE_CATEGORY
+
+
+class InputCategoryIntent(BaseTopicIntent, BaseMessageIntent):
+    def handle(self, *args, **kwargs):
+        topic = self.get_topic()
+        topic.categories_names = prepare_categories(self.update.message.text)
+        self.set_topic(topic)
+        self.bot.sendMessage(
+            chat_id=self.update.message.chat_id,
+            text=_("Ok! Please, input the topic title"),
         )
         return states.TOPIC_STATE_TITLE
 
@@ -77,6 +93,7 @@ class TopicConversationIntent(BaseConversationIntent):
             states={
                 states.TOPIC_STATE_TYPE: [InputTypeIntent.get_handler()],
                 states.TOPIC_STATE_TITLE: [InputTitleIntent.get_handler()],
+                states.TOPIC_STATE_CATEGORY: [InputCategoryIntent.get_handler()],
                 states.TOPIC_STATE_BODY: [InputBodyIntent.get_handler()],
             },
             fallbacks=[

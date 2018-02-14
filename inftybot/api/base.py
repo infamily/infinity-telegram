@@ -8,7 +8,6 @@ from slumber.exceptions import HttpClientError, HttpServerError
 
 from inftybot import config
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -36,8 +35,10 @@ class API(object):
         self._data = {}
 
     def _update_session(self):
+        # temporary solution because API returns token as HyperlinkedRelated field (as URL)
+        token = list(filter(lambda v: v, self.user.token.split('/')))[-1]
         self.session.headers.update({
-            'Authorization': 'Token {}'.format(self.user.token)
+            'Authorization': 'Token {}'.format(token)
         })
 
     @property

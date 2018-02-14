@@ -42,6 +42,11 @@ def create_dispatcher(bot, workers=1, **kwargs):
         dispatcher_cls = import_string(config.DISPATCHER_DEFAULT_CLASS)
 
     dispatcher = dispatcher_cls(bot, Queue(), workers=workers, **kwargs)
+
+    if config.TELEGRAM_ERROR_HANDLER:
+        error_handler = import_string(config.TELEGRAM_ERROR_HANDLER)
+        dispatcher.add_error_handler(error_handler)
+
     register_intents(dispatcher)
     return dispatcher
 

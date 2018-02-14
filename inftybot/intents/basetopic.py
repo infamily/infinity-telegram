@@ -7,11 +7,12 @@ from slumber.exceptions import HttpClientError, HttpServerError
 from telegram import InlineKeyboardButton, ParseMode
 from telegram.ext import CommandHandler
 
-from inftybot.intents import constants, states
-from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin
+import inftybot.constants
+from inftybot.intents import states
+from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin, ObjectListKeyboardMixin
 from inftybot.intents.exceptions import ValidationError, APIResourceError
 from inftybot.intents.utils import render_model_errors, render_topic
-from inftybot.models import Topic
+from inftybot.models import Topic, Type
 from inftybot.utils import render_errors
 
 _ = gettext.gettext
@@ -20,16 +21,20 @@ logger = logging.getLogger(__name__)
 
 CHOOSE_TYPE_KEYBOARD = [
     [
-        InlineKeyboardButton("Need", callback_data=constants.TOPIC_TYPE_NEED),
-        InlineKeyboardButton("Goal", callback_data=constants.TOPIC_TYPE_GOAL),
-        InlineKeyboardButton("Idea", callback_data=constants.TOPIC_TYPE_IDEA)
+        InlineKeyboardButton("Need", callback_data=inftybot.constants.TOPIC_TYPE_NEED),
+        InlineKeyboardButton("Goal", callback_data=inftybot.constants.TOPIC_TYPE_GOAL),
+        InlineKeyboardButton("Idea", callback_data=inftybot.constants.TOPIC_TYPE_IDEA)
     ],
     [
-        InlineKeyboardButton("Plan", callback_data=constants.TOPIC_TYPE_PLAN),
-        InlineKeyboardButton("Step", callback_data=constants.TOPIC_TYPE_STEP),
-        InlineKeyboardButton("Task", callback_data=constants.TOPIC_TYPE_TASK)
+        InlineKeyboardButton("Plan", callback_data=inftybot.constants.TOPIC_TYPE_PLAN),
+        InlineKeyboardButton("Step", callback_data=inftybot.constants.TOPIC_TYPE_STEP),
+        InlineKeyboardButton("Task", callback_data=inftybot.constants.TOPIC_TYPE_TASK)
     ]
 ]
+
+
+def prepare_categories(value):
+    return list(filter(lambda v: v, (v.strip() for v in value.split(','))))
 
 
 def send_confirm(bot, chat_id, topic):
@@ -58,8 +63,10 @@ def send_confirm(bot, chat_id, topic):
 
 class BaseTopicIntent(BaseIntent):
     def reset_topic(self):
-        if 'topic' in self.chat_data:
+        try:
             del self.chat_data['topic']
+        except KeyError:
+            pass
 
     def set_topic(self, topic):
         if isinstance(topic, Topic):
@@ -72,6 +79,13 @@ class BaseTopicIntent(BaseIntent):
     def get_topic(self):
         data = self.chat_data.get('topic')
         return Topic.from_native(data) if data else None
+
+
+class TopicCategoryListMixin(ObjectListKeyboardMixin, BaseTopicIntent):
+    model = Type
+
+    def get_extra_params(self):
+        return {'category': '1'}
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
@@ -114,7 +128,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
             rv = method(data=topic.to_native())
         except (HttpClientError, HttpServerError) as e:
             # intercept 4xx and 5xx both
-            raise APIResourceError('Internal error. Please, report it')
+            raise APIResourceError('Failed to save the topic. Please, report it :/')
         else:
             self.reset_topic()
 

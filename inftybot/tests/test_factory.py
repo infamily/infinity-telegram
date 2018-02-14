@@ -2,9 +2,6 @@
 # flake8: noqa
 from unittest import TestCase
 
-from mock import patch, MagicMock
-from telegram import Update
-
 from inftybot.factory import create_intent
 from inftybot.intents.base import BaseIntent
 
