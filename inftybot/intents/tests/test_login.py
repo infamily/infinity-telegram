@@ -33,11 +33,10 @@ class AuthenticatedIntentSetAuthenticationTestCase(BaseIntentTestCase):
         user.email = 'example@email.com'
 
         intent = self.create_intent(update)
+        intent.set_user(user)
 
         try:
-            intent(chat_data={
-                'user': user,
-            })
+            intent()
         except ValidationError:
             pass
 

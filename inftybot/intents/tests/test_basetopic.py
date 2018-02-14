@@ -30,13 +30,14 @@ class TopicDoneTestCase(UserMixin, BaseIntentTestCase):
     def test_valid_topic_api_post_call(self, api_mock):
         update = updates['TOPIC_DONE']
         intent = self.create_intent(update)
+        intent.set_user(self.user)
 
         topic = Topic()
         topic.title = 'Test title'
         topic.body = 'Test body'
         topic.type = TOPIC_TYPE_NEED
 
-        intent(chat_data={'topic': topic, 'user': self.user})
+        intent(chat_data={'topic': topic})
         request = api_mock.call_args[0][0]
         request_data = json.loads(request.body)
 
