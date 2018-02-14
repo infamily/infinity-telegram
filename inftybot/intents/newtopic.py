@@ -8,7 +8,6 @@ from inftybot.intents import states
 from inftybot.intents.base import BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, AuthenticatedMixin, \
     BaseCallbackIntent, BaseMessageIntent
 from inftybot.intents.basetopic import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent, send_confirm
-from inftybot.intents.edittopic import TopicEditCommandIntent
 from inftybot.models import Topic
 
 _ = gettext.gettext

@@ -11,7 +11,7 @@ from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseIntent, AuthenticatedMixin
 from inftybot.intents.exceptions import ValidationError, APIResourceError
 from inftybot.intents.utils import render_model_errors, render_topic
-from inftybot.models import Topic, User
+from inftybot.models import Topic
 from inftybot.utils import render_errors
 
 _ = gettext.gettext

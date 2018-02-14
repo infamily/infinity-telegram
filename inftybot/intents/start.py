@@ -5,7 +5,6 @@ from telegram.ext import CommandHandler
 
 from inftybot.intents.base import BaseCommandIntent
 
-
 _ = gettext.gettext
 
 

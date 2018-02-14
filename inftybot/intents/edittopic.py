@@ -161,7 +161,8 @@ class TopicEditCommandIntent(AuthenticatedMixin, TopicListRetrieveMixin, BaseTop
         return states.TOPIC_STATE_EDIT_CHOOSE_TOPIC
 
 
-class TopicChooseCallback(AuthenticatedMixin, TopicListRetrieveMixin, TopicRetrieveMixin, BaseTopicIntent, BaseCallbackIntent):
+class TopicChooseCallback(AuthenticatedMixin, TopicListRetrieveMixin, TopicRetrieveMixin,
+                          BaseTopicIntent, BaseCallbackIntent):
     """Choose topic to edit"""
 
     def handle_pagination(self):
