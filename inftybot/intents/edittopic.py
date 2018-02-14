@@ -4,7 +4,6 @@ import gettext
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler, CallbackQueryHandler
 
-from inftybot.api.utils import get_model_resource
 from inftybot.intents import constants, states
 from inftybot.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, CancelCommandIntent, \
     AuthenticatedMixin, BaseMessageIntent, ObjectListKeyboardMixin
@@ -12,7 +11,7 @@ from inftybot.intents.basetopic import TopicDoneCommandIntent, BaseTopicIntent, 
     TopicCategoryListMixin, prepare_categories
 from inftybot.intents.exceptions import IntentHandleException
 from inftybot.intents.utils import render_topic
-from inftybot.models import Topic, Type
+from inftybot.models import Topic
 
 _ = gettext.gettext
 

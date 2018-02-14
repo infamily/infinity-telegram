@@ -1,4 +1,5 @@
 # coding: utf-8
+# flake8: noqa
 from unittest import TestCase
 
 from inftybot.intents.comment import MessageParser

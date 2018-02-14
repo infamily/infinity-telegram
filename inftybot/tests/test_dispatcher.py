@@ -1,4 +1,6 @@
 # coding: utf-8
+# flake8: noqa
+from abc import ABC
 from unittest import TestCase
 
 from mock import patch, MagicMock
@@ -9,8 +11,15 @@ from inftybot.dispatcher import Dispatcher, DynamoDispatcher
 from inftybot.factory import create_dispatcher
 
 
+class TestDispatcherABC(ABC):
+    pass
+
+
 class TestDispatcher(Dispatcher):
     pass
+
+
+TestDispatcherABC.register(TestDispatcher)
 
 
 class DispatcherTestCase(TestCase):
@@ -40,7 +49,7 @@ class DynamoDispatcherUserDataTestCase(TestCase):
 
 class DispatcherDefaultClassFallbackTestCase(TestCase):
     def test_provided_default_dispatcher_class_is_used(self):
-        config.DISPATCHER_DEFAULT_CLASS = 'test_dispatcher.TestDispatcher'
+        config.DISPATCHER_DEFAULT_CLASS = 'inftybot.tests.test_dispatcher.TestDispatcher'
 
         dispatcher = create_dispatcher(MagicMock())
         self.assertIsInstance(dispatcher, TestDispatcher)

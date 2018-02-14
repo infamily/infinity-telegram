@@ -2,21 +2,13 @@
 """
 This module handles comment/reply intents
 """
-import datetime
 import gettext
 import logging
-import urllib.parse
 
 from slumber.exceptions import HttpClientError, HttpServerError
-from telegram.ext import CommandHandler, ConversationHandler, MessageHandler, Filters, BaseFilter
+from telegram.ext import MessageHandler, BaseFilter
 
-from inftybot import config
-from inftybot.intents import states
-from inftybot.intents.base import AuthenticatedMixin, BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, \
-    BaseMessageIntent, AuthenticationMixin
-from inftybot.intents.exceptions import ValidationError, CaptchaValidationError
-from inftybot.models import User
-
+from inftybot.intents.base import AuthenticatedMixin, BaseMessageIntent
 
 _ = gettext.gettext
 logger = logging.getLogger(__name__)

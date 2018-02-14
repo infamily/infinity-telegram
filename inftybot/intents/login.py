@@ -74,19 +74,19 @@ class AuthCaptchaIntent(CaptchaMixin, BaseMessageIntent):
                 data=payload
             )
         except HttpClientError as e:
-            captcha = self.api.client.captcha.get()
-            # we need to force store data because it stored on handle_success
-            # but this case is not success (see `inftybot.storage.store_data`)
-            self.set_captcha(captcha, True)
             raise CaptchaValidationError(
                 _("Bad captcha. Please, solve again"),
-                captcha=captcha,
             )
 
     def handle_error(self, error):
-        self.update.message.reply_text(_(error.message))
+        captcha = self.api.client.captcha.get()
 
-        captcha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, error.captcha['image_url'])
+        # we need to force store data because it stored on handle_success
+        # but this case is not success (see `inftybot.storage.store_data`)
+        self.set_captcha(captcha, True)
+
+        self.update.message.reply_text(_(error.message))
+        captcha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, captcha['image_url'])
         self.bot.sendPhoto(
             chat_id=self.update.message.chat_id,
             photo=captcha_url
