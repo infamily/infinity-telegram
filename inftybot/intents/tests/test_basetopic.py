@@ -1,4 +1,5 @@
 # coding: utf-8
+# flake8: noqa
 import json
 
 from inftybot.api.tests.base import patch_api_request

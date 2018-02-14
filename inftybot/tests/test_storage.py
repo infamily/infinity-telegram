@@ -1,4 +1,5 @@
 # coding: utf-8
+# flake8: noqa
 import logging
 import time
 from random import randint
