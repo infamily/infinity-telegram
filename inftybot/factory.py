@@ -7,9 +7,7 @@ import telegram.ext
 from werkzeug.utils import import_string
 
 from inftybot import config
-from inftybot.dispatcher import Dispatcher
 from inftybot.intents.base import BaseIntent
-
 
 logger = logging.getLogger(__name__)
 
