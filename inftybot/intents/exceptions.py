@@ -1,4 +1,7 @@
 # coding: utf-8
+import gettext
+
+_ = gettext.gettext
 
 
 class IntentHandleException(Exception):
@@ -10,9 +13,11 @@ class IntentHandleException(Exception):
 
     :see: inftybot.handlers
     """
-    def __init__(self, message, *args):
-        super(IntentHandleException, self).__init__(*args)
-        self.message = message
+    default_message = None
+
+    def __init__(self, message=None, *args):
+        self.message = message or self.default_message
+        super(IntentHandleException, self).__init__(message, *args)
 
 
 class UnauthenticatedException(IntentHandleException):
@@ -33,14 +38,18 @@ class AuthenticationError(IntentHandleException):
     pass
 
 
+class ChatNotFoundError(IntentHandleException):
+    default_message = _('CHAT_NOT_FOUND')
+
+
 class CommunityRequiredError(IntentHandleException):
     """Raised when the intent was called in the direct chat instead of group or channel"""
-    pass
+    default_message = _('COMMUNITY_REQUIRED')
 
 
 class AdminRequiredError(IntentHandleException):
     """Raised when the user is not administrator of the group or channel"""
-    pass
+    default_message = _('ADMIN_REQUIRED')
 
 
 class APIResourceError(IntentHandleException):
