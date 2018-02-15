@@ -359,3 +359,34 @@ class ObjectListKeyboardMixin(APIResponsePaginator, BaseIntent):
         return build_menu(
             buttons, column_count, header_buttons=header_buttons, footer_buttons=footer_buttons
         )
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        kwargs['add_help'] = False  # turn -h key off
+        super(ArgumentParser, self).__init__(*args, **kwargs)
+
+    def exit(self, status=0, message=None):
+        """Dummy method for make sure process won't exit"""
+        pass
+
+    def error(self, message):
+        message = "{}\n\n{}".format(message, self.format_help())
+        raise ValidationError(message)
+
+
+class ArgparseMixin(BaseCommandIntent):
+    command_name = None
+
+    def __init__(self, **kwargs):
+        super(ArgparseMixin, self).__init__(**kwargs)
+        parser = self.create_parser()
+        self.add_arguments(parser)
+        self.parser = parser
+        self.parsed_args = None
+
+    def create_parser(self):
+        return ArgumentParser(self.command_name)
+
+    def add_arguments(self, parser):
+        pass
