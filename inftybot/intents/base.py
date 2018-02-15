@@ -1,4 +1,5 @@
 # coding: utf-8
+import argparse
 import gettext
 import logging
 
@@ -56,11 +57,11 @@ class BaseIntent(object):
         return self._errors
 
     def __call__(self, *args, **kwargs):
-        # todo: maybe set the value only here, in the __call__ and to remove it from __init__ ?
         logger.debug('Run handler <{}>'.format(
             self.__class__.__name__,
         ))
 
+        # todo: maybe set the value only here, in the __call__ and to remove it from __init__ ?
         self.chat_data = kwargs.pop('chat_data', self.chat_data)
         self.user_data = kwargs.pop('user_data', self.user_data)
 
@@ -70,7 +71,7 @@ class BaseIntent(object):
             return self.handle_error(e)
 
         try:
-            self.validate()
+            self.validate(*args, **kwargs)
         except ValidationError as e:
             self._errors.append(e)
             return self.handle_error(e)
@@ -107,7 +108,7 @@ class BaseIntent(object):
         """Setup method"""
         pass
 
-    def validate(self):
+    def validate(self, *args, **kwargs):
         pass
 
     def before_validate(self):
