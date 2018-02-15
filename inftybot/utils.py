@@ -1,6 +1,9 @@
 # coding: utf-8
 import telegram
+import telegram.error
 from telegram import Update, Chat
+
+from inftybot.intents.exceptions import ChatNotFoundError
 
 
 def update_from_dict(bot, update_dict):
@@ -32,13 +35,32 @@ def render_errors(errors):
 def _get_chat_id(chat):
     if isinstance(chat, Chat):
         return chat.id
-    return chat
+    if isinstance(chat, str):
+        try:
+            return int(chat)
+        except ValueError:
+            pass
+
+        if not chat.startswith('@'):
+            return '@{}'.format(chat)
+        return chat
+    raise ValueError("Undefined chat argument")
+
+
+def get_chat(bot, chat):
+    """Return chat by its id or name"""
+    if isinstance(chat, Chat):
+        return chat
+    chat_id = _get_chat_id(chat)
+    try:
+        return bot.get_chat(chat_id)
+    except telegram.error.BadRequest:
+        raise ChatNotFoundError()
 
 
 def get_chat_is_community(bot, chat):
     """Return True if chat is a community (group or channel)"""
-    chat_id = _get_chat_id(chat)
-    chat = bot.get_chat(chat_id)
+    chat = get_chat(bot, chat)
     return chat.type in (Chat.GROUP, Chat.CHANNEL)
 
 
