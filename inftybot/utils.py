@@ -1,6 +1,6 @@
 # coding: utf-8
 import telegram
-from telegram import Update
+from telegram import Update, Chat
 
 
 def update_from_dict(bot, update_dict):
@@ -25,4 +25,25 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
 
 
 def render_errors(errors):
+    # todo: move to the intents.utils
     return "\n".join(errors)
+
+
+def _get_chat_id(chat):
+    if isinstance(chat, Chat):
+        return chat.id
+    return chat
+
+
+def get_chat_is_community(bot, chat):
+    """Return True if chat is a community (group or channel)"""
+    chat_id = _get_chat_id(chat)
+    chat = bot.get_chat(chat_id)
+    return chat.type in (Chat.GROUP, Chat.CHANNEL)
+
+
+def get_user_is_admin(bot, user, chat):
+    """Return True if user is admin of the chat"""
+    chat_id = _get_chat_id(chat)
+    admins = bot.get_chat_administrators(chat_id)
+    return user.id in (m.user.id for m in admins)

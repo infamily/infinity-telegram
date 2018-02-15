@@ -33,5 +33,15 @@ class AuthenticationError(IntentHandleException):
     pass
 
 
+class CommunityRequiredError(IntentHandleException):
+    """Raised when the intent was called in the direct chat instead of group or channel"""
+    pass
+
+
+class AdminRequiredError(IntentHandleException):
+    """Raised when the user is not administrator of the group or channel"""
+    pass
+
+
 class APIResourceError(IntentHandleException):
     pass

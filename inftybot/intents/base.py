@@ -10,10 +10,11 @@ from inftybot.api import API
 from inftybot.api.pagination import APIResponsePaginator
 from inftybot.intents import constants
 from inftybot.intents import states
-from inftybot.intents.exceptions import IntentHandleException, ValidationError, AuthenticationError
+from inftybot.intents.exceptions import IntentHandleException, ValidationError, AuthenticationError, AdminRequiredError, \
+    CommunityRequiredError
 from inftybot.intents.signals import handle_success
 from inftybot.models import User
-from inftybot.utils import build_menu
+from inftybot.utils import build_menu, get_chat_is_community, get_user_is_admin
 
 logger = logging.getLogger(__name__)
 _ = gettext.gettext
@@ -202,7 +203,7 @@ class BaseCommandIntent(BaseIntent):
         raise NotImplementedError
 
     def handle_error(self, error):
-        self.update.message.reply_text(error.message)
+        self.bot.send_message(chat_id=self.update.effective_chat.id, text=error.message)
 
 
 class BaseCallbackIntent(BaseIntent):
@@ -278,6 +279,20 @@ class AuthenticatedMixin(AuthenticationMixin):
     def unauthenticate(self):
         self.user_data.clear()
         self.chat_data.clear()
+
+
+class CommunityRequiredMixin(BaseIntent):
+    def before_validate(self):
+        if not get_chat_is_community(self.bot, self.update.effective_chat):
+            raise CommunityRequiredError(_('COMMUNITY_REQUIRED'))
+        super(CommunityRequiredMixin, self).before_validate()
+
+
+class AdminRequiredMixin(BaseIntent):
+    def before_validate(self):
+        if not get_user_is_admin(self.bot, self.update.effective_user, self.update.effective_chat):
+            raise AdminRequiredError(_('ADMIN_REQUIRED'))
+        super(AdminRequiredMixin, self).before_validate()
 
 
 class ObjectListKeyboardMixin(APIResponsePaginator, BaseIntent):
