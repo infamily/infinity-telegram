@@ -66,7 +66,7 @@ class BaseIntent(object):
         self.user_data = kwargs.pop('user_data', self.user_data)
 
         try:
-            self.before_validate()
+            self.before_validate(*args, **kwargs)
         except IntentHandleException as e:
             return self.handle_error(e)
 
@@ -111,7 +111,7 @@ class BaseIntent(object):
     def validate(self, *args, **kwargs):
         pass
 
-    def before_validate(self):
+    def before_validate(self, *args, **kwargs):
         # todo change before_validate to instantiate
         pass
 
@@ -285,14 +285,14 @@ class AuthenticatedMixin(AuthenticationMixin):
 class CommunityRequiredMixin(BaseIntent):
     def before_validate(self):
         if not get_chat_is_community(self.bot, self.update.effective_chat):
-            raise CommunityRequiredError(_('COMMUNITY_REQUIRED'))
+            raise CommunityRequiredError()
         super(CommunityRequiredMixin, self).before_validate()
 
 
 class AdminRequiredMixin(BaseIntent):
     def before_validate(self):
         if not get_user_is_admin(self.bot, self.update.effective_user, self.update.effective_chat):
-            raise AdminRequiredError(_('ADMIN_REQUIRED'))
+            raise AdminRequiredError()
         super(AdminRequiredMixin, self).before_validate()
 
 
