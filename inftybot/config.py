@@ -22,6 +22,8 @@ INTENTS = [
     'inftybot.intents.search.SearchTopicsInlineIntent',
     'inftybot.intents.comment.ReplyIntent',
     'inftybot.intents.listcategories.ListCategoriesCommandIntent',
+    'inftybot.intents.groupcategories.SetCategoriesCommandIntent',
+    'inftybot.intents.groupcategories.GetCategoriesCommandIntent',
     'inftybot.intents.reset.ResetCommandIntent',
 ]
 
