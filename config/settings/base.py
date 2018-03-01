@@ -2,17 +2,12 @@
 import logging
 import os
 
-from envparse import Env
 
 BASE_DIR = os.path.abspath(
     os.path.join(
         os.path.dirname(__file__), os.pardir, os.pardir
     )
 )
-
-
-env = Env()
-env.read_envfile(os.path.join(BASE_DIR, '.env'))
 
 
 DEBUG = False
@@ -25,19 +20,19 @@ EXTENSIONS = [
 ]
 
 
-TELEGRAM_BOT_TOKEN = env('TELEGRAM_BOT_TOKEN', '')
-TELEGRAM_BOT_FACTORY = env('TELEGRAM_BOT_FACTORY', 'inftybot.factory.create_bot')
-TELEGRAM_BOT_FACTORY_PARAMS = env('TELEGRAM_BOT_FACTORY_PARAMS', {
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+TELEGRAM_BOT_FACTORY = os.environ.get('TELEGRAM_BOT_FACTORY', 'inftybot.factory.create_bot')
+TELEGRAM_BOT_FACTORY_PARAMS = os.environ.get('TELEGRAM_BOT_FACTORY_PARAMS', {
     'token': TELEGRAM_BOT_TOKEN,
 
 })
 
 
-TELEGRAM_BOT_DISPATCHER_FACTORY = env('TELEGRAM_BOT_DISPATCHER_FACTORY', 'inftybot.factory.create_dispatcher')
-TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS = env('TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS', {
+TELEGRAM_BOT_DISPATCHER_FACTORY = os.environ.get('TELEGRAM_BOT_DISPATCHER_FACTORY', 'inftybot.factory.create_dispatcher')
+TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS = os.environ.get('TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS', {
     'class': 'inftybot.dispatcher.DynamoDispatcher',
     'workers': 1,  # because AWS Lambda is stateless
 })
 
-SENTRY_DSN = env('SENTRY_DSN', None)
-SENTRY_LOGGING_LEVEL = env('SENTRY_LOGGING_LEVEL', logging.ERROR)
+SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
+SENTRY_LOGGING_LEVEL = os.environ.get('SENTRY_LOGGING_LEVEL', logging.ERROR)

@@ -6,12 +6,15 @@ import raven.base
 from envparse import Env
 from flask import Flask
 from raven.contrib.flask import Sentry
-from raven.transport import RequestsHTTPTransport
+from raven.transport import RequestsHTTPTransport, os
 from werkzeug.utils import import_string
 
 logger = logging.getLogger(__name__)
+
+settings_module = os.environ.get('SETTINGS_MODULE', 'config.settings.local')
+
 env = Env()
-settings_module = env('SETTINGS_MODULE', 'config.settings.local')
+env.read_envfile('./.env')
 
 
 def create_app():
