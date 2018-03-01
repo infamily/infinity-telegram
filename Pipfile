@@ -26,6 +26,9 @@ blinker = "*"
 raven = "*"
 "flake8" = "*"
 langsplit = "*"
+django = "*"
+dj-database-url = "*"
+"psycopg2" = "*"
 
 
 ["dev-packages"]
