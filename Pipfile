@@ -25,8 +25,10 @@ blinker = "*"
 "boto3" = "*"
 raven = "*"
 "flake8" = "*"
+langsplit = "*"
 
 
 ["dev-packages"]
 
 ipdb = "*"
+ipython = "*"
