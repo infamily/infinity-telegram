@@ -38,6 +38,7 @@ class AuthenticationError(IntentHandleException):
     pass
 
 
+# todo: make ChatNotFoundError, CommunityRequiredError, AdminRequiredError subclasses of ValidationError?
 class ChatNotFoundError(IntentHandleException):
     default_message = _('CHAT_NOT_FOUND')
 
