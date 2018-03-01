@@ -1,6 +1,9 @@
 # coding: utf-8
 import os
 
+
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+
 INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'https://dev.wfx.io')
 INFTY_API_URL = os.environ.get('INFTY_API_URL', 'https://dev.wfx.io')
 
