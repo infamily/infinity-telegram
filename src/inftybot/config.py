@@ -15,17 +15,19 @@ SEARCH_PREVIEW_LENGTH = os.environ.get('SEARCH_PREVIEW_LENGTH', 200)
 INLINE_QUERY_CACHE_TIME = os.environ.get('INLINE_QUERY_CACHE_TIME', 0)
 
 INTENTS = [
+    'inftybot.core.intents.start.StartCommandIntent',
+    'inftybot.core.intents.reset.ResetCommandIntent',
+    'inftybot.core.intents.base.CancelCommandIntent',
     'inftybot.authentication.intents.login.LoginConversationIntent',
+
     # 'inftybot.intents.newtopic.TopicConversationIntent',
     # 'inftybot.intents.edittopic.TopicConversationIntent',
     # 'inftybot.intents.basetopic.TopicDoneCommandIntent',
-    # 'inftybot.intents.start.StartCommandIntent',
     # 'inftybot.intents.search.SearchTopicsInlineIntent',
     # 'inftybot.intents.comment.ReplyIntent',
     # 'inftybot.intents.listcategories.ListCategoriesCommandIntent',
     # 'inftybot.intents.groupcategories.SetCategoriesCommandIntent',
     # 'inftybot.intents.groupcategories.GetCategoriesCommandIntent',
-    # 'inftybot.intents.reset.ResetCommandIntent',
 ]
 
 DISPATCHER_DEFAULT_CLASS = 'inftybot.dispatcher.Dispatcher'
