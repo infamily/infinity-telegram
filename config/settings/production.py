@@ -1,8 +1,7 @@
 # coding: utf-8
-from .base import *  # NOQA
 
 DEBUG = False
-
+TESTING = False
 
 LOGGING = {
     'version': 1,
