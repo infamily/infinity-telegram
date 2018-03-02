@@ -142,8 +142,26 @@ STATIC_URL = '/static/'
 
 # -----------------------------------------------
 
-
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+
+TELEGRAM_BOT_CLASS = {
+    'class': 'telegram.Bot',
+    'params': {
+        'token': TELEGRAM_BOT_TOKEN,
+    },
+}
+
+TELEGRAM_BOT_DISPATCHER = {
+    'class': 'inftybot.core.dispatchers.DynamoDispatcher',
+    'params': {
+        'workers': 1,  # because AWS Lambda is stateless
+    },
+}
+
+
+# -----------------------------------------------
+
+
 TELEGRAM_BOT_FACTORY = os.environ.get('TELEGRAM_BOT_FACTORY', 'inftybot.factory.create_bot')
 TELEGRAM_BOT_FACTORY_PARAMS = os.environ.get('TELEGRAM_BOT_FACTORY_PARAMS', {
     'token': TELEGRAM_BOT_TOKEN,
