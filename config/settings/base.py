@@ -16,6 +16,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+import sys
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.abspath(
@@ -23,6 +25,12 @@ BASE_DIR = os.path.abspath(
         os.path.dirname(__file__), os.pardir, os.pardir
     )
 )
+
+# Add src to the sys.path if necessary
+APPS_DIR = os.path.join(BASE_DIR, 'src')
+if APPS_DIR not in sys.path:
+    sys.path.append(APPS_DIR)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
@@ -44,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'inftybot',
 ]
 
 MIDDLEWARE = [
