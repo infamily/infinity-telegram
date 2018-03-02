@@ -7,7 +7,7 @@ from mock import patch, MagicMock
 from telegram import Update
 
 from inftybot import config
-from inftybot.core.dispatcher import Dispatcher, DynamoDispatcher
+from inftybot.core.dispatchers import Dispatcher, DynamoDispatcher
 from inftybot.core.factory import create_dispatcher
 
 
