@@ -17,6 +17,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 import sys
+from dotenv import load_dotenv
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -25,6 +26,9 @@ BASE_DIR = os.path.abspath(
         os.path.dirname(__file__), os.pardir, os.pardir
     )
 )
+
+DOTENV_PATH = os.path.join(BASE_DIR, '.env')
+load_dotenv(DOTENV_PATH)
 
 # Add src to the sys.path if necessary
 APPS_DIR = os.path.join(BASE_DIR, 'src')
@@ -90,7 +94,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default='postgres://postgres@postgres/postgres')
+    'default': dj_database_url.config(default='postgres:///')
 }
 
 # Password validation
