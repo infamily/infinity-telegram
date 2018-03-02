@@ -1,4 +1,8 @@
 # coding: utf-8
+from config.settings.base import *
+
+assert BASE_DIR
+
 
 DEBUG = False
 TESTING = False
