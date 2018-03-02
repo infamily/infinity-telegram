@@ -57,7 +57,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'inftybot',
+    'inftybot.core',
+    'inftybot.authentication',
+    'inftybot.topics',
+    'inftybot.search',
+    'inftybot.comments',
+    'inftybot.chats',
+    'inftybot.categories',
+    'inftybot.tasks',
 ]
 
 MIDDLEWARE = [
