@@ -44,11 +44,12 @@ class BaseIntent(object):
         return self.get_current_chat()
 
     def get_current_user(self):
-        """Return current user based on Update data or None"""
+        """Returns current user model instance based on Update data"""
         instance, _ = ChatUser.objects.get_or_create(pk=self.update.effective_user.id)
         return instance
 
     def get_current_chat(self):
+        """Returns current chat model instance based on Update data"""
         instance, _ = Chat.objects.get_or_create(pk=self.update.effective_chat.id)
         return instance
 
