@@ -1,7 +1,6 @@
 # coding: utf-8
 import telegram.ext
 
-from inftybot.core import storage
 from inftybot.core.utils import update_from_dict
 
 
@@ -15,12 +14,3 @@ class Dispatcher(telegram.ext.Dispatcher):
         if isinstance(update, dict):
             update = update_from_dict(self.bot, update)
         return super(Dispatcher, self).process_update(update)
-
-
-class DynamoDispatcher(Dispatcher):
-    """Dispatcher that stores user & chat data to dynamodb"""
-
-    def __init__(self, *args, **kwargs):
-        super(DynamoDispatcher, self).__init__(*args, **kwargs)
-        self.user_data = storage.UserDataStorage()
-        self.chat_data = storage.ChatDataStorage()

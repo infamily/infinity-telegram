@@ -30,7 +30,7 @@ INTENTS = [
     # 'inftybot.intents.groupcategories.GetCategoriesCommandIntent',
 ]
 
-DISPATCHER_DEFAULT_CLASS = 'inftybot.dispatcher.Dispatcher'
+DISPATCHER_DEFAULT_CLASS = 'contrib.telegram.ext.Dispatcher'
 
 TELEGRAM_ERROR_HANDLER = 'inftybot.error_callback'
 
