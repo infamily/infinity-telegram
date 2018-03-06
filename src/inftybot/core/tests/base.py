@@ -10,6 +10,7 @@ from telegram import User, Update
 
 from infinity.api.tests.base import APIMixin
 from inftybot.authentication.models import ChatUser
+from inftybot.chats.models import Chat
 from inftybot.core.factory import create_bot
 from inftybot.core.utils import update_from_dict
 
@@ -21,6 +22,15 @@ def create_user_from_update(bot, update, **params):
     user, _ = ChatUser.objects.get_or_create(id=update.effective_user.id, **params)
     user.ensure_session()
     return user
+
+
+def create_chat_from_update(bot, update, **params):
+    if not isinstance(update, Update):
+        update = update_from_dict(bot, update)
+
+    chat, _ = Chat.objects.get_or_create(id=update.effective_chat.id, **params)
+    chat.ensure_chat_data()
+    return chat
 
 
 class UserMixin(TestCase):
