@@ -10,7 +10,8 @@ import inftybot.topics.states
 from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.core.exceptions import IntentHandleException
 from inftybot.core.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, \
-    CancelCommandIntent, BaseMessageIntent, ObjectListKeyboardMixin
+    BaseMessageIntent, ObjectListKeyboardMixin
+from inftybot.core.intents.cancel import CancelCommandIntent
 from inftybot.topics.intents.base import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
     TopicCategoryListMixin, prepare_categories
 from inftybot.topics.models import Topic

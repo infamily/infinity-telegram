@@ -7,8 +7,8 @@ from telegram.ext import CommandHandler, ConversationHandler
 import inftybot.core.states
 import inftybot.topics.states
 from inftybot.authentication.intents.base import AuthenticatedMixin
-from inftybot.core.intents.base import BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, \
-    BaseCallbackIntent, BaseMessageIntent
+from inftybot.core.intents.base import BaseCommandIntent, BaseConversationIntent, BaseCallbackIntent, BaseMessageIntent
+from inftybot.core.intents.cancel import CancelCommandIntent
 from inftybot.topics.intents.base import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent, send_confirm, \
     prepare_categories
 from inftybot.topics.models import Topic

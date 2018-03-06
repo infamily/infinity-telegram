@@ -3,15 +3,16 @@ import argparse
 import gettext
 import logging
 
-from schematics.exceptions import DataError
+from django.utils.functional import cached_property
 from telegram import InlineKeyboardButton
-from telegram.ext import MessageHandler, Filters, CommandHandler, CallbackQueryHandler
+from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
 import inftybot.core.constants
 import inftybot.core.states
 from infinity.api.base import API
 from infinity.api.pagination import APIResponsePaginator
-from inftybot.authentication.models import User
+from inftybot.authentication.models import ChatUser, User
+from inftybot.chats.models import Chat
 from inftybot.chats.utils import get_chat_is_community, get_user_is_admin
 from inftybot.core.exceptions import IntentHandleException, ValidationError, AdminRequiredError, \
     CommunityRequiredError
@@ -34,25 +35,26 @@ class BaseIntent(object):
         self._errors = []
         self.instantiate()
 
-    @property
-    def user(self):
+    @cached_property
+    def current_user(self):
         # todo maybe it is necessary not to use property, but use get_user() always instead?
-        return self.get_user()
+        return self.get_current_user()
 
-    def get_user(self):
-        data = dict(self.user_data)
+    def get_current_user(self):
+        """Return current user based on Update data or None"""
+        instance, _ = ChatUser.objects.get_or_create(pk=self.update.effective_user.id)
+        return instance
 
-        try:
-            return User.from_native(data)
-        except DataError as e:
-            self._errors.append(e)
-
-    def set_user(self, user):
+    def set_user_TODO_REMOVE(self, user):
         if isinstance(user, User):
             data = user.to_native()
         else:
             data = user
         self.user_data.update(data)
+
+    def get_current_chat(self):
+        instance, _ = Chat.objects.get_or_create(pk=self.update.effective_chat.id)
+        return instance
 
     @property
     def errors(self):
@@ -239,16 +241,6 @@ class BaseConversationIntent(BaseIntent):
     def handle(self, *args, **kwargs):
         """No direct handling assumed"""
         pass
-
-
-class CancelCommandIntent(BaseCommandIntent):
-    @classmethod
-    def get_handler(cls):
-        return CommandHandler("cancel", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
-
-    def handle(self, *args, **kwargs):
-        self.update.message.reply_text(_("Canceled"))
-        return inftybot.core.states.STATE_END
 
 
 class CommunityRequiredMixin(BaseIntent):
