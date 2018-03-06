@@ -1,4 +1,4 @@
 # coding: utf-8
+from telegram.ext import ConversationHandler
 
-
-STATE_END = -1
+STATE_END = ConversationHandler.END
