@@ -17,8 +17,8 @@ INLINE_QUERY_CACHE_TIME = os.environ.get('INLINE_QUERY_CACHE_TIME', 0)
 INTENTS = [
     'inftybot.core.intents.start.StartCommandIntent',
     'inftybot.core.intents.reset.ResetCommandIntent',
-    'inftybot.core.intents.base.CancelCommandIntent',
     'inftybot.authentication.intents.login.LoginConversationIntent',
+    'inftybot.authentication.intents.login.LogoutCommandIntent',
 
     # 'inftybot.intents.newtopic.TopicConversationIntent',
     # 'inftybot.intents.edittopic.TopicConversationIntent',
