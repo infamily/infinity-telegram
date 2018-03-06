@@ -4,7 +4,7 @@ import gettext
 from telegram.ext import CommandHandler
 
 from contrib.telegram.ext.conversationhandler import get_conversation_storage
-from inftybot.authentication.intents.base import unauthenticate
+from inftybot.authentication.intents.base import logout
 from inftybot.core.intents.base import BaseCommandIntent
 
 _ = gettext.gettext
@@ -31,6 +31,6 @@ class ResetCommandIntent(BaseCommandIntent):
 
         storage_keys = ((chat.id,), (chat.id, user.id))
         reset(storage_keys)
-        unauthenticate(self.current_user)
+        logout(self.current_user)
 
         self.update.message.reply_text(_("OK"))

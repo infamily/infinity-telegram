@@ -7,7 +7,8 @@ from inftybot.core.intents.base import BaseIntent
 
 
 @atomic
-def unauthenticate(user):
+def logout(user):
+    """Logout chat user: clean its session object"""
     session = user.ensure_session()
 
     try:
@@ -18,7 +19,8 @@ def unauthenticate(user):
 
 
 @atomic
-def authenticate(user, token, **params):
+def login(user, token, **params):
+    """Login chat user: update session with API token, etc."""
     session = user.ensure_session()
     session_data = {'token': token}
     session_data.update(params)
@@ -30,6 +32,7 @@ class AuthenticationMixin(BaseIntent):
     """Adds authentiation-process specific methods"""
 
     def set_api_authentication(self, user):
+        """Set current user to the API wrapper"""
         self.api.user = user
 
 

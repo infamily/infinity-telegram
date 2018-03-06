@@ -9,7 +9,7 @@ import inftybot.authentication.states
 import inftybot.core.states
 from contrib.telegram.ext import ConversationHandler
 from inftybot import config
-from inftybot.authentication.intents.base import AuthenticationMixin, unauthenticate, authenticate
+from inftybot.authentication.intents.base import AuthenticationMixin, logout, login
 from inftybot.authentication.models import Session
 from inftybot.core.exceptions import ValidationError, CaptchaValidationError
 from inftybot.core.intents.base import (
@@ -20,8 +20,8 @@ from inftybot.core.intents.cancel import CancelCommandIntent
 _ = gettext.gettext
 
 
-class LoginLogoutCommand(BaseCommandIntent):
-
+class LoginLogoutIntent(BaseCommandIntent):
+    """Base class for login/logout intents"""
     def _check_session(self):
         try:
             return self.current_user.session and len(self.current_user.session.session_data['token'])
@@ -30,6 +30,7 @@ class LoginLogoutCommand(BaseCommandIntent):
 
 
 class CaptchaMixin(BaseIntent):
+    """Adds captcha-specific methods"""
     def get_captcha(self):
         current_chat = self.get_current_chat()
         return current_chat.chatdata.data.get('captcha', {})
@@ -136,12 +137,12 @@ class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
         self.update.message.reply_text(_("Login failed"))
 
     def handle(self, *args, **kwargs):
-        authenticate(self.current_user, self.chat_data['token'])
+        login(self.current_user, self.chat_data['token'])
         self.update.message.reply_text(_('Login success'))
         return inftybot.core.states.STATE_END
 
 
-class LoginCommandIntent(LoginLogoutCommand):
+class LoginCommandIntent(LoginLogoutIntent):
     @classmethod
     def get_handler(cls):
         return CommandHandler("login", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
@@ -155,7 +156,7 @@ class LoginCommandIntent(LoginLogoutCommand):
             return inftybot.authentication.states.AUTH_STATE_EMAIL
 
 
-class LogoutCommandIntent(LoginLogoutCommand):
+class LogoutCommandIntent(LoginLogoutIntent):
     @classmethod
     def get_handler(cls):
         return CommandHandler("logout", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
@@ -165,7 +166,7 @@ class LogoutCommandIntent(LoginLogoutCommand):
             self.update.message.reply_text(_("?"))
             return inftybot.core.states.STATE_END
 
-        unauthenticate(self.current_user)
+        logout(self.current_user)
         self.update.message.reply_text(_("See you!"))
         return inftybot.core.states.STATE_END
 

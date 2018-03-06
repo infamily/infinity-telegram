@@ -7,7 +7,7 @@ import inftybot.authentication.states
 import inftybot.core.intents
 import inftybot.core.states
 from infinity.api.tests.base import patch_api_request
-from inftybot.authentication.intents.base import AuthenticatedMixin, authenticate
+from inftybot.authentication.intents.base import AuthenticatedMixin, login
 from inftybot.core.exceptions import ValidationError, CaptchaValidationError
 from inftybot.core.tests.base import BaseIntentTestCase, load_tg_updates, load_api_responses, create_user_from_update, \
     create_chat_from_update
@@ -30,7 +30,7 @@ class APIAuthenticationTestCase(BaseIntentTestCase):
         update = updates['OTP_MESSAGE']
 
         user = create_user_from_update(self.bot, update)
-        authenticate(user, 'token')
+        login(user, 'token')
 
         intent = self.create_intent(update)
 

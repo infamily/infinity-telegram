@@ -18,6 +18,7 @@ class ChatManager(models.Manager):
 
 
 class Chat(models.Model):
+    """Chat model"""
     TYPE_PRIVATE = 'private'
     TYPE_GROUP = 'group'
     TYPE_CHANNEL = 'channel'
@@ -39,5 +40,6 @@ class Chat(models.Model):
 
 
 class ChatData(models.Model):
+    """Chat data model"""
     chat = models.OneToOneField('chats.Chat', on_delete=models.CASCADE, verbose_name=_('Chat reference'))
     data = JSONField(verbose_name=_('Session data'), blank=True, null=False, default={})
