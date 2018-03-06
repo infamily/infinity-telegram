@@ -152,7 +152,7 @@ TELEGRAM_BOT_CLASS = {
 }
 
 TELEGRAM_BOT_DISPATCHER = {
-    'class': 'inftybot.core.dispatchers.DynamoDispatcher',
+    'class': 'inftybot.core.dispatchers.Dispatcher',
     'params': {
         'workers': 1,  # because AWS Lambda is stateless
     },
