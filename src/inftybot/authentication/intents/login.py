@@ -3,36 +3,48 @@ import gettext
 import urllib.parse
 
 from slumber.exceptions import HttpClientError
-from telegram.ext import CommandHandler, ConversationHandler
+from telegram.ext import CommandHandler
 
 import inftybot.authentication.states
 import inftybot.core.states
+from contrib.telegram.ext import ConversationHandler
 from inftybot import config
-from inftybot.authentication.intents.base import AuthenticationMixin, AuthenticatedMixin
-from inftybot.authentication.models import User
+from inftybot.authentication.intents.base import AuthenticationMixin, unauthenticate, authenticate
+from inftybot.authentication.models import Session
 from inftybot.core.exceptions import ValidationError, CaptchaValidationError
 from inftybot.core.intents.base import (
-    BaseCommandIntent, BaseConversationIntent, CancelCommandIntent, BaseMessageIntent
-)
+    BaseCommandIntent, BaseConversationIntent, BaseMessageIntent,
+    BaseIntent)
+from inftybot.core.intents.cancel import CancelCommandIntent
 
 _ = gettext.gettext
 
 
-class CaptchaMixin(object):
-    @property
-    def captcha(self):
-        chat_data = getattr(self, 'chat_data', {})
-        return chat_data.get('captcha', {})
+class LoginLogoutCommand(BaseCommandIntent):
 
-    def set_captcha(self, value, force_store=False):
-        chat_data = getattr(self, 'chat_data', {})
-        chat_data['captcha'] = value
-        if force_store:
-            chat_data.store(True)
+    def _check_session(self):
+        try:
+            return self.current_user.session and len(self.current_user.session.session_data['token'])
+        except (Session.DoesNotExist, KeyError):
+            return False
+
+
+class CaptchaMixin(BaseIntent):
+    def get_captcha(self):
+        current_chat = self.get_current_chat()
+        return current_chat.chatdata.data.get('captcha', {})
+
+    def set_captcha(self, value):
+        current_chat = self.get_current_chat()
+        current_chat.chatdata.data['captcha'] = value
+        current_chat.chatdata.save()
 
     def clear_captcha(self):
-        chat_data = getattr(self, 'chat_data', {})
-        del chat_data['captcha']
+        current_chat = self.get_current_chat()
+        try:
+            del current_chat.chatdata.data['captcha']
+        except KeyError:
+            pass
 
 
 class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
@@ -43,12 +55,11 @@ class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
             raise ValidationError("Please, enter valid email")
 
     def handle(self, *args, **kwargs):
-        user = User()
+        user = self.get_current_user()
         user.email = self.update.message.text
+        user.save()
 
         captcha = self.api.client.captcha.get()
-
-        self.set_user(user)
         self.set_captcha(captcha)
 
         self.update.message.reply_text(_('Please, solve the captcha:'))
@@ -63,11 +74,16 @@ class AuthEmailIntent(CaptchaMixin, BaseMessageIntent):
 
 
 class AuthCaptchaIntent(CaptchaMixin, BaseMessageIntent):
+    def before_validate(self, *args, **kwargs):
+        self.current_user.ensure_session()
+
     def validate(self):
+        captcha = self.get_captcha()
+
         payload = {
-            'email': self.user.email,
+            'email': self.current_user.email,
             'captcha': {
-                'hashkey': self.captcha['key'],
+                'hashkey': captcha['key'],
                 'response': self.update.message.text,
             }
         }
@@ -83,10 +99,7 @@ class AuthCaptchaIntent(CaptchaMixin, BaseMessageIntent):
 
     def handle_error(self, error):
         captcha = self.api.client.captcha.get()
-
-        # we need to force store data because it stored on handle_success
-        # but this case is not success (see `inftybot.storage.store_data`)
-        self.set_captcha(captcha, True)
+        self.set_captcha(captcha)
 
         self.update.message.reply_text(_(error.message))
         captcha_url = urllib.parse.urljoin(config.INFTY_SERVER_URL, captcha['image_url'])
@@ -102,10 +115,13 @@ class AuthCaptchaIntent(CaptchaMixin, BaseMessageIntent):
 
 
 class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
+    def before_validate(self, *args, **kwargs):
+        self.current_user.ensure_session()
+
     def validate(self):
         try:
             payload = {
-                'email': self.user.email,
+                'email': self.current_user.email,
                 'one_time_password': self.update.message.text,
             }
             response = self.api.client.signin.post(data=payload)
@@ -114,40 +130,42 @@ class AuthOTPIntent(AuthenticationMixin, BaseMessageIntent):
                 _("Wrong authentication credentials")
             )
         else:
-            user = self.user
-            user.token = response['auth_token']
-            self.set_user(user)
+            self.chat_data['token'] = response['auth_token']
 
     def handle_error(self, error):
         self.update.message.reply_text(_("Login failed"))
 
     def handle(self, *args, **kwargs):
-        self.update_user_data(self.user)
+        authenticate(self.current_user, self.chat_data['token'])
         self.update.message.reply_text(_('Login success'))
         return inftybot.core.states.STATE_END
 
 
-class LoginCommandIntent(BaseCommandIntent):
+class LoginCommandIntent(LoginLogoutCommand):
     @classmethod
     def get_handler(cls):
         return CommandHandler("login", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
-        if self.user and self.user.token:
+        if self._check_session():
             self.update.message.reply_text(_("I know you!"))
             return inftybot.core.states.STATE_END
+        else:
+            self.update.message.reply_text(_("What's your email?"))
+            return inftybot.authentication.states.AUTH_STATE_EMAIL
 
-        self.update.message.reply_text(_("What's your email?"))
-        return inftybot.authentication.states.AUTH_STATE_EMAIL
 
-
-class LogoutCommandIntent(AuthenticatedMixin, BaseCommandIntent):
+class LogoutCommandIntent(LoginLogoutCommand):
     @classmethod
     def get_handler(cls):
         return CommandHandler("logout", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def handle(self, *args, **kwargs):
-        self.unauthenticate()
+        if not self._check_session():
+            self.update.message.reply_text(_("?"))
+            return inftybot.core.states.STATE_END
+
+        unauthenticate(self.current_user)
         self.update.message.reply_text(_("See you!"))
         return inftybot.core.states.STATE_END
 
@@ -156,7 +174,7 @@ class LoginConversationIntent(BaseConversationIntent):
     @classmethod
     def get_handler(cls):
         return ConversationHandler(
-            entry_points=[LoginCommandIntent.get_handler(), LogoutCommandIntent.get_handler()],
+            entry_points=[LoginCommandIntent.get_handler()],
             states={
                 inftybot.authentication.states.AUTH_STATE_EMAIL: [AuthEmailIntent.get_handler()],
                 inftybot.authentication.states.AUTH_STATE_CAPTCHA: [AuthCaptchaIntent.get_handler()],
