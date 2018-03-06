@@ -2,23 +2,36 @@
 # flake8: noqa
 import json
 import os
-from unittest import TestCase
 
+from autofixture import AutoFixture
+from django.test import TestCase
 from mock import MagicMock, patch
-from telegram import User
+from telegram import User, Update
 
 from infinity.api.tests.base import APIMixin
-from inftybot.authentication import models
+from inftybot.authentication.models import ChatUser
 from inftybot.core.factory import create_bot
 from inftybot.core.utils import update_from_dict
+
+
+def create_user_from_update(bot, update, **params):
+    if not isinstance(update, Update):
+        update = update_from_dict(bot, update)
+
+    user, _ = ChatUser.objects.get_or_create(id=update.effective_user.id, **params)
+    user.ensure_session()
+    return user
 
 
 class UserMixin(TestCase):
     def setUp(self):
         super(UserMixin, self).setUp()
-        self.user = models.User()
-        self.user.email = 'email@example.com'
-        self.user.token = 'test_token'
+        self.user = AutoFixture(ChatUser, field_values={
+            'email': 'email@example.com',
+        }).create_one()
+        session = self.user.ensure_session
+        session.session_data['token'] = 'test_token'
+        session.save()
 
 
 class BotMixin(TestCase):
