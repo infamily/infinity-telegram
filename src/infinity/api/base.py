@@ -37,7 +37,14 @@ class API(object):
 
     def _update_session(self):
         # temporary solution because API returns token as HyperlinkedRelated field (as URL)
-        token = list(filter(lambda v: v, self.user.token.split('/')))[-1]
+        session = self.user.ensure_session()
+        token_url = session.session_data.get('token')
+
+        try:
+            token = list(filter(lambda v: v, token_url.split('/')))[-1]
+        except (ValueError, AttributeError):
+            token = None
+
         self.session.headers.update({
             'Authorization': 'Token {}'.format(token)
         })
@@ -53,7 +60,7 @@ class API(object):
 
     @property
     def api_token(self):
-        return self.user.token
+        return self.user.session.session_data.get('token')
 
     @property
     def is_authenticated(self):

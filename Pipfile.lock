@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4818c3fdad53db5a92e68607388eef1a85f1d8dd6ff6456c90e03fcdd06c5970"
+            "sha256": "08bb86c917e81ed22b05ff101ee367ef03786a1d5583a2b4d9161fe9743092e4"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -98,10 +98,13 @@
         },
         "django": {
             "hashes": [
-                "sha256:7c8ff92285406fb349e765e9ade685eec7271d6f5c3f918e495a74768b765c99",
-                "sha256:dc3b61d054f1bced64628c62025d480f655303aea9f408e5996c339a543b45f0"
+                "sha256:3d9916515599f757043c690ae2b5ea28666afa09779636351da505396cbb2f19",
+                "sha256:769f212ffd5762f72c764fa648fca3b7f7dd4ec27407198b68e7c4abf4609fd0"
             ],
-            "version": "==2.0.2"
+            "version": "==2.0.3"
+        },
+        "django-autofixture": {
+            "git": "https://github.com/volrath/django-autofixture.git"
         },
         "docutils": {
             "hashes": [
@@ -308,10 +311,10 @@
         },
         "pytest": {
             "hashes": [
-                "sha256:8970e25181e15ab14ae895599a0a0e0ade7d1f1c4c8ca1072ce16f25526a184d",
-                "sha256:9ddcb879c8cc859d2540204b5399011f842e5e8823674bf429f70ada281b3cc6"
+                "sha256:062027955bccbc04d2fcd5d79690947e018ba31abe4c90b2c6721abec734261b",
+                "sha256:117bad36c1a787e1a8a659df35de53ba05f9f3398fb9e4ac17e80ad5903eb8c5"
             ],
-            "version": "==3.4.1"
+            "version": "==3.4.2"
         },
         "python-dateutil": {
             "hashes": [
@@ -322,10 +325,10 @@
         },
         "python-dotenv": {
             "hashes": [
-                "sha256:dc7940052cfe170e881aea40feb4ea7776e6a97170ed038fd2ee7e26e47585f2",
-                "sha256:45e927c34204c90f5faa35ea8709b894f6b1a7712d77eb50940601068040993b"
+                "sha256:2a0073a6f7a10156de2ab7d8c2399b5e86ac61786206f6e1b4a1fcad92fa2dd1",
+                "sha256:2bfeb2ce1b5d1ce46ecdce5c9d55e4976ca403fdcc251b4870e5c0647d0dce67"
             ],
-            "version": "==0.7.1"
+            "version": "==0.8.0"
         },
         "python-slugify": {
             "hashes": [
@@ -336,10 +339,10 @@
         },
         "python-telegram-bot": {
             "hashes": [
-                "sha256:ca5e1d257702d194ad5a5a0e6ccffb31203f1f783bf1c5da60c128f083032c44",
-                "sha256:f5c3233bea7c7adf165e31225bbe9f28717e9f1f5070ebe99a4757c31c27ab28"
+                "sha256:caa89c0eb1e5284ec0d02d6a9a4d6dc1b7db356c16fcde0a4472c4613b742c6e",
+                "sha256:580390d75a63706647962556bab69c7313bee1438411288c37f545e421498e6c"
             ],
-            "version": "==9.0.0"
+            "version": "==10.0.1"
         },
         "pytz": {
             "hashes": [

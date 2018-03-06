@@ -29,6 +29,7 @@ dj-database-url = "*"
 "jinja2" = "*"
 "psycopg2" = "*"
 click = "*"
+django-autofixture = {git = "https://github.com/volrath/django-autofixture.git"}
 
 
 ["dev-packages"]

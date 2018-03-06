@@ -143,8 +143,10 @@ STATIC_URL = '/static/'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
+    },
+    'conversations': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
 }
 
 
