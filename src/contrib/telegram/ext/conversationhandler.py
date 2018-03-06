@@ -30,6 +30,9 @@ class ConversationStorage(object):
     def __delitem__(self, key):
         return self._storage.delete(key)
 
+    def __contains__(self, key):
+        return self.get(key, None) is not None
+
 
 class ConversationHandler(BaseConversationHandler):
     def __init__(self, *args, **kwargs):
