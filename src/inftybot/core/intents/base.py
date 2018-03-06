@@ -37,12 +37,19 @@ class BaseIntent(object):
 
     @cached_property
     def current_user(self):
-        # todo maybe it is necessary not to use property, but use get_user() always instead?
         return self.get_current_user()
+
+    @cached_property
+    def current_chat(self):
+        return self.get_current_chat()
 
     def get_current_user(self):
         """Return current user based on Update data or None"""
         instance, _ = ChatUser.objects.get_or_create(pk=self.update.effective_user.id)
+        return instance
+
+    def get_current_chat(self):
+        instance, _ = Chat.objects.get_or_create(pk=self.update.effective_chat.id)
         return instance
 
     def set_user_TODO_REMOVE(self, user):
@@ -51,10 +58,6 @@ class BaseIntent(object):
         else:
             data = user
         self.user_data.update(data)
-
-    def get_current_chat(self):
-        instance, _ = Chat.objects.get_or_create(pk=self.update.effective_chat.id)
-        return instance
 
     @property
     def errors(self):
