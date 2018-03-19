@@ -261,7 +261,7 @@ class AdminRequiredMixin(BaseIntent):
         super(AdminRequiredMixin, self).before_validate()
 
 
-class ObjectListKeyboardMixin(APIResponsePaginator, BaseIntent):
+class ObjectListKeyboardMixin(BaseIntent, APIResponsePaginator):
     """
     Mixin is used in ```Intents```.
     Handles paginated data retrieved from API
