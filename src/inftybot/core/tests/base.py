@@ -39,7 +39,7 @@ class UserMixin(TestCase):
         self.user = AutoFixture(ChatUser, field_values={
             'email': 'email@example.com',
         }).create_one()
-        session = self.user.ensure_session
+        session = self.user.ensure_session()
         session.session_data['token'] = 'test_token'
         session.save()
 

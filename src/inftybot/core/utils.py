@@ -1,22 +1,18 @@
 # coding: utf-8
 import telegram
+from django.template.loader import render_to_string
 from telegram import Update
 
 
 def render_error_list(errors):
-    message_list = []
-
-    for field, messages in errors:
-        for message in messages:
-            message_list.append(
-                "{}: {}".format(field, message)
-            )
-
-    return message_list
+    return render_to_string('core/error_list.html', {
+        'error_list': errors,
+        'errors': errors,
+    })
 
 
-def render_model_errors(error):
-    return render_error_list(error.messages.items())
+def render_form_errors(form):
+    return render_error_list(form.errors)
 
 
 def update_from_dict(bot, update_dict):
@@ -41,5 +37,5 @@ def build_menu(buttons, n_cols, header_buttons=None, footer_buttons=None):
 
 
 def render_errors(errors):
-    # todo: move to the intents.utils
-    return "\n".join(errors)
+    # todo: remove this wrapper
+    return render_error_list(errors)
