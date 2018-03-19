@@ -1,27 +1,13 @@
 # coding: utf-8
 # flake8: noqa
 from inftybot.core.states import STATE_END
-from inftybot.core.tests.base import load_tg_updates, load_api_responses, UserMixin, BaseIntentTestCase, \
-    create_user_from_update, create_chat_from_update
+from inftybot.core.tests.base import load_tg_updates, load_api_responses
 from inftybot.topics import states
 from inftybot.topics.intents import newtopic
-from inftybot.topics.models import Topic
+from inftybot.topics.tests.test_basetopic import TopicIntentTestCase
 
 updates = load_tg_updates()
 api_responses = load_api_responses()
-
-# Hmmm...
-
-
-class TopicIntentTestCase(UserMixin, BaseIntentTestCase):
-    update = None
-
-    def setUp(self):
-        super(TopicIntentTestCase, self).setUp()
-        self.user = create_user_from_update(self.bot, self.update)
-        self.chat = create_chat_from_update(self.bot, self.update)
-        self.intent = self.create_intent(self.update)
-        self.intent.set_topic(Topic())
 
 
 class NewTopicIntentTestCase(TopicIntentTestCase):

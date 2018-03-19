@@ -72,3 +72,14 @@ class TopicDoneTestCase(UserMixin, BaseIntentTestCase):
 
     def test_api_400_raises(self):
         pass
+
+
+class TopicIntentTestCase(UserMixin, BaseIntentTestCase):
+    update = None
+
+    def setUp(self):
+        super(TopicIntentTestCase, self).setUp()
+        self.user = create_user_from_update(self.bot, self.update)
+        self.chat = create_chat_from_update(self.bot, self.update)
+        self.intent = self.create_intent(self.update)
+        self.intent.set_topic(Topic())
