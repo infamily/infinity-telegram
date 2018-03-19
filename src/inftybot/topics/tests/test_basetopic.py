@@ -11,7 +11,6 @@ from inftybot.core.tests.base import BaseIntentTestCase, UserMixin, create_user_
 from inftybot.topics.constants import TOPIC_TYPE_NEED
 from inftybot.topics.intents.base import TopicDoneCommandIntent
 from inftybot.topics.models import Topic
-from inftybot.topics.tests.test_newtopic import updates
 
 updates = load_tg_updates()
 api_responses = load_api_responses()
