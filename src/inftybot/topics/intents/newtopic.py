@@ -38,7 +38,7 @@ class TopicCreateCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandI
 class InputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.type = int(self.update.callback_query.data)
+        topic['type'] = int(self.update.callback_query.data)
         self.set_topic(topic)
         self.bot.sendMessage(
             chat_id=self.update.callback_query.message.chat_id,
@@ -53,7 +53,7 @@ class InputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
 class InputCategoryIntent(BaseTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.categories_names = prepare_categories(self.update.message.text)
+        topic['categories_names'] = prepare_categories(self.update.message.text)
         self.set_topic(topic)
         self.bot.sendMessage(
             chat_id=self.update.message.chat_id,
@@ -65,7 +65,7 @@ class InputCategoryIntent(BaseTopicIntent, BaseMessageIntent):
 class InputTitleIntent(BaseTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.title = self.update.message.text
+        topic['title'] = self.update.message.text
         self.set_topic(topic)
         self.update.message.reply_text(
             _("Ok! Please, input the topic body")
@@ -76,7 +76,7 @@ class InputTitleIntent(BaseTopicIntent, BaseMessageIntent):
 class InputBodyIntent(BaseTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.body = self.update.message.text
+        topic['body'] = self.update.message.text
         self.set_topic(topic)
 
         send_confirm(

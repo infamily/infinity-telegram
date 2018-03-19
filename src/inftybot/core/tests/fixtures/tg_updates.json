@@ -272,7 +272,7 @@
         "text": "Please, choose:"
       },
       "chat_instance": "4419899338569566463",
-      "data": "need"
+      "data": 0
     }
   },
   "TOPIC_TITLE": {
@@ -319,6 +319,29 @@
       },
       "date": 1510511546,
       "text": "Topic body"
+    }
+  },
+  "TOPIC_CATEGORIES": {
+    "update_id": 739984128,
+    "message": {
+      "message_id": 1668,
+      "from": {
+        "id": 317865952,
+        "is_bot": false,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "language_code": "en-US"
+      },
+      "chat": {
+        "id": 317865952,
+        "first_name": "Kuznetsov",
+        "last_name": "Eugene",
+        "username": "e_kuznetsov",
+        "type": "private"
+      },
+      "date": 1510511546,
+      "text": "general,medicine"
     }
   },
   "TOPIC_DONE": {

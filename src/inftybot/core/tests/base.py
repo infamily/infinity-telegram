@@ -104,5 +104,6 @@ def mock_update(update):
 
 
 def mock_bot(bot):
-    bot.sendPhoto = MagicMock()
+    bot.sendPhoto = bot.send_photo = MagicMock()
+    bot.sendMessage = bot.send_message = MagicMock()
     return bot
