@@ -1,37 +1,44 @@
 # coding: utf-8
-from schematics.types import IntType, ListType, URLType, serializable
+from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from django.utils.translation import gettext as _
 
-from inftybot.core.models import Model, StringType
-from inftybot.topics import constants
 
+class Topic(models.Model):
+    """Dummy topic model"""
+    TYPE_NEED = 0
+    TYPE_GOAL = 1
+    TYPE_IDEA = 2
+    TYPE_PLAN = 3
+    TYPE_STEP = 4
+    TYPE_TASK = 5
 
-class Topic(Model):
+    TYPE_CHOICES = (
+        (TYPE_NEED, 'Need'),
+        (TYPE_GOAL, 'Goal'),
+        (TYPE_IDEA, 'Idea'),
+        (TYPE_PLAN, 'Plan'),
+        (TYPE_STEP, 'Step'),
+        (TYPE_TASK, 'Task')
+    )
+
     class Meta:
-        plural = 'topics'
+        managed = False
+        verbose_name_plural = 'Topics'
 
-    id = IntType(required=False)
-    type = IntType(required=True)
-    title = StringType(required=True, min_length=1)
-    body = StringType(required=True, min_length=1)
-    categories_names = ListType(StringType, required=False, default=[])
-    url = URLType(required=False)
-    parents = ListType(StringType, required=True, default=[])
-
-    @serializable
-    def categories_str(self):
-        """Used as data field when send to the API"""
-        return self.categories_names
-
-    @serializable
-    def type_str(self):
-        return constants.TOPIC_TYPE_CHOICES.get(self.type)
+    type = models.SmallIntegerField(verbose_name=_('Type'), choices=TYPE_CHOICES)
+    title = models.CharField(verbose_name=_('Title'), max_length=200)
+    body = models.TextField(verbose_name=_('Body'))
+    categories_names = ArrayField(
+        models.CharField(max_length=100), verbose_name=_('Categories (names)'), blank=True, null=True, default=[])
+    url = models.URLField(verbose_name=_('URL'), null=True, blank=True)
+    parents = ArrayField(models.CharField(max_length=100), verbose_name=_('Parents'), blank=True, default=[])
 
     def __str__(self):
-        topic_type = constants.TOPIC_TYPE_CHOICES.get(self.type, '<no type>')
+        topic_type = self.get_type_display() or '<no type>'
+        topic_title = self.title or '<no title>'
+        topic_str = "{}: {}".format(topic_type, topic_title)
 
-        topic_str = "{}: {}".format(
-            topic_type, self.title or '<no title>'
-        )
         if not self.id:
             topic_str = "{} (draft)".format(topic_str)
 

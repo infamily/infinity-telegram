@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "08bb86c917e81ed22b05ff101ee367ef03786a1d5583a2b4d9161fe9743092e4"
+            "sha256": "a13799260f09dc20830fc8898ad4ce0b48c39a1abeec7dac8e7356b2a1401856"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -50,17 +50,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:d817c21abcb41f390cec28e444d180db7d40ec2786ff5f54813af52e53598362",
-                "sha256:cf5768f1b9f26d5f82369ef97e11eee0010d10f8723b081c61ff17a1cd199bea"
+                "sha256:8cac0e97b9c7bf78a933644f2c801f049c5acce8f2a0105104811fab3829712e",
+                "sha256:474e1333f17bb2e361555c9f98c5db57581de32f68713bfb1f8bbbb647580ecc"
             ],
-            "version": "==1.6.3"
+            "version": "==1.6.11"
         },
         "botocore": {
             "hashes": [
-                "sha256:8a8c59f4c7b4e3521d82aee4b8cba55e80de44617649c2320823505bfebbcaa4",
-                "sha256:d5b892ab86cd3e8d6cb570dd5275bf1c600cbbf9f07a40a22bcdd9023c0e844f"
+                "sha256:38471b40c32eb20cbac8ac13b85d82d2a313f06a6a89e26fbe72160d81cb3d66",
+                "sha256:5a79b44c6fa1f3befae37519add0b02307cd3425308ff8fd6793fe7a349f0c54"
             ],
-            "version": "==1.9.3"
+            "version": "==1.9.11"
         },
         "certifi": {
             "hashes": [
@@ -71,9 +71,9 @@
         },
         "cfn-flip": {
             "hashes": [
-                "sha256:9e53c920be4ac1950067dbff4b6303e63be0e7af415170e16789a6b2f533090a"
+                "sha256:9c61039c71995ab204c005ec46d47d0f7a109e9f1b6d63569397f8bc648a8151"
             ],
-            "version": "==1.0.0"
+            "version": "==1.0.3"
         },
         "chardet": {
             "hashes": [
@@ -105,6 +105,13 @@
         },
         "django-autofixture": {
             "git": "https://github.com/volrath/django-autofixture.git"
+        },
+        "djangorestframework": {
+            "hashes": [
+                "sha256:1f6baf40ed456ed2af6bd1a4ff8bbc3503cebea16509993aea2b7085bc097766",
+                "sha256:9f9e94e8d22b100ed3a43cee8c47a7ff7b185e778a1f2da9ec5c73fc4e081b87"
+            ],
+            "version": "==3.7.7"
         },
         "docutils": {
             "hashes": [
@@ -325,10 +332,10 @@
         },
         "python-dotenv": {
             "hashes": [
-                "sha256:2a0073a6f7a10156de2ab7d8c2399b5e86ac61786206f6e1b4a1fcad92fa2dd1",
-                "sha256:2bfeb2ce1b5d1ce46ecdce5c9d55e4976ca403fdcc251b4870e5c0647d0dce67"
+                "sha256:4965ed170bf51c347a89820e8050655e9c25db3837db6602e906b6d850fad85c",
+                "sha256:509736185257111613009974e666568a1b031b028b61b500ef1ab4ee780089d5"
             ],
-            "version": "==0.8.0"
+            "version": "==0.8.2"
         },
         "python-slugify": {
             "hashes": [
@@ -434,9 +441,9 @@
         },
         "troposphere": {
             "hashes": [
-                "sha256:b2e322063e2278e7d69822943d230b683ce9a0438db8ad017f610d344998453d"
+                "sha256:e15e2470fe4f02a5c1b70ccd552b09ac664acfff0de74cd4464acf8e6039e118"
             ],
-            "version": "==2.2.0"
+            "version": "==2.2.1"
         },
         "unidecode": {
             "hashes": [

@@ -2,7 +2,9 @@
 import gettext
 import logging
 
-from schematics.exceptions import DataError, ValidationError as SValidationError
+from django.db import models
+from django.forms import model_to_dict
+from django.template import loader
 from slumber.exceptions import HttpClientError, HttpServerError
 from telegram import InlineKeyboardButton, ParseMode
 from telegram.ext import CommandHandler
@@ -13,9 +15,8 @@ from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.categories.models import Type
 from inftybot.core.exceptions import ValidationError, APIResourceError
 from inftybot.core.intents.base import BaseCommandIntent, BaseIntent, ObjectListKeyboardMixin
-from inftybot.core.utils import render_model_errors, render_errors
-from inftybot.topics.models import Topic
-from inftybot.topics.utils import render_topic
+from inftybot.core.utils import render_form_errors, render_errors
+from inftybot.topics.serializers import TopicSerializer
 
 _ = gettext.gettext
 logger = logging.getLogger(__name__)
@@ -45,7 +46,7 @@ def send_confirm(bot, chat_id, topic):
         text=_("Well! That's your topic:"),
     )
 
-    confirmation = render_topic(topic)
+    confirmation = loader.render_to_string('topics/topic.md', topic)
 
     bot.sendMessage(
         chat_id=chat_id,
@@ -65,21 +66,22 @@ def send_confirm(bot, chat_id, topic):
 class BaseTopicIntent(BaseIntent):
     def reset_topic(self):
         try:
-            del self.chat_data['topic']
+            del self.current_chat.chatdata.data['topic']
+            self.current_chat.chatdata.save()
         except KeyError:
             pass
 
-    def set_topic(self, topic):
-        if isinstance(topic, Topic):
-            data = topic.to_native()
-        else:
-            data = topic
-
-        self.chat_data['topic'] = data
+    def set_topic(self, data):
+        if isinstance(data, models.Model):
+            data = model_to_dict(data)
+        self.current_chat.chatdata.data['topic'] = data
+        self.current_chat.chatdata.save()
 
     def get_topic(self):
-        data = self.chat_data.get('topic')
-        return Topic.from_native(data) if data else None
+        return self.current_chat.chatdata.data.get('topic', None)
+
+    def get_topic_serializer(self, data=None):
+        return TopicSerializer(data=data)
 
 
 class TopicCategoryListMixin(ObjectListKeyboardMixin, BaseTopicIntent):
@@ -97,15 +99,13 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         return CommandHandler("done", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def validate(self):
-        topic = self.get_topic()
-
-        if topic is None:
+        stored_data = self.get_topic()
+        if not stored_data:
             raise ValidationError("No topics to publish. Please, use /newtopic or /edit command.")
 
-        try:
-            topic.validate()
-        except (DataError, SValidationError) as e:
-            errors = render_model_errors(e)
+        serializer = self.get_topic_serializer(stored_data)
+        if not serializer.is_valid():
+            errors = render_form_errors(serializer)
             raise ValidationError(errors)
 
     def handle_error(self, error):
@@ -114,20 +114,19 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         else:
             message = error.message
 
-        message = "\n\n".join((_("Hmmm..."), message))
-
+        self.update.message.reply_text(_("Please, check this errors:"))
         self.update.message.reply_text(message)
 
     def handle(self, *args, **kwargs):
-        topic = self.get_topic()
+        stored_data = self.get_topic()
 
-        if topic.id:
-            method = self.api.client.topics(int(topic.id)).put
-        else:
+        if not stored_data or not stored_data.get('id'):
             method = self.api.client.topics.post
+        else:
+            method = self.api.client.topics(int(stored_data['id'])).put
 
         try:
-            rv = method(data=topic.to_native())
+            rv = method(data=stored_data)
         except (HttpClientError, HttpServerError) as e:
             # intercept 4xx and 5xx both
             raise APIResourceError('Failed to save the topic. Please, report it :/')
