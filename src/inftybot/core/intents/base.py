@@ -33,6 +33,7 @@ class BaseIntent(object):
         self.chat_data = kwargs.pop('chat_data', {})
         self.user_data = kwargs.pop('user_data', {})
         self._errors = []
+        super().__init__()
         self.instantiate()
 
     @cached_property

@@ -80,6 +80,13 @@ class BaseTopicIntent(BaseIntent):
     def get_topic(self):
         return self.current_chat.chatdata.data.get('topic', None)
 
+    def fetch_topic(self, pk):
+        """
+        Loads topic from API
+        """
+        response = self.api.client.topics(pk).get()
+        return response
+
     def get_topic_serializer(self, data=None):
         return TopicSerializer(data=data)
 

@@ -1,6 +1,5 @@
 # coding: utf-8
-import gettext
-
+from django.utils.translation import gettext_lazy as _
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler, ConversationHandler, CallbackQueryHandler
 
@@ -17,17 +16,6 @@ from inftybot.topics.intents.base import TopicDoneCommandIntent, BaseTopicIntent
 from inftybot.topics.models import Topic
 from inftybot.topics.utils import render_topic
 
-_ = gettext.gettext
-
-
-class TopicRetrieveMixin(BaseTopicIntent):
-    def fetch_topic(self, pk):
-        """
-        Loads topic from API
-        """
-        response = self.api.client.topics(pk).get()
-        return Topic.from_native(response)
-
 
 class TopicListKeyboardMixin(ObjectListKeyboardMixin, BaseTopicIntent):
     """Mixin for provide current user owned topic list in the keyboard"""
@@ -39,7 +27,7 @@ class TopicListKeyboardMixin(ObjectListKeyboardMixin, BaseTopicIntent):
     def filter_list(self, lst):
         """Filters out current (choosed) topic"""
         current_object = self.get_topic()
-        current_object_id = current_object.id if current_object else None
+        current_object_id = current_object['id'] if current_object else None
         return filter(lambda t: t.id != current_object_id or None, lst)
 
 
@@ -73,7 +61,7 @@ class TopicEditCommandIntent(AuthenticatedMixin, TopicListKeyboardMixin, BaseCom
         return inftybot.topics.states.TOPIC_STATE_EDIT_CHOOSE_TOPIC
 
 
-class TopicChooseCallback(AuthenticatedMixin, TopicListKeyboardMixin, TopicRetrieveMixin, BaseTopicIntent,
+class TopicChooseCallback(AuthenticatedMixin, TopicListKeyboardMixin, BaseTopicIntent,
                           BaseCallbackIntent):
     """Choose topic to edit"""
 
@@ -125,7 +113,7 @@ class TopicChooseCallback(AuthenticatedMixin, TopicListKeyboardMixin, TopicRetri
             return self.handle_choose_topic()
 
 
-class TopicPartChooseCallback(AuthenticatedMixin, TopicRetrieveMixin, BaseTopicIntent, BaseCallbackIntent):
+class TopicPartChooseCallback(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
     """Choose topic part for edit"""
 
     def get_keyboard(self):
@@ -210,7 +198,7 @@ class InputCategoryIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.categories_names = prepare_categories(self.update.message.text)
+        topic['categories_names'] = prepare_categories(self.update.message.text)
         self.set_topic(topic)
 
         send_confirm(
@@ -227,7 +215,7 @@ class InputTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.type = int(self.update.callback_query.data)
+        topic['type'] = int(self.update.callback_query.data)
         self.set_topic(topic)
 
         send_confirm(
@@ -244,7 +232,7 @@ class InputTitleIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.title = self.update.message.text
+        topic['title'] = self.update.message.text
         self.set_topic(topic)
 
         send_confirm(
@@ -261,7 +249,7 @@ class InputBodyIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
 
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
-        topic.body = self.update.message.text
+        topic['body'] = self.update.message.text
         self.set_topic(topic)
 
         send_confirm(

@@ -2,4 +2,6 @@
 
 
 def get_model_resource(api, model):
-    return getattr(api.client, model.Meta.plural)
+    meta = getattr(model, '_meta')
+    plural = meta.verbose_name_plural.lower()
+    return getattr(api.client, plural)

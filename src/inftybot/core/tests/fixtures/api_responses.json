@@ -13,5 +13,30 @@
     "details": "Authentication credentials were not provided."
   },
   "TOPICS_POST_400": {},
-  "TOPICS_POST_200": {}
+  "TOPICS_POST_200": {},
+  "TOPIC_DETAIL": {
+    "id": 679,
+    "url": "http://dev.wfx.io/topics/679/",
+    "type": 1,
+    "title": ".:fi:Hello",
+    "body": ".:en\nWorld",
+    "owner": {
+      "id": 147,
+      "username": "Mindey@FE706DAF"
+    },
+    "parents": [],
+    "children": [],
+    "categories": [
+      "http://dev.wfx.io/types/78/",
+      "http://dev.wfx.io/types/101/"
+    ],
+    "categories_names": [
+      ".:en:Transportation Industry.:cn:交通运输业",
+      ".:en:Automotive Technology.:cn:汽车技术"
+    ],
+    "languages": [],
+    "is_draft": false,
+    "blockchain": 0,
+    "matched": 0.0
+  }
 }
