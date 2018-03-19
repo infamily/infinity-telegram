@@ -99,7 +99,7 @@ def load_api_responses():
 
 
 def mock_update(update):
-    update.message.reply_text = MagicMock()
+    update.effective_message.reply_text = MagicMock()
     return update
 
 
