@@ -12,9 +12,8 @@ from inftybot.core.exceptions import IntentHandleException
 from inftybot.core.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, \
     ObjectListKeyboardMixin
 from inftybot.core.intents.cancel import CancelCommandIntent
-from inftybot.topics.intents.base import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
-    TopicCategoryListMixin, BaseInputBodyIntent, BaseInputCategoryIntent, BaseInputTypeIntent, \
-    BaseInputTitleIntent
+from inftybot.topics.intents.base import CHOOSE_TYPE_KEYBOARD, send_confirm, TopicDoneCommandIntent, BaseTopicIntent, \
+    TopicCategoryListMixin, BaseInputBodyIntent, BaseInputCategoryIntent, BaseInputTypeIntent, BaseInputTitleIntent
 from inftybot.topics.models import Topic
 from inftybot.topics.serializers import TopicSerializer
 from inftybot.topics.utils import render_topic
@@ -156,27 +155,27 @@ class TopicEditIntent(TopicCategoryListMixin, BaseTopicIntent, BaseCallbackInten
 
     def handle(self, *args, **kwargs):
         topic_part_mapping = {
-            inftybot.topics.constants.TOPIC_PART_TYPE: inftybot.topics.states.TOPIC_STATE_TYPE,
-            inftybot.topics.constants.TOPIC_PART_TITLE: inftybot.topics.states.TOPIC_STATE_TITLE,
-            inftybot.topics.constants.TOPIC_PART_BODY: inftybot.topics.states.TOPIC_STATE_BODY,
-            inftybot.topics.constants.TOPIC_PART_CATEGORY: inftybot.topics.states.TOPIC_STATE_CATEGORY,
+            inftybot.topics.constants.TOPIC_PART_TYPE: inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_TYPE,
+            inftybot.topics.constants.TOPIC_PART_TITLE: inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_TITLE,
+            inftybot.topics.constants.TOPIC_PART_BODY: inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_BODY,
+            inftybot.topics.constants.TOPIC_PART_CATEGORY: inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_CATEGORY,
         }
 
-        new_state = topic_part_mapping.get(self.update.callback_query.data)
+        next_state = topic_part_mapping.get(self.update.callback_query.data)
         reply_markup = None
 
-        if new_state is inftybot.topics.states.TOPIC_STATE_TYPE:
+        if next_state is inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_TYPE:
             message = _('Please, choose topic type')
             keyboard = CHOOSE_TYPE_KEYBOARD
             reply_markup = InlineKeyboardMarkup(keyboard)
-        elif new_state is inftybot.topics.states.TOPIC_STATE_CATEGORY:
+        elif next_state is inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_CATEGORY:
             message = _(
                 'Please, enter some categories (comma-separated). '
                 'Use /listcategories to check the available ones'
             )
-        elif new_state is inftybot.topics.states.TOPIC_STATE_TITLE:
+        elif next_state is inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_TITLE:
             message = _('Please, enter topic title')
-        elif new_state is inftybot.topics.states.TOPIC_STATE_BODY:
+        elif next_state is inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_BODY:
             message = _('Please, enter topic body')
         else:
             message = _('Unknown state. Please report it.')
@@ -187,7 +186,7 @@ class TopicEditIntent(TopicCategoryListMixin, BaseTopicIntent, BaseCallbackInten
             reply_markup=reply_markup
         )
 
-        return new_state
+        return next_state
 
     def handle_error(self, error):
         self.bot.sendMessage(
@@ -238,10 +237,10 @@ class TopicConversationIntent(BaseConversationIntent):
                 inftybot.topics.states.TOPIC_STATE_EDIT_CHOOSE_TOPIC: [TopicChooseCallback.get_handler()],
                 inftybot.topics.states.TOPIC_STATE_EDIT_CHOOSE_PART: [TopicPartChooseCallback.get_handler()],
                 inftybot.topics.states.TOPIC_STATE_EDIT_INPUT: [TopicEditIntent.get_handler()],
-                inftybot.topics.states.TOPIC_STATE_CATEGORY: [InputCategoryIntent.get_handler()],
-                inftybot.topics.states.TOPIC_STATE_TYPE: [InputTypeIntent.get_handler()],
-                inftybot.topics.states.TOPIC_STATE_TITLE: [InputTitleIntent.get_handler()],
-                inftybot.topics.states.TOPIC_STATE_BODY: [InputBodyIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_CATEGORY: [InputCategoryIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_TYPE: [InputTypeIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_TITLE: [InputTitleIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_EDIT_INPUT_BODY: [InputBodyIntent.get_handler()],
             },
             fallbacks=[
                 TopicDoneCommandIntent.get_handler(),

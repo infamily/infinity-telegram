@@ -30,11 +30,11 @@ class TopicCreateCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandI
             _("Please, choose type:"), reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-        return inftybot.topics.states.TOPIC_STATE_TYPE
+        return inftybot.topics.states.TOPIC_STATE_NEW_INPUT_TYPE
 
 
 class InputTypeIntent(BaseInputTypeIntent):
-    next_state = inftybot.topics.states.TOPIC_STATE_CATEGORY
+    next_state = inftybot.topics.states.TOPIC_STATE_NEW_INPUT_CATEGORY
 
     def handle(self, *args, **kwargs):
         next_state = super(InputTypeIntent, self).handle(*args, **kwargs)
@@ -49,7 +49,7 @@ class InputTypeIntent(BaseInputTypeIntent):
 
 
 class InputCategoryIntent(BaseInputCategoryIntent):
-    next_state = inftybot.topics.states.TOPIC_STATE_TITLE
+    next_state = inftybot.topics.states.TOPIC_STATE_NEW_INPUT_TITLE
 
     def handle(self, *args, **kwargs):
         next_state = super(InputCategoryIntent, self).handle(*args, **kwargs)
@@ -61,7 +61,7 @@ class InputCategoryIntent(BaseInputCategoryIntent):
 
 
 class InputTitleIntent(BaseInputTitleIntent):
-    next_state = inftybot.topics.states.TOPIC_STATE_BODY
+    next_state = inftybot.topics.states.TOPIC_STATE_NEW_INPUT_BODY
 
     def handle(self, *args, **kwargs):
         next_state = super(InputTitleIntent, self).handle(*args, **kwargs)
@@ -91,10 +91,10 @@ class TopicConversationIntent(BaseConversationIntent):
         return ConversationHandler(
             entry_points=[TopicCreateCommandIntent.get_handler()],
             states={
-                inftybot.topics.states.TOPIC_STATE_TYPE: [InputTypeIntent.get_handler()],
-                inftybot.topics.states.TOPIC_STATE_TITLE: [InputTitleIntent.get_handler()],
-                inftybot.topics.states.TOPIC_STATE_CATEGORY: [InputCategoryIntent.get_handler()],
-                inftybot.topics.states.TOPIC_STATE_BODY: [InputBodyIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_NEW_INPUT_TYPE: [InputTypeIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_NEW_INPUT_TITLE: [InputTitleIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_NEW_INPUT_CATEGORY: [InputCategoryIntent.get_handler()],
+                inftybot.topics.states.TOPIC_STATE_NEW_INPUT_BODY: [InputBodyIntent.get_handler()],
             },
             fallbacks=[
                 TopicDoneCommandIntent.get_handler(),
