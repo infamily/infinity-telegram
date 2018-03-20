@@ -1,10 +1,10 @@
-{% if categories_names %}
-`Categories:` {{categories_names|join:','}}
+{% if object.categories_names %}
+`Categories:` {{object.categories_names|join:','}}
 {% endif %}
 
-`{{type_str}}:` *{{title}}*
+`{{object.get_type_display}}:` *{{object.title}}*
 
-{{body}}
+{{object.body}}
 
-*URL:* {{url}}
+*URL:* {{object.url}}
 _Reply to this message to post a comment on Infinity._
