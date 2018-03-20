@@ -1,7 +1,6 @@
 # coding: utf-8
 """Intents for handling get/set group/channel categories set"""
-import gettext
-
+from django.utils.translation import gettext
 from telegram.ext import CommandHandler
 
 import inftybot.chats.utils
@@ -10,7 +9,7 @@ from inftybot.core.exceptions import CommunityRequiredError, AdminRequiredError,
 from inftybot.core.intents.base import BaseCommandIntent, ArgparseMixin
 from inftybot.core.storage import ChatDataStorage
 
-_ = gettext.gettext
+_ = gettext
 
 
 def get_chat_storage(chat_id):
