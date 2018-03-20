@@ -23,8 +23,7 @@ INTENTS = [
     'inftybot.topics.intents.newtopic.TopicConversationIntent',
     'inftybot.topics.intents.edittopic.TopicConversationIntent',
     'inftybot.topics.intents.base.TopicDoneCommandIntent',
-
-    # 'inftybot.intents.comment.ReplyIntent',
+    'inftybot.comments.intents.comment.ReplyIntent',
     # 'inftybot.intents.listcategories.ListCategoriesCommandIntent',
     # 'inftybot.intents.groupcategories.SetCategoriesCommandIntent',
     # 'inftybot.intents.groupcategories.GetCategoriesCommandIntent',
