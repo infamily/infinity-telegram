@@ -17,6 +17,6 @@ class APISetUserTestCase(TestCase, APIMixin):
         user.session.session_data['token'] = 'test_token'
         self.api.user = user
         self.assertEqual(
-            self.api.session.headers['Authorization'],
+            self.api.client._store['session'].headers['Authorization'],
             'Token test_token'
         )

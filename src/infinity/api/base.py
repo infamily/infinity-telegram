@@ -3,7 +3,6 @@
 import logging
 
 import slumber
-from requests import Session
 from slumber.exceptions import HttpClientError, HttpServerError
 
 from inftybot import config
@@ -24,15 +23,29 @@ class APIClient(slumber.API):
     resource_class = APIResource
 
 
+def set_api_authorization_token(api_client, authorization_token):
+    store = getattr(api_client, '_store')
+    session = store['session']
+    session.headers.update({
+        'Authorization': 'Token {}'.format(authorization_token)
+    })
+
+
+def create_api_client(base_url=None, session=None, authorization_token=None, **kwargs):
+    base_url = base_url or config.INFTY_API_URL
+    api_client = APIClient(base_url, session=session, **kwargs)
+    if authorization_token:
+        set_api_authorization_token(api_client, authorization_token)
+    return api_client
+
+
 class API(object):
     """
     Class for acessing Infty REST API
     """
 
     def __init__(self, base_url=None, **kwargs):
-        self.base_url = base_url or config.INFTY_API_URL
-        self.session = Session()
-        self.client = APIClient(self.base_url, session=self.session, **kwargs)
+        self.client = APIClient(base_url=base_url, **kwargs)
         self._data = {}
 
     def _update_session(self):
@@ -45,9 +58,7 @@ class API(object):
         except (ValueError, AttributeError):
             token = None
 
-        self.session.headers.update({
-            'Authorization': 'Token {}'.format(token)
-        })
+        set_api_authorization_token(self.client, token)
 
     @property
     def user(self):
