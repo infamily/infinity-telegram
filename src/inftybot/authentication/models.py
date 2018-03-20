@@ -37,7 +37,7 @@ class ChatUserManager(models.Manager):
 class ChatUser(models.Model):
     """Chat user model"""
     objects = ChatUserManager.from_queryset(ChatUserQuerySet)()
-
+    id = models.BigAutoField(primary_key=True)
     username = models.CharField(max_length=150, verbose_name=_('Username'))
     email = models.EmailField(verbose_name=_('Email'))
     user = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, verbose_name=_('User reference'))

@@ -30,6 +30,7 @@ class Chat(models.Model):
     )
 
     objects = ChatManager.from_queryset(ChatQuerySet)()
+    id = models.BigAutoField(primary_key=True)
     type = models.CharField(max_length=24, choices=TYPE_CHOICES, verbose_name=_('Chat type'))
 
     def ensure_chat_data(self):
