@@ -8,16 +8,6 @@ from inftybot.topics.serializers import TopicSerializer
 
 
 class TopicSerializerTestCase(TestCase):
-    def test_serializer_data_has_empty_default_categories_str_field(self):
-        data = {
-            'title': 'Test title',
-            'body': 'Test body',
-            'type': Topic.TYPE_NEED,
-        }
-        serializer = TopicSerializer(data=data)
-        serializer.is_valid()
-        self.assertEqual([], serializer.data['categories_str'])
-
     def test_serializer_data_has_categories_str_field(self):
         instance = Topic(categories_names=['test1', 'test2'])
 
@@ -47,3 +37,16 @@ class TopicSerializerTestCase(TestCase):
         instance = Topic(**{'id': 1, 'title': 'Title'})
         serializer = TopicSerializer(instance)
         self.assertEqual(1, serializer.data['id'])
+
+    def test_serialize_categories_names(self):
+        data = {
+            'id': 1,
+            'title': 'Test title',
+            'body': 'Test body',
+            'type': Topic.TYPE_NEED,
+            'categories_names': ['.:en:test.:ru:тест']
+        }
+
+        serializer = TopicSerializer(data=data)
+        serializer.is_valid()
+        self.assertEqual(data['categories_names'], serializer.validated_data['categories_names'])

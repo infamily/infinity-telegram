@@ -176,7 +176,8 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         self.update.message.reply_text(message)
 
     def handle(self, *args, **kwargs):
-        stored_data = self.get_topic_data()
+        topic = self.get_topic()
+        stored_data = self.serializer_class(instance=topic).data
 
         if not stored_data or not stored_data.get('id'):
             method = self.api.client.topics.post

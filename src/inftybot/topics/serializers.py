@@ -14,8 +14,6 @@ class TopicSerializer(serializers.ModelSerializer):
     body = serializers.CharField(required=False, default=None, allow_null=True, allow_blank=True)
     categories_names = serializers.ListField(
         child=serializers.CharField(), default=[])  # NOQA
-    categories_str = serializers.ListField(
-        child=serializers.CharField(), source='categories_names', default=[])  # NOQA
     url = serializers.URLField(required=False, default=None, allow_null=True)
     parents = serializers.ListField(child=serializers.CharField(), default=[])
 

@@ -49,6 +49,22 @@ class TopicDoneTestCase(UserMixin, BaseIntentTestCase):
         self.assertGreater(api_mock.call_count, 0)
 
     @patch_api_request(200, {})
+    def test_categories_str_existed_in_the_payload(self, api_response):
+        update = updates['TOPIC_DONE']
+        intent = self.create_intent(update)
+
+        create_user_from_update(self.bot, update)
+        create_chat_from_update(self.bot, update)
+
+        topic = Topic()
+        topic.title = 'Test title'
+        topic.body = 'Test body'
+        topic.type = TOPIC_TYPE_NEED
+        topic.categories_names = ['test1', 'test2']
+        intent.set_topic(topic)
+        intent()
+
+    @patch_api_request(200, {})
     def test_valid_topic_api_request_params_ok(self, api_mock):
         update = updates['TOPIC_DONE']
         intent = self.create_intent(update)

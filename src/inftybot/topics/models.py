@@ -43,3 +43,13 @@ class Topic(models.Model):
             topic_str = "{} (draft)".format(topic_str)
 
         return topic_str
+
+    @property
+    def categories_str(self):
+        # NOQA
+        return self.categories_names
+
+    @categories_str.setter
+    def categories_str(self, value):
+        # NOQA
+        pass
