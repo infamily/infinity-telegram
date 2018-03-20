@@ -5,7 +5,7 @@ from inftybot.topics import models
 
 
 class TopicSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=False, default=None, allow_null=True)
     categories_str = serializers.ListField(child=serializers.CharField(), source='categories_names', default=[])  # NOQA
 
     class Meta:

@@ -2,8 +2,6 @@
 import logging
 
 from django.db import models
-from django.forms import model_to_dict
-from django.template import loader
 from django.utils.translation import gettext
 from slumber.exceptions import HttpClientError, HttpServerError
 from telegram import InlineKeyboardButton, ParseMode
@@ -14,9 +12,12 @@ import inftybot.topics.constants
 from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.categories.models import Type
 from inftybot.core.exceptions import ValidationError, APIResourceError
-from inftybot.core.intents.base import BaseCommandIntent, BaseIntent, ObjectListKeyboardMixin
+from inftybot.core.intents.base import BaseCommandIntent, BaseIntent, ObjectListKeyboardMixin, BaseCallbackIntent, \
+    BaseMessageIntent
 from inftybot.core.utils import render_form_errors, render_errors
+from inftybot.topics.models import Topic
 from inftybot.topics.serializers import TopicSerializer
+from inftybot.topics.utils import render_topic
 
 _ = gettext
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ def send_confirm(bot, chat_id, topic):
         text=_("Well! That's your topic:"),
     )
 
-    confirmation = loader.render_to_string('topics/topic.md', topic)
+    confirmation = render_topic(topic)
 
     bot.sendMessage(
         chat_id=chat_id,
@@ -64,6 +65,13 @@ def send_confirm(bot, chat_id, topic):
 
 
 class BaseTopicIntent(BaseIntent):
+    model = Topic
+    serializer = TopicSerializer
+    next_state = None
+
+    def get_next_state(self):
+        return self.next_state
+
     def reset_topic(self):
         try:
             del self.current_chat.chatdata.data['topic']
@@ -73,12 +81,26 @@ class BaseTopicIntent(BaseIntent):
 
     def set_topic(self, data):
         if isinstance(data, models.Model):
-            data = model_to_dict(data)
+            serializer = self.serializer(instance=data)
+            data = serializer.data
+        else:
+            serializer = self.serializer(data=data)
+            data = serializer.validated_data if serializer.is_valid() else {}
+        self.set_topic_data(data)
+
+    def set_topic_data(self, data):
+        self.current_chat.ensure_chat_data()
         self.current_chat.chatdata.data['topic'] = data
         self.current_chat.chatdata.save()
 
+    def get_topic_data(self):
+        return self.current_chat.chatdata.data.get('topic', {})
+
     def get_topic(self):
-        return self.current_chat.chatdata.data.get('topic', None)
+        serializer = self.serializer(data=self.get_topic_data())
+        if serializer.is_valid():
+            return Topic(**serializer.validated_data)
+        return None
 
     def fetch_topic(self, pk):
         """
@@ -87,15 +109,43 @@ class BaseTopicIntent(BaseIntent):
         response = self.api.client.topics(pk).get()
         return response
 
-    def get_topic_serializer(self, data=None):
-        return TopicSerializer(data=data)
-
 
 class TopicCategoryListMixin(ObjectListKeyboardMixin, BaseTopicIntent):
     model = Type
 
     def get_extra_params(self):
         return {'category': '1'}
+
+
+class BaseInputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
+    def handle(self, *args, **kwargs):
+        topic = self.get_topic()
+        topic.type = int(self.update.callback_query.data)
+        self.set_topic(topic)
+        return self.get_next_state()
+
+
+class BaseInputCategoryIntent(BaseTopicIntent, BaseMessageIntent):
+    def handle(self, *args, **kwargs):
+        topic = self.get_topic()
+        topic.categories_names = prepare_categories(self.update.message.text)
+        self.set_topic(topic)
+        return self.get_next_state()
+
+
+class BaseInputTitleIntent(BaseTopicIntent, BaseMessageIntent):
+    def handle(self, *args, **kwargs):
+        topic = self.get_topic()
+        topic.title = self.update.message.text
+        return self.get_next_state()
+
+
+class BaseInputBodyIntent(BaseTopicIntent, BaseMessageIntent):
+    def handle(self, *args, **kwargs):
+        topic = self.get_topic()
+        topic.body = self.update.message.text
+        self.set_topic(topic)
+        return self.get_next_state()
 
 
 class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
@@ -106,11 +156,11 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         return CommandHandler("done", cls.as_callback(), pass_chat_data=True, pass_user_data=True)
 
     def validate(self):
-        stored_data = self.get_topic()
+        stored_data = self.get_topic_data()
         if not stored_data:
             raise ValidationError("No topics to publish. Please, use /newtopic or /edit command.")
 
-        serializer = self.get_topic_serializer(stored_data)
+        serializer = self.serializer(data=stored_data)
         if not serializer.is_valid():
             errors = render_form_errors(serializer)
             raise ValidationError(errors)
@@ -125,7 +175,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         self.update.message.reply_text(message)
 
     def handle(self, *args, **kwargs):
-        stored_data = self.get_topic()
+        stored_data = self.get_topic_data()
 
         if not stored_data or not stored_data.get('id'):
             method = self.api.client.topics.post

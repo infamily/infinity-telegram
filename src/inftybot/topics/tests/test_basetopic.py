@@ -36,13 +36,16 @@ class TopicDoneTestCase(UserMixin, BaseIntentTestCase):
         intent = self.create_intent(update)
 
         create_user_from_update(self.bot, update)
+        create_chat_from_update(self.bot, update)
 
         topic = Topic()
         topic.title = 'Test title'
         topic.body = 'Test body'
         topic.type = TOPIC_TYPE_NEED
 
-        intent(chat_data={'topic': topic})
+        intent.set_topic(topic)
+
+        intent()
         self.assertGreater(api_mock.call_count, 0)
 
     @patch_api_request(200, {})
