@@ -45,7 +45,7 @@ class API(object):
     """
 
     def __init__(self, base_url=None, **kwargs):
-        self.client = APIClient(base_url=base_url, **kwargs)
+        self.client = create_api_client(base_url=base_url, **kwargs)
         self._data = {}
 
     def _update_session(self):
