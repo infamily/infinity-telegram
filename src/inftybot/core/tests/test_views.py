@@ -4,12 +4,12 @@ import json
 from django.test import TestCase
 from django.urls import reverse
 
-from inftybot.core.tests.base import load_tg_updates
+from inftybot.core.tests.base import load_tg_updates, BotMixin
 
 tg_updates = load_tg_updates()
 
 
-class WebhookTestCase(TestCase):
+class WebhookTestCase(BotMixin, TestCase):
     def setUp(self):
         super(WebhookTestCase, self).setUp()
 

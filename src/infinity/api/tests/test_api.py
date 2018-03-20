@@ -1,19 +1,20 @@
 # coding: utf-8
 # flake8: noqa
-from unittest import TestCase
+from django.test import TestCase
 
-from api.tests.base import APIMixin
+from infinity.api.tests.base import APIMixin
+from inftybot.authentication.models import ChatUser
 
-from inftybot.authentication.models import User
 
-
-class APISetUserTestCase(APIMixin, TestCase):
+class APISetUserTestCase(TestCase, APIMixin):
     def setUp(self):
         self.api = self.create_api_client()
 
     def test_set_user_updates_session_headers(self):
-        user = User()
-        user.token = 'test_token'
+        user = ChatUser()
+        user.save()
+        user.ensure_session()
+        user.session.session_data['token'] = 'test_token'
         self.api.user = user
         self.assertEqual(
             self.api.session.headers['Authorization'],

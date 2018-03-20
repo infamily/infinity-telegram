@@ -23,7 +23,7 @@ class CreateIntentTestCase(TestCase):
 
     def test_create_from_dict(self):
         dict_conf = {
-            'cls': 'inftybot.authentication.intents.login.LoginConversationIntent',
+            'class': 'inftybot.authentication.intents.login.LoginConversationIntent',
         }
         intent = create_intent(dict_conf)
         self.assertIsInstance(intent, BaseIntent.__class__)
