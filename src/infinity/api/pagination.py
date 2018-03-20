@@ -16,6 +16,7 @@ class APIResponsePaginator(object):
     (see ```inftybot.models.from_native()```)
     """
     model = None
+    serializer = None
     api = None
 
     def __init__(self, **kwargs):
@@ -37,6 +38,14 @@ class APIResponsePaginator(object):
 
     def get_extra_params(self):
         return {}
+
+    def create_object(self, data):
+        serializer_cls = getattr(self, 'serializer')
+        model = getattr(self, 'model')
+        serializer = serializer_cls(data=data)
+        if serializer.is_valid():
+            return model(**serializer.validated_data)
+        return None
 
     def fetch(self):
         """Fetch portion of the data (current page) from the API"""
@@ -65,4 +74,4 @@ class APIResponsePaginator(object):
         else:
             object_list = response[0:10]  # todo remove slicing
 
-        return [from_native(self.model, data) for data in object_list]
+        return (item for item in (self.create_object(data) for data in object_list) if item)

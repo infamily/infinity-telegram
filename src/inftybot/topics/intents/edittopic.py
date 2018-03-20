@@ -14,12 +14,14 @@ from inftybot.core.intents.cancel import CancelCommandIntent
 from inftybot.topics.intents.base import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
     TopicCategoryListMixin, prepare_categories
 from inftybot.topics.models import Topic
+from inftybot.topics.serializers import TopicSerializer
 from inftybot.topics.utils import render_topic
 
 
 class TopicListKeyboardMixin(ObjectListKeyboardMixin, BaseTopicIntent):
     """Mixin for provide current user owned topic list in the keyboard"""
     model = Topic
+    serializer = TopicSerializer
 
     def get_extra_params(self):
         return {'owner': 'me'}
@@ -54,7 +56,7 @@ class TopicEditCommandIntent(AuthenticatedMixin, TopicListKeyboardMixin, BaseCom
 
         self.bot.send_message(
             chat_id=self.update.effective_chat.id,
-            text=message_text,
+            text=str(message_text),
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
 

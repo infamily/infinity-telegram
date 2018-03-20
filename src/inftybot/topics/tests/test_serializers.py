@@ -30,3 +30,15 @@ class TopicSerializerTestCase(TestCase):
         serializer = TopicSerializer(instance, data=data)
         serializer.is_valid()
         self.assertEqual(['test1', 'test2'], serializer.data['categories_str'])
+
+    def test_id_field_in_validated_data(self):
+        data = {
+            'id': 1,
+            'title': 'Test title',
+            'body': 'Test body',
+            'type': Topic.TYPE_NEED,
+        }
+
+        serializer = TopicSerializer(data=data)
+        serializer.is_valid()
+        self.assertEqual(1, serializer.validated_data['id'])
