@@ -5,15 +5,17 @@ from telegram.ext import CommandHandler
 
 import inftybot.chats.utils
 from inftybot.authentication.intents.base import AuthenticatedMixin
+from inftybot.chats.models import Chat
 from inftybot.core.exceptions import CommunityRequiredError, AdminRequiredError, ValidationError
 from inftybot.core.intents.base import BaseCommandIntent, ArgparseMixin
-from inftybot.core.storage import ChatDataStorage
 
 _ = gettext
 
 
 def get_chat_storage(chat_id):
-    return ChatDataStorage()[chat_id]
+    chat, _ = Chat.objects.get_or_create(id=chat_id)
+    chat.ensure_chat_data()
+    return chat.chatdata
 
 
 class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandIntent):
@@ -30,7 +32,7 @@ class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
         parser.add_argument('categories', type=str, help='Category name or comma-separated list')
         return parser
 
-    def before_validate(self):
+    def before_validate(self, *args, **kwargs):
         if inftybot.chats.utils.get_chat_is_community(self.bot, self.update.effective_chat):
             message = _(
                 "You should to use this command in direct chat with me. \n"
@@ -48,11 +50,11 @@ class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
             raise AdminRequiredError()
 
     def handle(self, *args, **kwargs):
-        chat_id = self.parsed_args.chat
+        chat = inftybot.chats.utils.get_chat(self.bot, self.parsed_args.chat)
         categories = self.parsed_args.categories.split(',')
-        storage = get_chat_storage(chat_id)
-        storage['categories'] = categories
-        storage.store()
+        storage = get_chat_storage(chat.id)
+        storage.data['categories'] = categories
+        storage.save()
         self.update.message.reply_text(_("OK"))
 
 
@@ -89,7 +91,7 @@ class GetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
     def handle(self, *args, **kwargs):
         chat_id = self.parsed_args.chat
         storage = get_chat_storage(chat_id)
-        categories = storage.get('categories', [])
+        categories = storage.data.get('categories', [])
         categories_str = ', '.join(categories) if categories else 'empty'
         message = "CATEGORIES_LIST: {}".format(categories_str)
         self.update.message.reply_text(_(message))
