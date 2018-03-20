@@ -1,18 +1,17 @@
 # coding: utf-8
-from django.utils.translation import gettext
+from django.utils.translation import gettext as _
 from telegram import InlineKeyboardMarkup
-from telegram.ext import CommandHandler, ConversationHandler
+from telegram.ext import CommandHandler
 
 import inftybot.core.states
 import inftybot.topics.states
+from contrib.telegram.ext import ConversationHandler
 from inftybot.authentication.intents.base import AuthenticatedMixin
-from inftybot.core.intents.base import BaseCommandIntent, BaseConversationIntent, BaseCallbackIntent, BaseMessageIntent
+from inftybot.core.intents.base import BaseCommandIntent, BaseConversationIntent
 from inftybot.core.intents.cancel import CancelCommandIntent
 from inftybot.topics.intents.base import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandIntent, BaseTopicIntent, send_confirm, \
-    prepare_categories
+    BaseInputTypeIntent, BaseInputCategoryIntent, BaseInputTitleIntent, BaseInputBodyIntent
 from inftybot.topics.models import Topic
-
-_ = gettext
 
 
 class TopicCreateCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):
@@ -34,11 +33,11 @@ class TopicCreateCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandI
         return inftybot.topics.states.TOPIC_STATE_TYPE
 
 
-class InputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
+class InputTypeIntent(BaseInputTypeIntent):
+    next_state = inftybot.topics.states.TOPIC_STATE_CATEGORY
+
     def handle(self, *args, **kwargs):
-        topic = self.get_topic()
-        topic['type'] = int(self.update.callback_query.data)
-        self.set_topic(topic)
+        next_state = super(InputTypeIntent, self).handle(*args, **kwargs)
         self.bot.sendMessage(
             chat_id=self.update.callback_query.message.chat_id,
             text=_(
@@ -46,45 +45,44 @@ class InputTypeIntent(BaseTopicIntent, BaseCallbackIntent):
                 "Use /listcategories to check the available ones"
             ),
         )
-        return inftybot.topics.states.TOPIC_STATE_CATEGORY
+        return next_state
 
 
-class InputCategoryIntent(BaseTopicIntent, BaseMessageIntent):
+class InputCategoryIntent(BaseInputCategoryIntent):
+    next_state = inftybot.topics.states.TOPIC_STATE_TITLE
+
     def handle(self, *args, **kwargs):
-        topic = self.get_topic()
-        topic['categories_names'] = prepare_categories(self.update.message.text)
-        self.set_topic(topic)
+        next_state = super(InputCategoryIntent, self).handle(*args, **kwargs)
         self.bot.sendMessage(
             chat_id=self.update.message.chat_id,
             text=_("Ok! Please, input the topic title"),
         )
-        return inftybot.topics.states.TOPIC_STATE_TITLE
+        return next_state
 
 
-class InputTitleIntent(BaseTopicIntent, BaseMessageIntent):
+class InputTitleIntent(BaseInputTitleIntent):
+    next_state = inftybot.topics.states.TOPIC_STATE_BODY
+
     def handle(self, *args, **kwargs):
-        topic = self.get_topic()
-        topic['title'] = self.update.message.text
-        self.set_topic(topic)
+        next_state = super(InputTitleIntent, self).handle(*args, **kwargs)
         self.update.message.reply_text(
             _("Ok! Please, input the topic body")
         )
-        return inftybot.topics.states.TOPIC_STATE_BODY
+        return next_state
 
 
-class InputBodyIntent(BaseTopicIntent, BaseMessageIntent):
+class InputBodyIntent(BaseInputBodyIntent):
+    next_state = inftybot.core.states.STATE_END
+
     def handle(self, *args, **kwargs):
+        next_state = super(InputBodyIntent, self).handle(*args, **kwargs)
         topic = self.get_topic()
-        topic['body'] = self.update.message.text
-        self.set_topic(topic)
-
         send_confirm(
             self.bot,
             self.update.message.chat_id,
             topic
         )
-
-        return inftybot.core.states.STATE_END
+        return next_state
 
 
 class TopicConversationIntent(BaseConversationIntent):

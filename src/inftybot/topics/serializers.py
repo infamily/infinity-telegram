@@ -5,8 +5,19 @@ from inftybot.topics import models
 
 
 class TopicSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False, default=None, allow_null=True)
-    categories_str = serializers.ListField(child=serializers.CharField(), source='categories_names', default=[])  # NOQA
+    """Seralizer for data fetched from the API (create instances, etc.)"""
+    id = serializers.IntegerField(
+        required=False, default=None, allow_null=True)
+    type = serializers.ChoiceField(
+        choices=models.Topic.TYPE_CHOICES, required=False, default=models.Topic.TYPE_NEED, allow_null=True)
+    title = serializers.CharField(required=False, default=None, allow_null=True, allow_blank=True)
+    body = serializers.CharField(required=False, default=None, allow_null=True, allow_blank=True)
+    categories_names = serializers.ListField(
+        child=serializers.CharField(), default=[])  # NOQA
+    categories_str = serializers.ListField(
+        child=serializers.CharField(), source='categories_names', default=[])  # NOQA
+    url = serializers.URLField(required=False, default=None, allow_null=True)
+    parents = serializers.ListField(child=serializers.CharField(), default=[])
 
     class Meta:
         model = models.Topic

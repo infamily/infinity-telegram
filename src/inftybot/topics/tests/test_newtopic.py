@@ -20,8 +20,8 @@ class NewTopicIntentTestCase(TopicIntentTestCase):
 
     def test_intent_handler_set_new_topic(self):
         self.intent()
-        topic = self.intent.get_topic()
-        self.assertGreater(len(topic), 0)
+        topic_data = self.intent.get_topic_data()
+        self.assertGreater(len(topic_data), 0)
 
 
 class InputTypeIntentTestCase(TopicIntentTestCase):
@@ -34,8 +34,8 @@ class InputTypeIntentTestCase(TopicIntentTestCase):
 
     def test_intent_handler_update_topic_title(self):
         self.intent()
-        topic = self.intent.get_topic()
-        self.assertEqual(topic['type'], 0)
+        topic_data = self.intent.get_topic_data()
+        self.assertEqual(topic_data['type'], 0)
 
 
 class InputCategoryIntentCase(TopicIntentTestCase):
@@ -49,8 +49,8 @@ class InputCategoryIntentCase(TopicIntentTestCase):
 
     def test_intent_handler_update_topic_category(self):
         self.intent()
-        topic = self.intent.get_topic()
-        self.assertEqual(topic['categories_names'], ['general', 'medicine'])
+        topic_data = self.intent.get_topic_data()
+        self.assertEqual(topic_data['categories_names'], ['general', 'medicine'])
 
 
 class InputTitleIntentTestCase(TopicIntentTestCase):
@@ -64,8 +64,8 @@ class InputTitleIntentTestCase(TopicIntentTestCase):
 
     def test_intent_handler_update_topic_title(self):
         self.intent()
-        topic = self.intent.get_topic()
-        self.assertEqual(topic['title'], 'Topic title')
+        topic_data = self.intent.get_topic_data()
+        self.assertEqual(topic_data['title'], 'Topic title')
 
 
 class InputBodyIntentTestCase(TopicIntentTestCase):
@@ -73,11 +73,10 @@ class InputBodyIntentTestCase(TopicIntentTestCase):
     update = updates['TOPIC_BODY']
 
     def test_intent_return_proper_new_state(self):
-        intent = self.create_intent(self.update)
-        new_state = intent()
+        new_state = self.intent()
         self.assertEqual(new_state, STATE_END)
 
     def test_intent_handler_update_topic_title(self):
         self.intent()
-        topic = self.intent.get_topic()
-        self.assertEqual(topic['body'], 'Topic body')
+        topic_data = self.intent.get_topic_data()
+        self.assertEqual(topic_data['body'], 'Topic body')

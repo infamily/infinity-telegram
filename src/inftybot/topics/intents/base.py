@@ -137,6 +137,7 @@ class BaseInputTitleIntent(BaseTopicIntent, BaseMessageIntent):
     def handle(self, *args, **kwargs):
         topic = self.get_topic()
         topic.title = self.update.message.text
+        self.set_topic(topic)
         return self.get_next_state()
 
 
