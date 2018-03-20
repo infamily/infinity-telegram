@@ -1,18 +1,20 @@
 # coding: utf-8
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from telegram.ext import CommandHandler, ConversationHandler, CallbackQueryHandler
+from telegram.ext import CommandHandler, CallbackQueryHandler
 
 import inftybot.core.constants
 import inftybot.topics.constants
 import inftybot.topics.states
+from contrib.telegram.ext import ConversationHandler
 from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.core.exceptions import IntentHandleException
 from inftybot.core.intents.base import BaseCommandIntent, BaseCallbackIntent, BaseConversationIntent, \
-    BaseMessageIntent, ObjectListKeyboardMixin
+    ObjectListKeyboardMixin
 from inftybot.core.intents.cancel import CancelCommandIntent
 from inftybot.topics.intents.base import TopicDoneCommandIntent, BaseTopicIntent, CHOOSE_TYPE_KEYBOARD, send_confirm, \
-    TopicCategoryListMixin, prepare_categories
+    TopicCategoryListMixin, BaseInputBodyIntent, BaseInputCategoryIntent, BaseInputTypeIntent, \
+    BaseInputTitleIntent
 from inftybot.topics.models import Topic
 from inftybot.topics.serializers import TopicSerializer
 from inftybot.topics.utils import render_topic
@@ -28,7 +30,7 @@ class TopicListKeyboardMixin(ObjectListKeyboardMixin, BaseTopicIntent):
 
     def filter_list(self, lst):
         """Filters out current (choosed) topic"""
-        current_object = self.get_topic()
+        current_object = self.get_topic_data()
         current_object_id = current_object['id'] if current_object else None
         return filter(lambda t: t.id != current_object_id or None, lst)
 
@@ -63,8 +65,7 @@ class TopicEditCommandIntent(AuthenticatedMixin, TopicListKeyboardMixin, BaseCom
         return inftybot.topics.states.TOPIC_STATE_EDIT_CHOOSE_TOPIC
 
 
-class TopicChooseCallback(AuthenticatedMixin, TopicListKeyboardMixin, BaseTopicIntent,
-                          BaseCallbackIntent):
+class TopicChooseCallback(TopicListKeyboardMixin, BaseTopicIntent, BaseCallbackIntent):
     """Choose topic to edit"""
 
     def handle_pagination(self):
@@ -115,7 +116,7 @@ class TopicChooseCallback(AuthenticatedMixin, TopicListKeyboardMixin, BaseTopicI
             return self.handle_choose_topic()
 
 
-class TopicPartChooseCallback(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
+class TopicPartChooseCallback(BaseTopicIntent, BaseCallbackIntent):
     """Choose topic part for edit"""
 
     def get_keyboard(self):
@@ -143,7 +144,7 @@ class TopicPartChooseCallback(AuthenticatedMixin, BaseTopicIntent, BaseCallbackI
         return inftybot.topics.states.TOPIC_STATE_EDIT_INPUT
 
 
-class TopicEditIntent(AuthenticatedMixin, TopicCategoryListMixin, BaseTopicIntent, BaseCallbackIntent):
+class TopicEditIntent(TopicCategoryListMixin, BaseTopicIntent, BaseCallbackIntent):
     """Intent (CallbackHandler) for start edit topic"""
 
     @classmethod
@@ -195,72 +196,34 @@ class TopicEditIntent(AuthenticatedMixin, TopicCategoryListMixin, BaseTopicInten
         )
 
 
-class InputCategoryIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
+class ConfirmMixin(BaseTopicIntent):
+    """Send confirm every handle"""
+
+    def handle(self, *args, **kwargs):
+        next_state = super(ConfirmMixin, self).handle(*args, **kwargs)
+        topic = self.get_topic()
+        send_confirm(self.bot, self.update.effective_message.chat_id, topic)
+        return next_state
+
+
+class InputCategoryIntent(ConfirmMixin, BaseInputCategoryIntent):
     """Edit topic category"""
-
-    def handle(self, *args, **kwargs):
-        topic = self.get_topic()
-        topic['categories_names'] = prepare_categories(self.update.message.text)
-        self.set_topic(topic)
-
-        send_confirm(
-            self.bot,
-            self.update.message.chat_id,
-            topic
-        )
-
-        return inftybot.topics.states.TOPIC_STATE_EDIT
+    next_state = inftybot.topics.states.TOPIC_STATE_EDIT
 
 
-class InputTypeIntent(AuthenticatedMixin, BaseTopicIntent, BaseCallbackIntent):
+class InputTypeIntent(ConfirmMixin, BaseInputTypeIntent):
     """Edit topic type"""
-
-    def handle(self, *args, **kwargs):
-        topic = self.get_topic()
-        topic['type'] = int(self.update.callback_query.data)
-        self.set_topic(topic)
-
-        send_confirm(
-            self.bot,
-            self.update.callback_query.message.chat_id,
-            topic
-        )
-
-        return inftybot.topics.states.TOPIC_STATE_EDIT
+    next_state = inftybot.topics.states.TOPIC_STATE_EDIT
 
 
-class InputTitleIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
+class InputTitleIntent(ConfirmMixin, BaseInputTitleIntent):
     """Edit topic title"""
-
-    def handle(self, *args, **kwargs):
-        topic = self.get_topic()
-        topic['title'] = self.update.message.text
-        self.set_topic(topic)
-
-        send_confirm(
-            self.bot,
-            self.update.message.chat_id,
-            topic
-        )
-
-        return inftybot.topics.states.TOPIC_STATE_EDIT
+    next_state = inftybot.topics.states.TOPIC_STATE_EDIT
 
 
-class InputBodyIntent(AuthenticatedMixin, BaseTopicIntent, BaseMessageIntent):
+class InputBodyIntent(ConfirmMixin, BaseInputBodyIntent):
     """Edit topic body"""
-
-    def handle(self, *args, **kwargs):
-        topic = self.get_topic()
-        topic['body'] = self.update.message.text
-        self.set_topic(topic)
-
-        send_confirm(
-            self.bot,
-            self.update.message.chat_id,
-            topic
-        )
-
-        return inftybot.topics.states.TOPIC_STATE_EDIT
+    next_state = inftybot.topics.states.TOPIC_STATE_EDIT
 
 
 class TopicConversationIntent(BaseConversationIntent):

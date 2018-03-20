@@ -27,7 +27,7 @@ class TopicChooseCallbackIntentTestCase(TopicIntentTestCase):
     @patch_api_request(200, api_responses['TOPIC_DETAIL'])
     def test_intent_valid_data_fetch_and_set_topic_from_api(self, api_response):
         self.intent()
-        fetched_topic = self.intent.get_topic()
+        fetched_topic = self.intent.get_topic_data()
         self.chat.chatdata.refresh_from_db()
         stored_topic = self.chat.chatdata.data['topic']
         self.assertEqual(fetched_topic['id'], stored_topic['id'])
@@ -93,9 +93,9 @@ class EditTitleIntentTestCase(TopicIntentTestCase):
 
     def test_intent_valid_data_field_changed(self):
         field_name = 'title'
-        value_before = self.intent.get_topic()[field_name]
+        value_before = self.intent.get_topic_data()[field_name]
         self.intent()
-        self.assertNotEqual(self.intent.get_topic()[field_name], value_before)
+        self.assertNotEqual(self.intent.get_topic_data()[field_name], value_before)
 
 
 class EditTypeIntentTestCase(TopicIntentTestCase):
@@ -108,9 +108,9 @@ class EditTypeIntentTestCase(TopicIntentTestCase):
 
     def test_intent_valid_data_field_changed(self):
         field_name = 'type'
-        value_before = self.intent.get_topic()[field_name]
+        value_before = self.intent.get_topic_data()[field_name]
         self.intent()
-        self.assertNotEqual(self.intent.get_topic()[field_name], value_before)
+        self.assertNotEqual(self.intent.get_topic_data()[field_name], value_before)
 
 
 class EditBodyIntentTestCase(TopicIntentTestCase):
@@ -123,9 +123,9 @@ class EditBodyIntentTestCase(TopicIntentTestCase):
 
     def test_intent_valid_data_field_changed(self):
         field_name = 'body'
-        value_before = self.intent.get_topic()[field_name]
+        value_before = self.intent.get_topic_data()[field_name]
         self.intent()
-        self.assertNotEqual(self.intent.get_topic()[field_name], value_before)
+        self.assertNotEqual(self.intent.get_topic_data()[field_name], value_before)
 
 
 class EditCategoryIntentTestCase(TopicIntentTestCase):
@@ -138,6 +138,6 @@ class EditCategoryIntentTestCase(TopicIntentTestCase):
 
     def test_intent_valid_data_field_changed(self):
         field_name = 'categories_names'
-        value_before = self.intent.get_topic()[field_name]
+        value_before = self.intent.get_topic_data()[field_name]
         self.intent()
-        self.assertNotEqual(self.intent.get_topic()[field_name], value_before)
+        self.assertNotEqual(self.intent.get_topic_data()[field_name], value_before)
