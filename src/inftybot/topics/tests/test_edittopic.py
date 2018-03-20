@@ -50,7 +50,7 @@ class EditTitleChoosenTestCase(TopicIntentTestCase):
     @patch_api_request(200, api_responses['TOPIC_DETAIL'])
     def test_intent_valid_data_return_proper_state(self, api_response):
         new_state = self.intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_TITLE)
+        self.assertEqual(new_state, states.TOPIC_STATE_EDIT_INPUT_TITLE)
 
 
 class EditTypeChoosenTestCase(TopicIntentTestCase):
@@ -60,7 +60,7 @@ class EditTypeChoosenTestCase(TopicIntentTestCase):
     @patch_api_request(200, api_responses['TOPIC_DETAIL'])
     def test_intent_valid_data_return_proper_state(self, api_response):
         new_state = self.intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_TYPE)
+        self.assertEqual(new_state, states.TOPIC_STATE_EDIT_INPUT_TYPE)
 
 
 class EditBodyChoosenTestCase(TopicIntentTestCase):
@@ -70,7 +70,7 @@ class EditBodyChoosenTestCase(TopicIntentTestCase):
     @patch_api_request(200, api_responses['TOPIC_DETAIL'])
     def test_intent_valid_data_return_proper_state(self, api_response):
         new_state = self.intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_BODY)
+        self.assertEqual(new_state, states.TOPIC_STATE_EDIT_INPUT_BODY)
 
 
 class EditCategoryChoosenTestCase(TopicIntentTestCase):
@@ -80,7 +80,7 @@ class EditCategoryChoosenTestCase(TopicIntentTestCase):
     @patch_api_request(200, api_responses['TOPIC_DETAIL'])
     def test_intent_valid_data_return_proper_state(self, api_response):
         new_state = self.intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_CATEGORY)
+        self.assertEqual(new_state, states.TOPIC_STATE_EDIT_INPUT_CATEGORY)
 
 
 class EditTitleIntentTestCase(TopicIntentTestCase):

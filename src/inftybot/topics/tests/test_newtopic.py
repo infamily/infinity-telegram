@@ -16,7 +16,7 @@ class NewTopicIntentTestCase(TopicIntentTestCase):
 
     def test_intent_return_proper_new_state(self):
         new_state = self.intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_TYPE)
+        self.assertEqual(new_state, states.TOPIC_STATE_NEW_INPUT_TYPE)
 
     def test_intent_handler_set_new_topic(self):
         self.intent()
@@ -30,7 +30,7 @@ class InputTypeIntentTestCase(TopicIntentTestCase):
 
     def test_intent_return_proper_new_state(self):
         new_state = self.intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_CATEGORY)
+        self.assertEqual(new_state, states.TOPIC_STATE_NEW_INPUT_CATEGORY)
 
     def test_intent_handler_update_topic_title(self):
         self.intent()
@@ -45,7 +45,7 @@ class InputCategoryIntentCase(TopicIntentTestCase):
     def test_intent_return_proper_new_state(self):
         intent = self.create_intent(self.update)
         new_state = intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_TITLE)
+        self.assertEqual(new_state, states.TOPIC_STATE_NEW_INPUT_TITLE)
 
     def test_intent_handler_update_topic_category(self):
         self.intent()
@@ -60,7 +60,7 @@ class InputTitleIntentTestCase(TopicIntentTestCase):
     def test_intent_return_proper_new_state(self):
         intent = self.create_intent(self.update)
         new_state = intent()
-        self.assertEqual(new_state, states.TOPIC_STATE_BODY)
+        self.assertEqual(new_state, states.TOPIC_STATE_NEW_INPUT_BODY)
 
     def test_intent_handler_update_topic_title(self):
         self.intent()
