@@ -22,7 +22,7 @@ from inftybot.topics.utils import render_topic
 class TopicListKeyboardMixin(ObjectListKeyboardMixin, BaseTopicIntent):
     """Mixin for provide current user owned topic list in the keyboard"""
     model = Topic
-    serializer = TopicSerializer
+    serializer_class = TopicSerializer
 
     def get_extra_params(self):
         return {'owner': 'me'}

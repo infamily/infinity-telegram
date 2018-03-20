@@ -66,7 +66,7 @@ def send_confirm(bot, chat_id, topic):
 
 class BaseTopicIntent(BaseIntent):
     model = Topic
-    serializer = TopicSerializer
+    serializer_class = TopicSerializer
     next_state = None
 
     def get_next_state(self):
@@ -81,10 +81,10 @@ class BaseTopicIntent(BaseIntent):
 
     def set_topic(self, data):
         if isinstance(data, models.Model):
-            serializer = self.serializer(instance=data)
+            serializer = self.serializer_class(instance=data)
             data = serializer.data
         else:
-            serializer = self.serializer(data=data)
+            serializer = self.serializer_class(data=data)
             data = serializer.validated_data if serializer.is_valid() else {}
         self.set_topic_data(data)
 
@@ -97,7 +97,7 @@ class BaseTopicIntent(BaseIntent):
         return self.current_chat.chatdata.data.get('topic', {})
 
     def get_topic(self):
-        serializer = self.serializer(data=self.get_topic_data())
+        serializer = self.serializer_class(data=self.get_topic_data())
         if serializer.is_valid():
             return Topic(**serializer.validated_data)
         return None
@@ -161,7 +161,7 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
         if not stored_data:
             raise ValidationError("No topics to publish. Please, use /newtopic or /edit command.")
 
-        serializer = self.serializer(data=stored_data)
+        serializer = self.serializer_class(data=stored_data)
         if not serializer.is_valid():
             errors = render_form_errors(serializer)
             raise ValidationError(errors)
