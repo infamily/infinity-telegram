@@ -25,8 +25,8 @@ INTENTS = [
     'inftybot.topics.intents.base.TopicDoneCommandIntent',
     'inftybot.comments.intents.comment.ReplyIntent',
     'inftybot.categories.intents.listcategories.ListCategoriesCommandIntent',
-    'inftybot.intents.groupcategories.SetCategoriesCommandIntent',
-    'inftybot.intents.groupcategories.GetCategoriesCommandIntent',
+    'inftybot.categories.intents.groupcategories.SetCategoriesCommandIntent',
+    'inftybot.categories.intents.groupcategories.GetCategoriesCommandIntent',
 ]
 
 DISPATCHER_DEFAULT_CLASS = 'contrib.telegram.ext.Dispatcher'
