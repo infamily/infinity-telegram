@@ -89,9 +89,9 @@ class GetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
             raise AdminRequiredError()
 
     def handle(self, *args, **kwargs):
-        chat_id = self.parsed_args.chat
-        storage = get_chat_storage(chat_id)
+        chat = inftybot.chats.utils.get_chat(self.bot, self.parsed_args.chat)
+        storage = get_chat_storage(chat.id)
         categories = storage.data.get('categories', [])
         categories_str = ', '.join(categories) if categories else 'empty'
-        message = "CATEGORIES_LIST: {}".format(categories_str)
+        message = "{}: {}".format(_("CATEGORIES_LIST"), categories_str)
         self.update.message.reply_text(_(message))
