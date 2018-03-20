@@ -7,19 +7,8 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy
-from schematics.types import EmailType
-
-from inftybot.core.models import Model, StringType
 
 _ = gettext_lazy
-
-
-class User(Model):
-    email = EmailType(required=True)
-    token = StringType(required=False)
-
-    def __str__(self):
-        return '<User: {}>'.format(self.email)
 
 
 class ChatUserQuerySet(models.QuerySet):

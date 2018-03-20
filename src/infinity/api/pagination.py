@@ -2,7 +2,6 @@
 from slumber.exceptions import HttpClientError
 
 from infinity.api.utils import get_model_resource
-from inftybot.core.models import from_native
 
 
 class APIResponsePaginator(object):

@@ -11,7 +11,7 @@ import inftybot.core.constants
 import inftybot.core.states
 from infinity.api.base import API
 from infinity.api.pagination import APIResponsePaginator
-from inftybot.authentication.models import ChatUser, User
+from inftybot.authentication.models import ChatUser
 from inftybot.chats.models import Chat
 from inftybot.chats.utils import get_chat_is_community, get_user_is_admin
 from inftybot.core.exceptions import IntentHandleException, ValidationError, AdminRequiredError, \
@@ -53,13 +53,6 @@ class BaseIntent(object):
         """Returns current chat model instance based on Update data"""
         instance, _ = Chat.objects.get_or_create(pk=self.update.effective_chat.id)
         return instance
-
-    def set_user_TODO_REMOVE(self, user):
-        if isinstance(user, User):
-            data = user.to_native()
-        else:
-            data = user
-        self.user_data.update(data)
 
     @property
     def errors(self):
