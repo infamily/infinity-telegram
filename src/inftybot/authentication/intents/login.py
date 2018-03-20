@@ -1,7 +1,7 @@
 # coding: utf-8
-import gettext
 import urllib.parse
 
+from django.utils.translation import gettext
 from slumber.exceptions import HttpClientError
 from telegram.ext import CommandHandler
 
@@ -17,7 +17,7 @@ from inftybot.core.intents.base import (
     BaseIntent)
 from inftybot.core.intents.cancel import CancelCommandIntent
 
-_ = gettext.gettext
+_ = gettext
 
 
 class LoginLogoutIntent(BaseCommandIntent):

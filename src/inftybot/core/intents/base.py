@@ -1,9 +1,9 @@
 # coding: utf-8
 import argparse
-import gettext
 import logging
 
 from django.utils.functional import cached_property
+from django.utils.translation import gettext
 from telegram import InlineKeyboardButton
 from telegram.ext import MessageHandler, Filters, CallbackQueryHandler
 
@@ -20,7 +20,7 @@ from inftybot.core.signals import handle_success
 from inftybot.core.utils import build_menu
 
 logger = logging.getLogger(__name__)
-_ = gettext.gettext
+_ = gettext
 
 
 class BaseIntent(object):

@@ -2,16 +2,16 @@
 """
 This module handles comment/reply intents
 """
-import gettext
 import logging
 
+from django.utils.translation import gettext
 from slumber.exceptions import HttpClientError, HttpServerError
 from telegram.ext import MessageHandler, BaseFilter
 
 from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.core.intents.base import BaseMessageIntent
 
-_ = gettext.gettext
+_ = gettext
 logger = logging.getLogger(__name__)
 
 

@@ -1,10 +1,10 @@
 # coding: utf-8
-import gettext
 import logging
 
 from django.db import models
 from django.forms import model_to_dict
 from django.template import loader
+from django.utils.translation import gettext
 from slumber.exceptions import HttpClientError, HttpServerError
 from telegram import InlineKeyboardButton, ParseMode
 from telegram.ext import CommandHandler
@@ -18,7 +18,7 @@ from inftybot.core.intents.base import BaseCommandIntent, BaseIntent, ObjectList
 from inftybot.core.utils import render_form_errors, render_errors
 from inftybot.topics.serializers import TopicSerializer
 
-_ = gettext.gettext
+_ = gettext
 logger = logging.getLogger(__name__)
 
 CHOOSE_TYPE_KEYBOARD = [

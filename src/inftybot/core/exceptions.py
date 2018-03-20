@@ -1,7 +1,7 @@
 # coding: utf-8
-import gettext
+from django.utils.translation import gettext
 
-_ = gettext.gettext
+_ = gettext
 
 
 class IntentHandleException(Exception):

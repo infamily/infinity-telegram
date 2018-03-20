@@ -1,13 +1,12 @@
 # coding: utf-8
-import gettext
-
+from django.utils.translation import gettext
 from telegram.ext import CommandHandler
 
 from contrib.telegram.ext.conversationhandler import get_conversation_storage
 from inftybot.authentication.intents.base import logout
 from inftybot.core.intents.base import BaseCommandIntent
 
-_ = gettext.gettext
+_ = gettext
 
 
 def reset(keys):

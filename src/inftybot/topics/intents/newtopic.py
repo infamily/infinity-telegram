@@ -1,6 +1,5 @@
 # coding: utf-8
-import gettext
-
+from django.utils.translation import gettext
 from telegram import InlineKeyboardMarkup
 from telegram.ext import CommandHandler, ConversationHandler
 
@@ -13,7 +12,7 @@ from inftybot.topics.intents.base import CHOOSE_TYPE_KEYBOARD, TopicDoneCommandI
     prepare_categories
 from inftybot.topics.models import Topic
 
-_ = gettext.gettext
+_ = gettext
 
 
 class TopicCreateCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandIntent):

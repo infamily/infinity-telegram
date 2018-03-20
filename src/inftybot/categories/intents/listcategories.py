@@ -1,6 +1,5 @@
 # coding: utf-8
-import gettext
-
+from django.utils.translation import gettext
 from telegram.ext import CommandHandler
 
 import inftybot.core.states
@@ -10,7 +9,7 @@ from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.categories.models import Type
 from inftybot.core.intents.base import BaseCommandIntent
 
-_ = gettext.gettext
+_ = gettext
 
 
 def render_category_list(response):
