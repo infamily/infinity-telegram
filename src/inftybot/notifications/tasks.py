@@ -1,4 +1,6 @@
 # coding: utf-8
+import logging
+
 from langsplit import splitter
 
 from infinity.api.base import create_api_client
@@ -9,6 +11,7 @@ from inftybot.topics.models import Topic
 from inftybot.topics.serializers import TopicSerializer
 
 api = create_api_client()
+logger = logging.getLogger(__name__)
 
 
 @task
@@ -25,6 +28,8 @@ def notify_subscribers_about_new_topic(bot, **kwargs):
     # *. Retrievee its categories
     # *. Get chats that subscribed to theese categories
     # *. Send message to every chat from last point
+    logging.debug("Run `notify_subscribers_about_new_topic` with kwargs {}".format(kwargs))
+
     pk = kwargs.get('event', {}).get('topic_id')
 
     if not pk:
