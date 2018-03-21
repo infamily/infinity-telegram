@@ -2,6 +2,8 @@
 import logging
 from functools import wraps
 
+from django.utils.module_loading import import_string
+
 from inftybot.config import TELEGRAM_BOT_TOKEN
 from inftybot.core.factory import create_bot
 
@@ -20,3 +22,20 @@ def task(func):
         return result
 
     return wrapper
+
+
+def run_with_django(event, context):
+    """
+    Run some function as AWS lambda event handler using Django
+    """
+    # setup django
+    import django
+    django.setup()
+
+    # get function name from event kwargs
+    kwargs = event.get('kwargs', {})
+    func_str = kwargs.get('function')
+    func_obj = import_string(func_str)
+
+    # call function with event & context kwargs
+    return func_obj(event=event, context=context)
