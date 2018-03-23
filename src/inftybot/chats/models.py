@@ -12,6 +12,11 @@ class ChatQuerySet(models.QuerySet):
         instance.ensure_chat_data()
         return instance
 
+    def ensure_chat(self, pk, typ=None):
+        instance, _ = self.get_or_create(pk=pk, type=typ)
+        instance.ensure_chat_data()
+        return instance
+
 
 class ChatManager(models.Manager):
     pass
