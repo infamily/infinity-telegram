@@ -15,7 +15,7 @@
   "TOPICS_POST_400": {},
   "TOPICS_POST_200": {},
   "TOPIC_DETAIL": {
-    "id": 679,
+    "id": 1,
     "url": "http://dev.wfx.io/topics/679/",
     "type": 1,
     "title": ".:fi:Hello",
@@ -27,12 +27,12 @@
     "parents": [],
     "children": [],
     "categories": [
-      "http://dev.wfx.io/types/78/",
-      "http://dev.wfx.io/types/101/"
+      "http://dev.wfx.io/types/1/",
+      "http://dev.wfx.io/types/2/"
     ],
     "categories_names": [
-      ".:en:Transportation Industry.:cn:交通运输业",
-      ".:en:Automotive Technology.:cn:汽车技术"
+      ".:en:test1.:ru:тест1",
+      ".:en:test2.:ru:тест2"
     ],
     "languages": [],
     "is_draft": false,
