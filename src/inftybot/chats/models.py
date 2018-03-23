@@ -34,10 +34,6 @@ class ChatQuerySet(models.QuerySet):
         return self.filter(q)
 
 
-class ChatManager(models.Manager):
-    pass
-
-
 class Chat(models.Model):
     """Chat model"""
     TYPE_PRIVATE = 'private'
@@ -50,7 +46,7 @@ class Chat(models.Model):
         (TYPE_PRIVATE, _('Private')),
     )
 
-    objects = ChatManager.from_queryset(ChatQuerySet)()
+    objects = models.Manager.from_queryset(ChatQuerySet)()
     id = models.BigAutoField(primary_key=True)
     type = models.CharField(max_length=24, choices=TYPE_CHOICES, verbose_name=_('Chat type'), db_index=True)
     categories = models.ManyToManyField('chats.ChatCategory')
