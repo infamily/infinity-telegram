@@ -31,6 +31,7 @@ dj-database-url = "*"
 click = "*"
 django-autofixture = {git = "https://github.com/volrath/django-autofixture.git"}
 djangorestframework = "*"
+django-extensions = "*"
 
 
 ["dev-packages"]

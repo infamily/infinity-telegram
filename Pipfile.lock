@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a13799260f09dc20830fc8898ad4ce0b48c39a1abeec7dac8e7356b2a1401856"
+            "sha256": "f17c71aab9bb27704c3a97fe0978a708c2fd46e1f03fca111ed9cbb48de4f586"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -50,17 +50,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:a55f74e427ae26e30ee8696312e0caa57bfef58d9bf308fa4221ba2d968c8db2",
-                "sha256:3e224b2ec4b62d3a88577eb6261fef4898d7aa5baabe58c79b7abf718fca1479"
+                "sha256:9b9f8291995075242be3559ca56523dfc404d048dc42dc5467235e6fb086427c",
+                "sha256:54e1af94506232fb5376c3ef63ad59064995c537f22c07e0074533976f0a7ca2"
             ],
-            "version": "==1.6.12"
+            "version": "==1.6.15"
         },
         "botocore": {
             "hashes": [
-                "sha256:2797b0dd2350c2611cf22fda3ea023b8f21cf3ef3db4bf8929f34ba779adaed0",
-                "sha256:54f28ec362c0ff2dfdc891835bdacdfb01770ab4973816fa37193164608ddbde"
+                "sha256:435c81553af5f5fcb470f0017779d1a1ceab17a08d38c8d05ba779f53edc4275",
+                "sha256:fccbaf8c61780394abda7fb58a9d80b0611d65500e612f7fac9516b4724631df"
             ],
-            "version": "==1.9.12"
+            "version": "==1.9.15"
         },
         "certifi": {
             "hashes": [
@@ -105,6 +105,13 @@
         },
         "django-autofixture": {
             "git": "https://github.com/volrath/django-autofixture.git"
+        },
+        "django-extensions": {
+            "hashes": [
+                "sha256:37a543af370ee3b0721ff50442d33c357dd083e6ea06c5b94a199283b6f9e361",
+                "sha256:bc9f2946c117bb2f49e5e0633eba783787790ae810ea112fe7fd82fa64de2ff1"
+            ],
+            "version": "==2.0.6"
         },
         "djangorestframework": {
             "hashes": [
@@ -244,6 +251,14 @@
             ],
             "version": "==2.0.0"
         },
+        "more-itertools": {
+            "hashes": [
+                "sha256:11a625025954c20145b37ff6309cd54e39ca94f72f6bb9576d1195db6fa2442e",
+                "sha256:0dd8f72eeab0d2c3bd489025bb2f6a1b8342f9b198f6fc37b52d15cfa4531fea",
+                "sha256:c9ce7eccdcb901a2c75d326ea134e0886abfbea5f93e91cc95de9507c0816c44"
+            ],
+            "version": "==4.1.0"
+        },
         "pbr": {
             "hashes": [
                 "sha256:60c25b7dfd054ef9bb0ae327af949dd4676aa09ac3a9471cdc871d8a9213f9ac",
@@ -297,10 +312,10 @@
         },
         "py": {
             "hashes": [
-                "sha256:8cca5c229d225f8c1e3085be4fcf306090b00850fefad892f9d96c7b6e2f310f",
-                "sha256:ca18943e28235417756316bfada6cd96b23ce60dd532642690dcfdaba988a76d"
+                "sha256:983f77f3331356039fdd792e9220b7b8ee1aa6bd2b25f567a963ff1de5a64f6a",
+                "sha256:29c9fab495d7528e80ba1e343b958684f4ace687327e6f789a94bf3d1915f881"
             ],
-            "version": "==1.5.2"
+            "version": "==1.5.3"
         },
         "pycodestyle": {
             "hashes": [
@@ -318,10 +333,10 @@
         },
         "pytest": {
             "hashes": [
-                "sha256:062027955bccbc04d2fcd5d79690947e018ba31abe4c90b2c6721abec734261b",
-                "sha256:117bad36c1a787e1a8a659df35de53ba05f9f3398fb9e4ac17e80ad5903eb8c5"
+                "sha256:6266f87ab64692112e5477eba395cfedda53b1933ccd29478e671e73b420c19c",
+                "sha256:fae491d1874f199537fd5872b5e1f0e74a009b979df9d53d1553fd03da1703e1"
             ],
-            "version": "==3.4.2"
+            "version": "==3.5.0"
         },
         "python-dateutil": {
             "hashes": [
