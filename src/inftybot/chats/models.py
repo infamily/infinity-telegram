@@ -3,6 +3,8 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy
 
+from inftybot.chats import constants
+
 _ = gettext_lazy
 
 
@@ -12,10 +14,17 @@ class ChatQuerySet(models.QuerySet):
         instance.ensure_chat_data()
         return instance
 
-    def ensure_chat(self, pk, typ=None):
+    def ensure_chat(self, **kwargs):
+        pk = kwargs.get('id', kwargs.get('pk')) or None
+        typ = kwargs.get('type', kwargs.get('typ')) or None
         instance, _ = self.get_or_create(pk=pk, type=typ)
         instance.ensure_chat_data()
         return instance
+
+    def by_categories(self, categories):
+        if not categories:
+            return self.none()
+        return self.filter(categories=categories)
 
 
 class ChatManager(models.Manager):
@@ -36,7 +45,8 @@ class Chat(models.Model):
 
     objects = ChatManager.from_queryset(ChatQuerySet)()
     id = models.BigAutoField(primary_key=True)
-    type = models.CharField(max_length=24, choices=TYPE_CHOICES, verbose_name=_('Chat type'))
+    type = models.CharField(max_length=24, choices=TYPE_CHOICES, verbose_name=_('Chat type'), db_index=True)
+    categories = models.ManyToManyField('chats.ChatCategory')
 
     def ensure_chat_data(self):
         try:
@@ -49,3 +59,8 @@ class ChatData(models.Model):
     """Chat data model"""
     chat = models.OneToOneField('chats.Chat', on_delete=models.CASCADE, verbose_name=_('Chat reference'))
     data = JSONField(verbose_name=_('Session data'), blank=True, null=False, default={})
+
+
+class ChatCategory(models.Model):
+    """Chat category model"""
+    name = models.CharField(max_length=constants.MAX_CATEGORY_NAME_LENGTH, db_index=True)

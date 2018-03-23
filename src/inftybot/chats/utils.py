@@ -29,6 +29,12 @@ def get_chat(bot, chat):
         return bot.get_chat(chat_id)
     except telegram.error.BadRequest:
         raise ChatNotFoundError()
+    # except telegram.error.BadRequest:
+    #     raise AdminRequiredError()
+
+
+def get_chat_title(chat):
+    return chat.title or "{} {}".format(chat.last_name, chat.first_name)
 
 
 def get_chat_is_community(bot, chat):
@@ -39,6 +45,9 @@ def get_chat_is_community(bot, chat):
 
 def get_user_is_admin(bot, user, chat):
     """Return True if user is admin of the chat"""
+    if chat.type == Chat.PRIVATE:
+        return True
+
     chat_id = _get_chat_id(chat)
     admins = bot.get_chat_administrators(chat_id)
     return user.id in (m.user.id for m in admins)

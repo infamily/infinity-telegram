@@ -17,6 +17,9 @@ INLINE_QUERY_CACHE_TIME = os.environ.get('INLINE_QUERY_CACHE_TIME', 0)
 INTENTS = [
     'inftybot.core.intents.start.StartCommandIntent',
     'inftybot.core.intents.reset.ResetCommandIntent',
+    'inftybot.chats.intents.chatinfo.ChatInfoCommandIntent',
+    'inftybot.chats.intents.chatcategories.SetCategoriesCommandIntent',
+    'inftybot.chats.intents.chatcategories.GetCategoriesCommandIntent',
     'inftybot.authentication.intents.login.LoginConversationIntent',
     'inftybot.authentication.intents.login.LogoutCommandIntent',
     'inftybot.search.intents.search.SearchTopicsInlineIntent',
@@ -25,8 +28,6 @@ INTENTS = [
     'inftybot.topics.intents.base.TopicDoneCommandIntent',
     'inftybot.comments.intents.comment.ReplyIntent',
     'inftybot.categories.intents.listcategories.ListCategoriesCommandIntent',
-    'inftybot.categories.intents.groupcategories.SetCategoriesCommandIntent',
-    'inftybot.categories.intents.groupcategories.GetCategoriesCommandIntent',
 ]
 
 DISPATCHER_DEFAULT_CLASS = 'contrib.telegram.ext.Dispatcher'

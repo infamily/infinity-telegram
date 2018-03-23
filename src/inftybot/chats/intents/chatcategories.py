@@ -1,29 +1,16 @@
 # coding: utf-8
 """Intents for handling get/set group/channel categories set"""
-import telegram.error
+from django.db.transaction import atomic
 from django.utils.translation import gettext
 from telegram.ext import CommandHandler
 
-import inftybot.chats.utils
 from inftybot.authentication.intents.base import AuthenticatedMixin
-from inftybot.chats.models import Chat
-from inftybot.core.exceptions import CommunityRequiredError, AdminRequiredError, ValidationError, ChatNotFoundError
+from inftybot.chats import utils
+from inftybot.chats.models import Chat, ChatCategory
+from inftybot.core.exceptions import AdminRequiredError, ValidationError, ChatNotFoundError
 from inftybot.core.intents.base import BaseCommandIntent, ArgparseMixin
 
 _ = gettext
-
-
-def get_chat(bot, id_or_name):
-    try:
-        return inftybot.chats.utils.get_chat(bot, id_or_name)
-    except telegram.error.BadRequest:
-        raise AdminRequiredError()
-
-
-def get_chat_storage(chat_id):
-    chat, _ = Chat.objects.get_or_create(id=chat_id)
-    chat.ensure_chat_data()
-    return chat.chatdata
 
 
 class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandIntent):
@@ -41,7 +28,7 @@ class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
         return parser
 
     def before_validate(self, *args, **kwargs):
-        if inftybot.chats.utils.get_chat_is_community(self.bot, self.update.effective_chat):
+        if utils.get_chat_is_community(self.bot, self.update.effective_chat):
             message = _(
                 "You should to use this command in direct chat with me. \n"
                 "BTW, current group's id is: {}".format(self.update.effective_chat.id)
@@ -49,24 +36,37 @@ class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
             raise ValidationError(message)
 
         self.parsed_args = self.parser.parse_args(kwargs.get('args'))
-        chat = get_chat(self.bot, self.parsed_args.chat)
+        chat = utils.get_chat(self.bot, self.parsed_args.chat)
 
         if not chat:
             raise ChatNotFoundError()
 
-        if not inftybot.chats.utils.get_chat_is_community(self.bot, chat):
-            raise CommunityRequiredError()
+        # if not utils.get_chat_is_community(self.bot, chat):
+        #     raise CommunityRequiredError()
 
-        if not inftybot.chats.utils.get_user_is_admin(self.bot, self.update.effective_user, chat):
+        if not utils.get_user_is_admin(self.bot, self.update.effective_user, chat):
             raise AdminRequiredError()
 
+    @atomic
     def handle(self, *args, **kwargs):
-        chat = get_chat(self.bot, self.parsed_args.chat)
+        chat_object = utils.get_chat(self.bot, self.parsed_args.chat)
+        chat_instance = Chat.objects.ensure_chat(id=chat_object.id, type=chat_object.type)
         categories = self.parsed_args.categories.split(',')
-        storage = get_chat_storage(chat.id)
-        storage.data['categories'] = categories
-        storage.save()
-        self.update.message.reply_text(_("OK"))
+
+        chat_instance.categories.clear()
+
+        for category in categories:
+            category_instance, __ = ChatCategory.objects.get_or_create(name=category)
+            chat_instance.categories.add(category_instance)
+
+        chat_instance.save()
+
+        message = _("Current categories for {} ({}): {}".format(
+            utils.get_chat_title(chat_object), chat_object.id,
+            ", ".join(chat_instance.categories.all().values_list('name', flat=True))
+        ))
+
+        self.update.message.reply_text(message)
 
 
 class GetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandIntent):
@@ -83,7 +83,7 @@ class GetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
         return parser
 
     def before_validate(self, *args, **kwargs):
-        if inftybot.chats.utils.get_chat_is_community(self.bot, self.update.effective_chat):
+        if utils.get_chat_is_community(self.bot, self.update.effective_chat):
             message = _(
                 "You should to use this command in direct chat with me. \n"
                 "BTW, current group's id is: {}".format(self.update.effective_chat.id)
@@ -91,21 +91,23 @@ class GetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
             raise ValidationError(message)
 
         self.parsed_args = self.parser.parse_args(kwargs.get('args'))
-        chat = get_chat(self.bot, self.parsed_args.chat)
+        chat = utils.get_chat(self.bot, self.parsed_args.chat)
 
         if not chat:
             raise ChatNotFoundError()
 
-        if not inftybot.chats.utils.get_chat_is_community(self.bot, chat):
-            raise CommunityRequiredError()
+        # if not utils.get_chat_is_community(self.bot, chat):
+        #     raise CommunityRequiredError()
 
-        if not inftybot.chats.utils.get_user_is_admin(self.bot, self.update.effective_user, chat):
+        if not utils.get_user_is_admin(self.bot, self.update.effective_user, chat):
             raise AdminRequiredError()
 
     def handle(self, *args, **kwargs):
-        chat = inftybot.chats.utils.get_chat(self.bot, self.parsed_args.chat)
-        storage = get_chat_storage(chat.id)
-        categories = storage.data.get('categories', [])
-        categories_str = ', '.join(categories) if categories else 'empty'
-        message = "{}: {}".format(_("CATEGORIES_LIST"), categories_str)
-        self.update.message.reply_text(_(message))
+        chat_object = utils.get_chat(self.bot, self.parsed_args.chat)
+        chat_instance = Chat.objects.ensure_chat(id=chat_object.id, type=chat_object.type)
+        message = _("Current categories for {} ({}): {}".format(
+            utils.get_chat_title(chat_object), chat_object.id,
+            ", ".join(chat_instance.categories.all().values_list('name', flat=True))
+        ))
+
+        self.update.message.reply_text(message)
