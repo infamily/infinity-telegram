@@ -18,5 +18,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('telegram/', include('inftybot.core.urls', namespace='inftybot'))
+    path('telegram/', include('inftybot.core.urls', namespace='inftybot')),
+    path('dev/telegram/', include('inftybot.core.urls')),  # make possible to hit from AWS API Gateway
 ]
