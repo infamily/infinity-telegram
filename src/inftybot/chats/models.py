@@ -1,6 +1,7 @@
 # coding: utf-8
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy
 
 from inftybot.chats import constants
@@ -24,7 +25,13 @@ class ChatQuerySet(models.QuerySet):
     def by_categories(self, categories):
         if not categories:
             return self.none()
-        return self.filter(categories=categories)
+
+        if all(isinstance(c, str) for c in categories):
+            q = Q(categories__name__in=categories)
+        else:
+            q = Q(categories=categories)
+
+        return self.filter(q)
 
 
 class ChatManager(models.Manager):
