@@ -1,9 +1,10 @@
 # coding: utf-8
+
 from config.settings.base import *
 
 assert BASE_DIR
 
-
+ALLOWED_HOSTS = ['my6nin46z2.execute-api.eu-central-1.amazonaws.com']
 DEBUG = False
 TESTING = False
 
@@ -33,4 +34,11 @@ LOGGING = {
             'propagate': True
         }
     }
+}
+
+RAVEN_CONFIG = {
+    'dsn': 'https://de11ec10e94b44149a485c2e64348fd7:2737d16b26c445d5acee77ba89b168f3@sentry.io/270033',
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    # 'release': raven.fetch_git_sha(BASE_DIR),
 }

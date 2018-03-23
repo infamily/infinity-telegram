@@ -16,7 +16,6 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
-import sys
 from dotenv import load_dotenv
 
 
@@ -29,11 +28,6 @@ BASE_DIR = os.path.abspath(
 
 DOTENV_PATH = os.path.join(BASE_DIR, '.env')
 load_dotenv(DOTENV_PATH)
-
-# Add src to the sys.path if necessary
-APPS_DIR = os.path.join(BASE_DIR, 'src')
-if APPS_DIR not in sys.path:
-    sys.path.append(APPS_DIR)
 
 
 # Quick-start development settings - unsuitable for production
@@ -57,6 +51,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'django_extensions',
+    'raven.contrib.django.raven_compat',
+
+    'tasks',
     'inftybot.core',
     'inftybot.authentication',
     'inftybot.topics',
@@ -64,7 +62,6 @@ INSTALLED_APPS = [
     'inftybot.comments',
     'inftybot.chats',
     'inftybot.categories',
-    'inftybot.tasks',
 ]
 
 MIDDLEWARE = [
