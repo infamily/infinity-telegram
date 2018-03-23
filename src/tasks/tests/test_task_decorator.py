@@ -2,7 +2,7 @@
 from django.test import TestCase
 from telegram import Bot
 
-from inftybot.tasks.base import task
+from tasks.base import task
 
 
 @task
