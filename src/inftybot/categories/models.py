@@ -2,7 +2,7 @@
 from django.db import models
 from django.utils.translation import gettext
 
-from inftybot.categories.constants import MAX_CATEGORY_NAME_LENGTH
+from inftybot.chats.constants import MAX_CATEGORY_NAME_LENGTH
 
 _ = gettext
 
