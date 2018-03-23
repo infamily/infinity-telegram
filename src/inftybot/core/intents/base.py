@@ -51,8 +51,7 @@ class BaseIntent(object):
 
     def get_current_chat(self):
         """Returns current chat model instance based on Update data"""
-        instance, _ = Chat.objects.get_or_create(pk=self.update.effective_chat.id)
-        return instance
+        return Chat.objects.ensure_chat(pk=self.update.effective_chat.id, type=self.update.effective_chat.type)
 
     @property
     def errors(self):

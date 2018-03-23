@@ -27,10 +27,7 @@ def create_user_from_update(bot, update, **params):
 def create_chat_from_update(bot, update, **params):
     if not isinstance(update, Update):
         update = update_from_dict(bot, update)
-
-    chat, _ = Chat.objects.get_or_create(id=update.effective_chat.id, **params)
-    chat.ensure_chat_data()
-    return chat
+    return Chat.objects.ensure_chat(pk=update.effective_chat.id, type=update.effective_chat.type)
 
 
 class UserMixin(TestCase):
