@@ -188,6 +188,9 @@ class TopicDoneCommandIntent(AuthenticatedMixin, BaseTopicIntent, BaseCommandInt
             rv = method(data=stored_data)
         except (HttpClientError, HttpServerError) as e:
             # intercept 4xx and 5xx both
+            content = getattr(e, 'content')
+            response = getattr(e, 'response')
+            logger.error('API error: error {}\n{}'.format(content, response))
             raise APIResourceError('Failed to save the topic. Please, report it :/')
         else:
             self.reset_topic()
