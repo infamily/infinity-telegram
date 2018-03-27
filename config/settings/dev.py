@@ -4,7 +4,7 @@ from config.settings.base import *
 
 assert BASE_DIR
 
-ALLOWED_HOSTS = [os.environ('LAMBDA_HOSTNAME')]
+ALLOWED_HOSTS = [os.environ.get('LAMBDA_HOSTNAME', None)]
 
 DEBUG = False
 TESTING = False
