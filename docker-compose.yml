@@ -1,0 +1,28 @@
+version: '2'
+
+volumes:
+  postgres_data: {}
+  postgres_backup: {}
+
+services:
+  postgres:
+    image: postgres:10.1
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_backup:/backups
+    env_file:
+      - .env
+
+  web:
+    build:
+      context: .
+      dockerfile: ./compose/web/Dockerfile
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app:rw
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    environment:
+      - "PYTHONUNBUFFERED=1"

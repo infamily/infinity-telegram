@@ -1,0 +1,4 @@
+# coding: utf-8
+
+
+MAX_CATEGORY_NAME_LENGTH = 100
