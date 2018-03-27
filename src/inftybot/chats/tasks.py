@@ -36,10 +36,13 @@ def notify_about_new_topic(bot, **kwargs):
     if not pk:
         return
 
+    logger.error("Trying to fetch topic {} from API".format(pk))
+
     data = api.topics(pk).get()
     serializer = TopicSerializer(data=data)
 
     if not serializer.is_valid():
+        logger.error("Topic is not valid:\n{}\nSkipping...".format(serializer.errors))
         return
 
     categories = []
@@ -50,10 +53,16 @@ def notify_about_new_topic(bot, **kwargs):
         categories.extend(value.values())
 
     if not categories:
+        logger.error("No topic categories\nSkipping...")
         return
 
     chats_queryset = Chat.objects.by_categories(categories).all()
 
+    if not chats_queryset.exists():
+        logger.error("No chats subscribed to {}".format(categories))
+
     for chat in chats_queryset.iterator():
         message = render_topic(instance)
         bot.send_message(chat.id, message, parse_mode=ParseMode.MARKDOWN)
+
+    return True
