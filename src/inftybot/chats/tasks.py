@@ -2,11 +2,13 @@
 import logging
 
 from langsplit import splitter
+from telegram import ParseMode
 
 from infinity.api.base import create_api_client
 from inftybot.chats.models import Chat
 from inftybot.topics.models import Topic
 from inftybot.topics.serializers import TopicSerializer
+from inftybot.topics.utils import render_topic
 from tasks.base import task
 
 api = create_api_client()
@@ -53,4 +55,5 @@ def notify_about_new_topic(bot, **kwargs):
     chats_queryset = Chat.objects.by_categories(categories).all()
 
     for chat in chats_queryset.iterator():
-        bot.send_message(chat.id, 'Hello')
+        message = render_topic(instance)
+        bot.send_message(chat.id, message, parse_mode=ParseMode.MARKDOWN)
