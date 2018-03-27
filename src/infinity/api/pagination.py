@@ -40,7 +40,7 @@ class APIResponsePaginator(object):
         return {}
 
     def create_object(self, data):
-        serializer_cls = getattr(self, 'serializer')
+        serializer_cls = getattr(self, 'serializer_class')
         model = getattr(self, 'model')
         serializer = serializer_cls(data=data)
         if serializer.is_valid():
