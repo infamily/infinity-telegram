@@ -22,13 +22,6 @@ def notify_about_new_topic(bot, **kwargs):
     Sends notifications to subscribers
     """
 
-    # Entities: Chat, Topic, Category
-
-    # *. Fetch topic data from API
-    # *. Instantiate it ?
-    # *. Retrievee its categories
-    # *. Get chats that subscribed to theese categories
-    # *. Send message to every chat from last point
     logger.error("Run `notify_subscribers_about_new_topic` with {}".format(kwargs))
 
     pk = kwargs.get('event', {}).get('topic_id')
