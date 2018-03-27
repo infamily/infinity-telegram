@@ -4,7 +4,8 @@ from config.settings.base import *
 
 assert BASE_DIR
 
-ALLOWED_HOSTS = ['my6nin46z2.execute-api.eu-central-1.amazonaws.com']
+ALLOWED_HOSTS = [os.environ('LAMBDA_HOSTNAME')]
+
 DEBUG = False
 TESTING = False
 

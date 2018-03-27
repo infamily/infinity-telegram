@@ -39,7 +39,7 @@ SECRET_KEY = 'r14mk**_rbgf7%yyogt%vlq(#@-6^yt9$^j)%+a6vzm#70^@e0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [os.environ('LAMBDA_HOSTNAME')]
+ALLOWED_HOSTS = []
 
 # Application definition
 
