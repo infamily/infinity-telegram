@@ -60,6 +60,8 @@ connect to Amazon RDS instance locally and locally-stored DATABASE_URL would be 
 For the next step you should to configure Amazon VPC to make possible  connections between 
 `Bot <-> Database` and `Bot <-> Internet`.
 
+
+## Example
 Please, see the following docs:
 
 https://docs.aws.amazon.com/lambda/latest/dg/vpc-rds.html
