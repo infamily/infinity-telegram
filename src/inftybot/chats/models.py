@@ -26,6 +26,11 @@ class ChatQuerySet(models.QuerySet):
         if not categories:
             return self.none()
 
+        if not isinstance(categories, (list, tuple)):
+            categories = [categories]
+
+        categories = [c.lower() for c in categories]
+
         if all(isinstance(c, str) for c in categories):
             q = Q(categories__name__in=categories)
         else:
@@ -67,3 +72,7 @@ class ChatData(models.Model):
 class ChatCategory(models.Model):
     """Chat category model"""
     name = models.CharField(max_length=constants.MAX_CATEGORY_NAME_LENGTH, db_index=True)
+
+    def save(self, *args, **kwargs):
+        self.name = str(self.name).lower()
+        return super(ChatCategory, self).save(*args, **kwargs)
