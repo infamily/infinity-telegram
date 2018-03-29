@@ -49,7 +49,7 @@ def notify_about_new_topic(bot, **kwargs):
         logger.error("No topic categories\nSkipping...")
         return
 
-    chats_queryset = Chat.objects.by_categories(categories).all()
+    chats_queryset = Chat.objects.by_categories(categories).distinct().all()
 
     if not chats_queryset.exists():
         logger.error("No chats subscribed to {}".format(categories))
