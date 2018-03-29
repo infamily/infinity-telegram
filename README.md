@@ -75,39 +75,39 @@ Generally, if you don't have any custom configuration of VPC, steps should look 
 * Add 3 subnets internal to existed route table (will considered as "internal route table")
 (Subnet associations tab)
 
-https://github.com/infamily/infinity-docs/blob/master/Subnets__internal_routes.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Subnets__internal_routes.png
 
 * Create new subnet (will considered as "outer")
 
-https://github.com/infamily/infinity-docs/blob/master/Subnets.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Subnets.png
 
 * Create another route table ("outer") and add previous subnet to it
 
-https://github.com/infamily/infinity-docs/blob/master/Route_tables.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Route_tables.png
 
 * Create NAT gateway
 
-https://github.com/infamily/infinity-docs/blob/master/NAT_gateway.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/NAT_gateway.png
 
 * Change routes in the "internal" route table: change target for 0.0.0.0/0 to intenet gateway
 
-https://github.com/infamily/infinity-docs/blob/master/Subnets__internal_subnet_associations.png
-https://github.com/infamily/infinity-docs/blob/master/Subnets__internal_routes.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Subnets__internal_subnet_associations.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Subnets__internal_routes.png
 
 * Change routes in the "outer" route table: change target for 0.0.0.0/0 to nat gateway
 
-https://github.com/infamily/infinity-docs/blob/master/Subnets__outer_subnet_associations.png
-https://github.com/infamily/infinity-docs/blob/master/Subnets__outer_routes.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Subnets__outer_subnet_associations.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Subnets__outer_routes.png
 
 * Add "internal subnets" to RDS security group, "Inbound" tab
 (EC2 serivce, "Security Groups" in the left sidebar)
 
-https://github.com/infamily/infinity-docs/blob/master/Security_Group.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Security_Group.png
 
 * Select VPC and add all subnets and all security groups to lambda vpc configuration
 (Lambda service, "Network" block in the your lambda function)
 
-https://github.com/infamily/infinity-docs/blob/master/Lambda_Network.png
+https://github.com/infamily/infinity-docs/blob/master/Example_AWS_Network/Lambda_Network.png
 
 ## Example zappa_settings.json
 
