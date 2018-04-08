@@ -320,6 +320,24 @@ class ObjectListKeyboardMixin(BaseIntent, APIResponsePaginator):
         )
 
 
+class BuildArgumentListAction(argparse.Action):
+    """
+    Process argument list like
+    `['value', 'with, 'whitespace,', 'value2']`
+    and make from it a list like
+    `['value with whitespace', 'value2']
+    """
+
+    def __call__(self, parser, namespace, values, *args, **kwargs):
+        values = self.prepare(values)
+        setattr(namespace, self.dest, values)
+
+    def prepare(self, values):
+        values_str = ' '.join(values)
+        split = [s.strip() for s in values_str.split(',')]
+        return split
+
+
 class ArgumentParser(argparse.ArgumentParser):
     def __init__(self, *args, **kwargs):
         kwargs['add_help'] = False  # turn -h key off

@@ -8,7 +8,7 @@ from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.chats import utils
 from inftybot.chats.models import Chat, ChatCategory
 from inftybot.core.exceptions import AdminRequiredError, ValidationError, ChatNotFoundError
-from inftybot.core.intents.base import BaseCommandIntent, ArgparseMixin
+from inftybot.core.intents.base import BaseCommandIntent, ArgparseMixin, BuildArgumentListAction
 
 _ = gettext
 
@@ -24,7 +24,9 @@ class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
 
     def add_arguments(self, parser):
         parser.add_argument('chat', type=str, help='Chat @username (str) or id (int) of the community')
-        parser.add_argument('categories', type=str, help='Category name or comma-separated list')
+        parser.add_argument(
+            'categories', type=str, nargs='+', action=BuildArgumentListAction,
+            help='Category name or comma-separated list')
         return parser
 
     def before_validate(self, *args, **kwargs):
@@ -51,7 +53,7 @@ class SetCategoriesCommandIntent(AuthenticatedMixin, ArgparseMixin, BaseCommandI
     def handle(self, *args, **kwargs):
         chat_object = utils.get_chat(self.bot, self.parsed_args.chat)
         chat_instance = Chat.objects.ensure_chat(id=chat_object.id, type=chat_object.type)
-        categories = self.parsed_args.categories.split(',')
+        categories = self.parsed_args.categories
 
         chat_instance.categories.clear()
 
