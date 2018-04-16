@@ -47,6 +47,13 @@ def notify_about_new_topic(bot, **kwargs):
     for value in splitted:
         categories.extend(value.values())
 
+    logger.error("Notifying in existing general chats...")
+    general_chat_id = settings.GENERAL_CHATS[instance.type]
+
+    if general_chat_id:
+        message = render_topic(instance)
+        bot.send_message(general_chat_id, message, parse_mode=ParseMode.MARKDOWN)
+
     if not categories:
         logger.error("No topic categories\nSkipping...")
         return
@@ -60,10 +67,5 @@ def notify_about_new_topic(bot, **kwargs):
         message = render_topic(instance)
         bot.send_message(chat.id, message, parse_mode=ParseMode.MARKDOWN)
 
-    general_chat_id = settings.GENERAL_CHATS[instance.type]
-
-    if general_chat_id:
-        message = render_topic(instance)
-        bot.send_message(general_chat_id, message, parse_mode=ParseMode.MARKDOWN)
 
     return True
