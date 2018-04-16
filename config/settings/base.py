@@ -184,3 +184,16 @@ TELEGRAM_BOT_DISPATCHER_FACTORY_PARAMS = os.environ.get('TELEGRAM_BOT_DISPATCHER
 
 SENTRY_DSN = os.environ.get('SENTRY_DSN', None)
 SENTRY_LOGGING_LEVEL = os.environ.get('SENTRY_LOGGING_LEVEL', logging.ERROR)
+
+
+# -----------------------------------------------
+
+
+GENERAL_CHATS = {
+    0: os.environ.get('GENERAL_NEEDS_CHAT_ID', None),
+    1: os.environ.get('GENERAL_GOALS_CHAT_ID', None),
+    2: os.environ.get('GENERAL_IDEAS_CHAT_ID', None),
+    3: os.environ.get('GENERAL_PLANS_CHAT_ID', None),
+    4: os.environ.get('GENERAL_STEPS_CHAT_ID', None),
+    5: os.environ.get('GENERAL_TASKS_CHAT_ID', None),
+}

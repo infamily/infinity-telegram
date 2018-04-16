@@ -11,6 +11,8 @@ from inftybot.topics.serializers import TopicSerializer
 from inftybot.topics.utils import render_topic
 from tasks.base import task
 
+from django.conf import settings
+
 api = create_api_client()
 logger = logging.getLogger(__name__)
 
@@ -57,5 +59,11 @@ def notify_about_new_topic(bot, **kwargs):
     for chat in chats_queryset.iterator():
         message = render_topic(instance)
         bot.send_message(chat.id, message, parse_mode=ParseMode.MARKDOWN)
+
+    general_chat_id = settings.GENERAL_CHATS[instance.type]
+
+    if general_chat_id:
+        message = render_topic(instance)
+        bot.send_message(general_chat_id, message, parse_mode=ParseMode.MARKDOWN)
 
     return True
