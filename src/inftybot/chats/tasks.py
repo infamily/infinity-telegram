@@ -52,7 +52,7 @@ def notify_about_new_topic(bot, **kwargs):
 
     if general_chat_id:
         message = render_topic(instance)
-        bot.send_message(general_chat_id, message, parse_mode=ParseMode.MARKDOWN)
+        bot.send_message(general_chat_id, message, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
     if not categories:
         logger.error("No topic categories\nSkipping...")
@@ -65,7 +65,7 @@ def notify_about_new_topic(bot, **kwargs):
 
     for chat in chats_queryset.iterator():
         message = render_topic(instance)
-        bot.send_message(chat.id, message, parse_mode=ParseMode.MARKDOWN)
+        bot.send_message(chat.id, message, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
 
     return True
