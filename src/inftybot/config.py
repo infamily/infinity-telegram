@@ -42,4 +42,3 @@ JINJA_EXTENSIONS = [
 ]
 
 TOPIC_URL_TEMPLATE = 'https://inf.li/#/{INFTY_API_URL}:en/@/topic/{TOPIC_ID}'
-COMMENT_URL_TEMPLATE = 'https://inf.li/#/{INFTY_API_URL}:en/@/topic/{TOPIC_ID}#comment-{COMMENT_ID}'
