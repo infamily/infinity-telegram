@@ -9,6 +9,7 @@ from slumber.exceptions import HttpClientError, HttpServerError
 from telegram.ext import MessageHandler, BaseFilter
 
 from inftybot.authentication.intents.base import AuthenticatedMixin
+from inftybot.comments.utils import prepare_comment
 from inftybot.core.intents.base import BaseMessageIntent
 from inftybot.topics.utils import get_topic_id
 
@@ -99,9 +100,10 @@ class ReplyIntent(BaseCommentIntent):
         original_message = self.update.message.reply_to_message
         parser = MessageParser(original_message.text)
         topic_url = parser.get_topic_url()
+        text = prepare_comment(self.update.message.text)
         data = {
             'topic': topic_url,
-            'text': self.update.message.text,
+            'text': text.text,
             # 'languages': [],
         }
 
