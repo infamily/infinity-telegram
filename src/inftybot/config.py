@@ -14,6 +14,9 @@ SEARCH_RESULTS_LIMIT = os.environ.get('SEARCH_RESULTS_LIMIT', 50)
 SEARCH_PREVIEW_LENGTH = os.environ.get('SEARCH_PREVIEW_LENGTH', 200)
 INLINE_QUERY_CACHE_TIME = os.environ.get('INLINE_QUERY_CACHE_TIME', 0)
 
+DEFAULT_LANGUAGE = os.environ.get('DEFAULT_LANGUAGE', 'en')
+
+
 INTENTS = [
     'inftybot.core.intents.start.StartCommandIntent',
     'inftybot.core.intents.reset.ResetCommandIntent',
