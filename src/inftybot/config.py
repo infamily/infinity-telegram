@@ -5,6 +5,7 @@ TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 
 INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'https://dev.wfx.io')
 INFTY_API_URL = os.environ.get('INFTY_API_URL', 'https://dev.wfx.io')
+INFTY_HTTP_CLIENT_URL = os.environ.get('INFTY_HTTP_CLIENT_URL', 'https://inf.li')
 
 # INFTY_SERVER_URL = os.environ.get('INFTY_SERVER_URL', 'http://localhost:8001')
 # INFTY_API_URL = os.environ.get('INFTY_API_URL', 'http://localhost:8001/api/v1')
