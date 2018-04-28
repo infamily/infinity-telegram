@@ -106,11 +106,11 @@ class ReplyIntent(BaseCommentIntent):
         }
 
         try:
-            response = self.api.client.comments.post(data=data)
+            self.api.client.comments.post(data=data)
         except (HttpClientError, HttpServerError) as e:
             logger.error(e)
         else:
             self.bot.sendMessage(
                 chat_id=self.update.message.chat_id,
-                text="Comment was created: {}".format(response.get('url', 'URL UNDEFINED')),
+                text="Comment was created",
             )
