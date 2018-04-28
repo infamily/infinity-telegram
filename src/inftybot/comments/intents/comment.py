@@ -10,6 +10,7 @@ from telegram.ext import MessageHandler, BaseFilter
 
 from inftybot.authentication.intents.base import AuthenticatedMixin
 from inftybot.core.intents.base import BaseMessageIntent
+from inftybot.topics.utils import get_topic_id
 
 _ = gettext
 logger = logging.getLogger(__name__)
@@ -69,11 +70,7 @@ class MessageParser(object):
 
     def get_topic_id(self):
         topic_url = self.get_topic_url()
-
-        try:
-            return int(topic_url.strip('/').rsplit('/', 1)[-1])
-        except (IndexError, TypeError):
-            return None
+        return get_topic_id(topic_url)
 
 
 class TopicReplyFilter(BaseFilter):

@@ -8,5 +8,5 @@
 
 {{object.body|select_language}}
 
-*URL:* {{object.url}}
+*URL:* {{object.get_client_url}}
 _Reply to this message to post a comment on Infinity._

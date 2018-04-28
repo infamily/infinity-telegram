@@ -209,5 +209,5 @@ Note the ```telegram/webhook``` url part
 + . Make the replies about log-in go directly to user from bot, rather than to channel.
 + . Slightly refactor my PR with notifcations to general channels about Goal, Idea, Plan,... 
 . Add links to inf.li, rather than to API items. 
-. Have a default language of the bot, and remove language tokens from text when showing on TG 
++ . Have a default language of the bot, and remove language tokens from text when showing on TG 
 . Prepend the language token when language of bot is known (e.g., like on web client.) less

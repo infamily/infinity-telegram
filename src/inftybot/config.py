@@ -40,3 +40,6 @@ TELEGRAM_ERROR_HANDLER = 'inftybot.error_callback'
 JINJA_EXTENSIONS = [
     'inftybot.contrib.jinja2.ext.StringExtension',
 ]
+
+TOPIC_URL_TEMPLATE = 'https://inf.li/#/{INFTY_API_URL}:en/@/topic/{TOPIC_ID}'
+COMMENT_URL_TEMPLATE = 'https://inf.li/#/{INFTY_API_URL}:en/@/topic/{TOPIC_ID}#comment-{COMMENT_ID}'
