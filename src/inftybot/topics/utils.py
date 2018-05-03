@@ -9,7 +9,7 @@ from inftybot import config
 def get_topic_id(topic_url):
     try:
         return int(topic_url.strip('/').rsplit('/', 1)[-1])
-    except (IndexError, TypeError):
+    except (AttributeError, IndexError, TypeError):
         return None
 
 
