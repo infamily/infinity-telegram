@@ -9,6 +9,10 @@ register = template.Library()
 
 @register.filter
 def select_language(value, langcode=None):
+    if isinstance(value, list):
+        return [select_language(v) for v in value]
     langcode = langcode or config.DEFAULT_LANGUAGE
     splitted = splitter.split(value)
-    return splitted.get(langcode, value)
+    if isinstance(splitted, dict):
+        return splitted.get(langcode, value)
+    return value
