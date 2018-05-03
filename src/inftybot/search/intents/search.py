@@ -48,11 +48,8 @@ class SearchTopicsInlineIntent(SearchTopicsMixin, BaseInlineQuery):
 def process_result(result):
     description = result.get('body', '')[:config.SEARCH_PREVIEW_LENGTH]
 
-    topic = Topic()
-    topic.type = result.get('type')
-    topic.title = result.get('title')
-    topic.body = result.get('body')
-    topic.url = result.get('url')
+    attrs = {k: v for k, v in result.items() if hasattr(Topic, k)}
+    topic = Topic(**attrs)
 
     message_text = render_topic(topic)
 
