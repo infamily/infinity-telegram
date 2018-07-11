@@ -9,7 +9,9 @@ from slumber.exceptions import HttpClientError, HttpServerError
 from telegram.ext import MessageHandler, BaseFilter
 
 from inftybot.authentication.intents.base import AuthenticatedMixin
+from inftybot.comments.utils import prepare_comment
 from inftybot.core.intents.base import BaseMessageIntent
+from inftybot.topics.utils import get_topic_id
 
 _ = gettext
 logger = logging.getLogger(__name__)
@@ -69,11 +71,7 @@ class MessageParser(object):
 
     def get_topic_id(self):
         topic_url = self.get_topic_url()
-
-        try:
-            return int(topic_url.strip('/').rsplit('/', 1)[-1])
-        except (IndexError, TypeError):
-            return None
+        return get_topic_id(topic_url)
 
 
 class TopicReplyFilter(BaseFilter):
@@ -102,18 +100,19 @@ class ReplyIntent(BaseCommentIntent):
         original_message = self.update.message.reply_to_message
         parser = MessageParser(original_message.text)
         topic_url = parser.get_topic_url()
+        text = prepare_comment(self.update.message.text)
         data = {
             'topic': topic_url,
-            'text': self.update.message.text,
+            'text': text.text,
             # 'languages': [],
         }
 
         try:
-            response = self.api.client.comments.post(data=data)
+            self.api.client.comments.post(data=data)
         except (HttpClientError, HttpServerError) as e:
             logger.error(e)
         else:
             self.bot.sendMessage(
                 chat_id=self.update.message.chat_id,
-                text="Comment was created: {}".format(response.get('url', 'URL UNDEFINED')),
+                text="Comment was created",
             )

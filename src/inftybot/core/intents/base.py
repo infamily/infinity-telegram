@@ -128,7 +128,6 @@ class BaseIntent(object):
 
     def handle_error(self, error):
         logger.error('Unhandled error in the intent {}: {}'.format(self.__class__, error))
-        pass
 
     @classmethod
     def create_from_intent(cls, intent, **kwargs):
@@ -159,7 +158,7 @@ class BaseInlineQuery(BaseIntent):
         self.query = query
 
     def handle_error(self, error):
-        raise NotImplementedError
+        self.bot.send_message(chat_id=self.update.effective_chat.id, text=error.message)
 
     def parse_query(self):
         """
@@ -193,7 +192,7 @@ class BaseMessageIntent(BaseIntent):
         )
 
     def handle_error(self, error):
-        self.update.message.reply_text(error.message)
+        self.bot.send_message(chat_id=self.update.effective_chat.id, text=error.message)
 
 
 class BaseCommandIntent(BaseIntent):

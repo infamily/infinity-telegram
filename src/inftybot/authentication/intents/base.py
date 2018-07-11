@@ -51,4 +51,5 @@ class AuthenticatedMixin(AuthenticationMixin):
         self.set_api_authentication(self.current_user)
 
         if not self.is_authenticated:
-            raise AuthenticationError("Please, /login first")
+            message = "Please, talk to @{} to login".format(self.bot.username)
+            raise AuthenticationError(message)

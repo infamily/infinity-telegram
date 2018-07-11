@@ -1,10 +1,10 @@
-{% if object.categories_names %}
-`Categories:` {{object.categories_names|join:','}}
-{% endif %}
+{% load langsplit_tags %}
 
-`{{object.get_type_display}}:` *{{object.title}}*
+{% if object.categories_names %}`Categories:` {{object.categories_names|select_language|join:', '}}{% endif %}
 
-{{object.body}}
+`{{object.get_type_display}}:` *{{object.title|select_language}}*
 
-*URL:* {{object.url}}
+{{object.body|select_language}}
+
+*URL:* {{object.get_client_url}}
 _Reply to this message to post a comment on Infinity._

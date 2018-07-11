@@ -1,7 +1,10 @@
 # coding: utf-8
+
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import gettext as _
+
+from inftybot.topics.utils import get_topic_id, get_topic_client_url
 
 
 class Topic(models.Model):
@@ -53,3 +56,9 @@ class Topic(models.Model):
     def categories_str(self, value):
         # NOQA
         pass
+
+    def get_topic_id(self):
+        return get_topic_id(self.url)
+
+    def get_client_url(self):
+        return get_topic_client_url(self)

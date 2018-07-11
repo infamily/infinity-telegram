@@ -39,7 +39,9 @@ class APIAuthenticationTestCase(BaseIntentTestCase):
         except ValidationError:
             pass
 
-        self.assertEqual(intent.api.session.headers['authorization'], 'Token token')
+        store = getattr(intent.api.client, '_store')
+        session = store['session']
+        self.assertEqual(session.headers['authorization'], 'Token token')
 
     def test_before_validate_sets_api_authentication(self):
         # todo test
